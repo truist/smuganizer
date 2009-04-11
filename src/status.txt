@@ -1,29 +1,30 @@
 
+
+fix &amp; issue with gallery
+
+implement a "hide" menu for SmugMug images
+
+do the drag-and-drop import
+	figure out import order - sorted (by what?) or not?
+	figure out what metadata (hidden, caption, etc.) to copy over
+
+implement a "password protect" menu for SmugMug albums
+
+need an application icon
+
+
+-----
+
 category move isn't implemented, both in SmugCategory and in SmugMug
 	categories (and subcategories) can be moved around, but there is no easy way to
-		update the api???? objects when doing so - I'll have to update the whole tree
+	update the api???? objects when doing so - I'll have to update the whole tree
 
 "copy" isn't implemented
 
 need a 'refresh' function for when changes are made via the website or other tools
 
-need an application icon
-
 -----
-
-need to indicate metadata (hidden/protected) in tree
-
-don't have any way to check for hidden albums - NEED TO WARN USERS
-
-have to have a way to re-open the image window, if the user closes it
-
-need to make the startup windows prettier
 
 need to figure out sorting in the Gallery tree
 	and the Settings menu
 
-need to figure out import order - sorted (by what?) or not?
-
------
-
-get it into google

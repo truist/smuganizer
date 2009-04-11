@@ -79,12 +79,13 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		focusManager.addPropertyChangeListener("focusOwner", this);
 		
-		JPanel leftPanel = new JPanel(new BorderLayout());
-		leftPanel.add(new JScrollPane(smugTree), BorderLayout.CENTER);
-		leftPanel.add(newHeaderLabel("SmugMug"), BorderLayout.NORTH);
 		JPanel rightPanel = new JPanel(new BorderLayout());
-		rightPanel.add(new JScrollPane(galleryTree), BorderLayout.CENTER);
-		rightPanel.add(newHeaderLabel("Gallery"), BorderLayout.NORTH);
+		rightPanel.add(new JScrollPane(smugTree), BorderLayout.CENTER);
+		rightPanel.add(newHeaderLabel("SmugMug"), BorderLayout.NORTH);
+		
+		JPanel leftPanel = new JPanel(new BorderLayout());
+		leftPanel.add(new JScrollPane(galleryTree), BorderLayout.CENTER);
+		leftPanel.add(newHeaderLabel("Gallery"), BorderLayout.NORTH);
 		
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, 
 									true, 
@@ -179,6 +180,7 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 			galleryTree.loadTree(gallery, gallerySettings);
 		} catch (IOException ex) {
 			JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error loading albums", JOptionPane.ERROR_MESSAGE);
+			return false;
 		}
 		return true;
 	}

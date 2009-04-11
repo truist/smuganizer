@@ -18,9 +18,8 @@ import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-public class SmugAlbum implements TreeableGalleryItem {
+public class SmugAlbum extends TreeableGalleryItem {
 	private static final int NO_IMAGES_FOUND_ERROR = 15;
-	private static ImageIcon albumIcon = new ImageIcon("lib/images/camera.png");
 	
 	private com.kallasoft.smugmug.api.json.entity.Album apiAlbum;
 	private SmugCategory parent;
@@ -51,19 +50,32 @@ public class SmugAlbum implements TreeableGalleryItem {
 
 	public List<? extends TreeableGalleryItem> loadChildren() {
 		childrenLoaded = true;
+		
+		com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo albumGet = new com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo();
+		com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo.GetInfoResponse albumResponse
+			= albumGet.execute(SmugMug.API_URL, 
+								SmugMug.API_KEY, 
+								SmugMug.sessionID, 
+								apiAlbum.getID(), 
+								apiAlbum.getAlbumKey());
+		if (albumResponse.isError()) {
+			throw new SmugException("Failed to load album details for \"" + getFullPathLabel() + "\"", albumResponse.getError());
+		}
+		apiAlbum = albumResponse.getAlbum();
+		
 		com.kallasoft.smugmug.api.json.v1_2_0.images.Get imageGet = new com.kallasoft.smugmug.api.json.v1_2_0.images.Get();
-		com.kallasoft.smugmug.api.json.v1_2_0.images.Get.GetResponse response 
+		com.kallasoft.smugmug.api.json.v1_2_0.images.Get.GetResponse imageResponse 
 			= imageGet.execute(SmugMug.API_URL, 
 								SmugMug.API_KEY, 
 								SmugMug.sessionID, 
 								apiAlbum.getID(), 
 								apiAlbum.getAlbumKey(), 
 								Boolean.FALSE);
-		if (response.isError() && response.getError().getCode().intValue() != NO_IMAGES_FOUND_ERROR) {
-			throw new SmugException("Failed to get images from album \"" + getFullPathLabel() + "\"", response.getError());
+		if (imageResponse.isError() && imageResponse.getError().getCode().intValue() != NO_IMAGES_FOUND_ERROR) {
+			throw new SmugException("Failed to get images from album \"" + getFullPathLabel() + "\"", imageResponse.getError());
 		}
 		images = new ArrayList<SmugImage>();
-		for (com.kallasoft.smugmug.api.json.entity.Image each : response.getImageList()) {
+		for (com.kallasoft.smugmug.api.json.entity.Image each : imageResponse.getImageList()) {
 			images.add(new SmugImage(this, each));
 		}
 		return images;
@@ -76,21 +88,12 @@ public class SmugAlbum implements TreeableGalleryItem {
 		return images;
 	}
 
-	public String getFullPathLabel() {
-		return parent.getFullPathLabel() + PATH_SEP + getLabel();
-	}
-
 	public String getLabel() {
 		return (reLabel != null) ? reLabel : apiAlbum.getTitle();
 	}
 
 	public boolean canBeRelabeled() {
 		return true;
-	}
-
-	@Override
-	public String toString() {
-		return getLabel();
 	}
 
 	public void reLabel(String newName) throws RenameException {
@@ -172,10 +175,6 @@ public class SmugAlbum implements TreeableGalleryItem {
 		return apiAlbum.getPosition();
 	}
 
-	public Icon getIcon() {
-		return albumIcon;
-	}
-
 	public String getType() {
 		return ALBUM;
 	}
@@ -205,5 +204,19 @@ public class SmugAlbum implements TreeableGalleryItem {
 
 	public URL getPreviewURL() throws MalformedURLException {
 		return null;
+	}
+	
+	private boolean hasPassword() {
+		return !"".equals(apiAlbum.getPassword());
+	}
+
+	@Override
+	public String getMetaLabel() {
+		return (hasPassword() ? " [password protected]" : "");
+	}
+
+	@Override
+	public boolean isProtected() {
+		return hasPassword();
 	}
 }

@@ -10,17 +10,21 @@ import javax.swing.Icon;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 
-public class Gallery implements TreeableGalleryItem {
+public class Gallery extends AbstractGalleryTreeable {
 	public static final String TYPE = "MenaltoGallery";
 	
 	static final String ARG_ALBUMS_TOO = "albums_too";
@@ -42,6 +46,7 @@ public class Gallery implements TreeableGalleryItem {
 	static final String G1_BASE = "gallery_remote2.php";
 	static final String G1_NOOP = "";
 	static final String G2_BASE = "main.php";
+	static final String G2_ITEMID = "g2_itemId=";
 	static final String G2_NOOP = "?g2_controller=remote.GalleryRemote&g2_form[cmd]=no-op";
 	static final String PROTOCOL_VERSION = "2.3";
 	static final String RESPONSE_ALBUM_COUNT = "album_count";
@@ -62,11 +67,12 @@ public class Gallery implements TreeableGalleryItem {
 	static final String USER_AGENT = "Smuganizer";
 
     private HttpClient loginHttpClient;
+	private HttpClient anonHttpClient;
 	
 	private GallerySettings settings;
-    private String baseURL;
+    private static String baseURL;
     private String completeURL;
-    private int galleryVersion;
+    private static int galleryVersion;
     private String lastAuthToken;
 
     public Gallery(GallerySettings settings) throws IOException {
@@ -77,6 +83,9 @@ public class Gallery implements TreeableGalleryItem {
 		loginHttpClient = new HttpClient();
 		loginHttpClient.setHttpConnectionManager(new MultiThreadedHttpConnectionManager());
 //		loginHttpClient.getHostConfiguration().setProxy("127.0.0.1", 8888);
+		
+		anonHttpClient = new HttpClient();
+		anonHttpClient.setHttpConnectionManager(new MultiThreadedHttpConnectionManager());
 		
 		this.galleryVersion = determineGalleryVersion(baseURL);
 		login();
@@ -179,7 +188,7 @@ public class Gallery implements TreeableGalleryItem {
 			String albumTitle = response.getProperty(RESPONSE_ALBUM_TITLE_INDEXED + albumRefNum);
 			String albumSummary = response.getProperty(RESPONSE_ALBUM_SUMMARY_INDEXED + albumRefNum);
 			
-			GalleryAlbum album = new GalleryAlbum(this, albumName, albumTitle, albumSummary);
+			GalleryAlbum album = new GalleryAlbum(this, albumName, albumTitle, albumSummary, albumRefNum);
 			rootAlbums.add(album);
 			
 			nameAlbumMap.put(albumName, album);
@@ -220,45 +229,29 @@ public class Gallery implements TreeableGalleryItem {
 		return images;
     }
 	
+	boolean isAlbumHidden(GalleryAlbum album) {
+        GetMethod get = new GetMethod();
+		get.setFollowRedirects(false);
+		try {
+			String url = generateUrlFor(album.getUrlName(), null).toString();
+			get.setURI(new org.apache.commons.httpclient.URI(url));
+			try {
+				return (HttpStatus.SC_MOVED_TEMPORARILY == anonHttpClient.executeMethod(get));
+			} finally {
+				get.releaseConnection();
+			}
+		} catch (Exception ex) {
+			Logger.getLogger(GalleryAlbum.class.getName()).log(Level.SEVERE, null, ex);
+			return false;
+		}
+	}
+	
 	public HttpClient getHttpClient() {
 		return loginHttpClient;
 	}
 	
-	@Override
-	public String toString() {
-		return getLabel();
-	}
-
-	public String getFullPathLabel() {
-		return "";
-	}
-
-	public int compareTo(TreeableGalleryItem o) {
-		return 0;
-	}
-
-	public Icon getIcon() {
-		return null;
-	}
-
 	public String getLabel() {
 		return getBaseURL();
-	}
-
-	public boolean canBeRelabeled() {
-		return false;
-	}
-
-	public void reLabel(String answer) {
-		throw new UnsupportedOperationException("Not supported");
-	}
-
-	public boolean canBeDeleted() {
-		return false;
-	}
-
-	public void delete() {
-		throw new UnsupportedOperationException("Not supported");
 	}
 
 	public boolean canBeLaunched() {
@@ -269,7 +262,7 @@ public class Gallery implements TreeableGalleryItem {
 		Desktop.getDesktop().browse(new java.net.URI("http", getBaseURL(), "/", null));
 	}
 	
-	public String getBaseURL() {
+	static String getBaseURL() {
 		int offset = baseURL.indexOf("//");
 		if (offset < 0) {
 			return baseURL;
@@ -279,6 +272,14 @@ public class Gallery implements TreeableGalleryItem {
 			} else {
 				return baseURL.substring(offset + 2);
 			}
+		}
+	}
+	
+	static URI generateUrlFor(String album, String image) throws URISyntaxException {
+		if (galleryVersion == 2) {
+			return new URI("http", null, getBaseURL(), -1, "/" + G2_BASE, G2_ITEMID + (image == null ? album : image), null);
+		} else {
+			return new URI("http", null, getBaseURL(), -1, "/" + album + (image != null ? "/" + image : ""), null, null);
 		}
 	}
 
@@ -294,11 +295,16 @@ public class Gallery implements TreeableGalleryItem {
 		return null;
 	}
 
-	public boolean canAccept(TreeableGalleryItem childItem, int childIndex) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public int compareTo(TreeableGalleryItem o) {
+		return 0;
 	}
 
-	public void receiveChild(TreeableGalleryItem childItem, int childIndex) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public String getMetaLabel() {
+		return "";
+	}
+
+	@Override
+	public boolean isProtected() {
+		return false;
 	}
 }

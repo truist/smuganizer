@@ -14,9 +14,7 @@ import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-public class SmugImage implements TreeableGalleryItem {
-	private static ImageIcon imageIcon = new ImageIcon("lib/images/image.png");
-	
+public class SmugImage extends TreeableGalleryItem {
 	private boolean loaded;
 	private com.kallasoft.smugmug.api.json.entity.Image apiImage;
 	private SmugAlbum parent;
@@ -75,8 +73,15 @@ public class SmugImage implements TreeableGalleryItem {
 		if (!loaded) {
 			loadImageDetails();
 		}
-		return (reLabel != null ? reLabel : apiImage.getCaption()) 
-			+ (apiImage.isHidden().booleanValue() ? " (hidden)" : "");
+		if (reLabel != null) {
+			return reLabel;
+		} 
+		String caption = apiImage.getCaption();
+		if ("".equals(apiImage.getCaption())) {
+			return apiImage.getFileName();
+		} else {
+			return caption;
+		}
 	}
 	
 	public int getPosition() {
@@ -84,18 +89,6 @@ public class SmugImage implements TreeableGalleryItem {
 			loadImageDetails();
 		}
 		return apiImage.getPosition().intValue();
-	}
-
-	public String getFullPathLabel() {
-		return parent.getFullPathLabel() + PATH_SEP + getLabel();
-	}
-
-	@Override
-	public String toString() {
-		if (!loaded) {
-			loadImageDetails();
-		}
-		return "".equals(getLabel()) ? apiImage.getFileName() : getLabel();
 	}
 
 	public boolean canBeRelabeled() {
@@ -147,10 +140,6 @@ public class SmugImage implements TreeableGalleryItem {
 		throw new RuntimeException("Shouldn't be able to get here");
 	}
 
-	public Icon getIcon() {
-		return imageIcon;
-	}
-
 	public String getType() {
 		return IMAGE;
 	}
@@ -161,5 +150,19 @@ public class SmugImage implements TreeableGalleryItem {
 
 	public int compareTo(TreeableGalleryItem o) {
 		return 0;
+	}
+	
+	private boolean isHidden() {
+		return apiImage.isHidden().booleanValue();
+	}
+
+	@Override
+	public String getMetaLabel() {
+		return (isHidden() ? " [hidden]" : "");
+	}
+
+	@Override
+	public boolean isProtected() {
+		return isHidden();
 	}
 }

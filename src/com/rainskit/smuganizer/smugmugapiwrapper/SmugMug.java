@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
 
-public class SmugMug implements TreeableGalleryItem {
+public class SmugMug extends TreeableGalleryItem {
 	public static final String TYPE = "SmugMug";
 	static final String API_URL = "https://api.smugmug.com/hack/json/1.2.0/";
 	static final String API_KEY = "aR8ks0WWmboWAcclI9poAboELIqNj3wW";
@@ -71,20 +71,8 @@ public class SmugMug implements TreeableGalleryItem {
 		return TYPE;
 	}
 
-	public Icon getIcon() {
-		return null;
-	}
-	
-	public String toString() {
-		return getBaseURL();
-	}
-	
 	public String getLabel() {
-		return "";
-	}
-
-	public String getFullPathLabel() {
-		return "";
+		return getBaseURL();
 	}
 
 	public boolean canBeRelabeled() {
@@ -137,5 +125,15 @@ public class SmugMug implements TreeableGalleryItem {
 
 	public URL getPreviewURL() throws MalformedURLException {
 		return null;
+	}
+
+	@Override
+	public String getMetaLabel() {
+		return "";
+	}
+
+	@Override
+	public boolean isProtected() {
+		return false;
 	}
 }

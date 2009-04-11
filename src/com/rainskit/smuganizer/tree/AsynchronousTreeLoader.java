@@ -53,8 +53,6 @@ public class AsynchronousTreeLoader {
 	private Thread[] startLoadingFromQueue(LinkedBlockingDeque<LoadTask> loadTaskQueue,
 											HttpConnectionManagerParams params,
 											HostConfiguration hostConfig) {
-//		HttpConnectionManagerParams params = APIConstants.HTTP_CLIENT.getHttpConnectionManager().getParams();
-//		HostConfiguration hostConfig = APIConstants.HTTP_CLIENT.getHostConfiguration();
 		params.setMaxConnectionsPerHost(hostConfig, TREE_LOADER_THREADS);
 		Thread[] threads = new Thread[TREE_LOADER_THREADS];
 		for (int i = 0; i < TREE_LOADER_THREADS; i++) {

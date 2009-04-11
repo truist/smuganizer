@@ -47,7 +47,7 @@ public class DisplayWindow extends JFrame {
 		displayPanel.add(new JScrollPane(helpPane), HELP_CARD);
 		displayPanel.add(new JScrollPane(imagePanel), IMAGE_CARD);
 		
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(displayPanel);
 		pack();
@@ -55,7 +55,7 @@ public class DisplayWindow extends JFrame {
 		setLocationRelativeTo(parent);
 		Point parentLocation = parent.getLocation();
 		Point currentLocation = this.getLocation();
-		setLocation(currentLocation.x, Math.max(currentLocation.y, parentLocation.y + 200));
+		setLocation(currentLocation.x, Math.max(currentLocation.y, parentLocation.y + 100));
 	}
 
 	public void displayImage(URL previewURL) {
@@ -63,6 +63,7 @@ public class DisplayWindow extends JFrame {
 			imageLabel.setIcon(new ImageIcon(previewURL));
 			imageLabel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.BLACK, 2), BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 			cardLayout.show(displayPanel, IMAGE_CARD);
+			reShowIfNeeded();
 		} else {
 			imageLabel.setIcon(null);
 			imageLabel.setBorder(null);
@@ -71,5 +72,12 @@ public class DisplayWindow extends JFrame {
 
 	public void showHelp() {
 		cardLayout.show(displayPanel, HELP_CARD);
+		reShowIfNeeded();
+	}
+	
+	public void reShowIfNeeded() {
+		if (!isVisible()) {
+			setVisible(true);
+		}
 	}
 }

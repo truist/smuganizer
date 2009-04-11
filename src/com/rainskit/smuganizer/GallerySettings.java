@@ -11,9 +11,10 @@ public class GallerySettings {
 	private static final String USERNAME = "gallery.username";
 	private static final String PASSWORD = "gallery.password";
 	private static final String NULL_PASSWORD = "";
+	private static final String CHECK_PROTECTED_ALBUMS = "gallery.check_protected_albums";
 	
 	private static Preferences storage = Preferences.userNodeForPackage(Main.class);
-	
+
 	private char[] sessionPassword;
 	
 	public URL getURL() throws MalformedURLException {
@@ -52,6 +53,14 @@ public class GallerySettings {
 		return !NULL_PASSWORD.equals(storage.get(PASSWORD, NULL_PASSWORD));
 	}
 	
+	public static boolean getCheckProtectedAlbums() {
+		return storage.getBoolean(CHECK_PROTECTED_ALBUMS, true);
+	}
+	
+	public static void setCheckProtectedAlbums(boolean selected) {
+		storage.putBoolean(CHECK_PROTECTED_ALBUMS, selected);
+	}
+
 	public void addSettingListener(final SettingsListener listener) {
 		storage.addPreferenceChangeListener(new PreferenceChangeListener() {
 			public void preferenceChange(PreferenceChangeEvent evt) {

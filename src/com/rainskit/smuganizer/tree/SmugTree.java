@@ -31,7 +31,7 @@ public class SmugTree extends JTree implements SettingsListener {
 		model.setRoot(rootNode);
 		
 		setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
-		setCellRenderer(new SmugTreeRenderer());
+		setCellRenderer(new TreeableRenderer());
 		setTransferHandler(new SmugTransferHandler(main));
 		setDragEnabled(true);
 		setDropMode(DropMode.INSERT);

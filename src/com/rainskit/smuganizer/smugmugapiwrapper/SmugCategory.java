@@ -17,8 +17,7 @@ import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-public class SmugCategory implements TreeableGalleryItem {
-	private static ImageIcon categoryIcon = new ImageIcon("lib/images/images_stack.png");
+public class SmugCategory extends TreeableGalleryItem {
 
 	protected com.kallasoft.smugmug.api.json.entity.Category apiCategory;
 	protected SmugCategory parent;
@@ -59,10 +58,6 @@ public class SmugCategory implements TreeableGalleryItem {
 		return children;
 	}
 
-	public String getFullPathLabel() {
-		return (parent == null ? "" : parent.getFullPathLabel()) + PATH_SEP + getLabel();
-	}
-
 	public String getLabel() {
 		return (reLabel != null) ? reLabel : apiCategory.getName();
 	}
@@ -92,11 +87,6 @@ public class SmugCategory implements TreeableGalleryItem {
 		} else {
 			Desktop.getDesktop().browse(new URI("http", SmugMug.getBaseURL(), "/" + getLabel(), null));
 		}
-	}
-
-	@Override
-	public String toString() {
-		return getLabel();
 	}
 
 	public boolean canBeDeleted() {
@@ -164,10 +154,6 @@ public class SmugCategory implements TreeableGalleryItem {
 		}
 	}
 
-	public Icon getIcon() {
-		return categoryIcon;
-	}
-
 	public String getType() {
 		return CATEGORY;
 	}
@@ -187,5 +173,15 @@ public class SmugCategory implements TreeableGalleryItem {
 
 	public URL getPreviewURL() throws MalformedURLException {
 		return null;
+	}
+
+	@Override
+	public String getMetaLabel() {
+		return "";
+	}
+
+	@Override
+	public boolean isProtected() {
+		return false;
 	}
 }
