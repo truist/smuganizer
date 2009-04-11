@@ -155,7 +155,11 @@ public class Gallery extends AbstractGalleryTreeable {
 			response.load(post.getResponseBodyAsStream());
 			String responseCode = response.getProperty(RESPONSE_STATUS_CODE);
 			if(responseCode == null || Integer.parseInt(responseCode) != 0) {
-				throw new IOException(response.getProperty(RESPONSE_STATUS_TEXT));
+				String message = response.getProperty(RESPONSE_STATUS_TEXT);
+				if (message == null) {
+					message = "Error!  Unable to read the response from the server";
+				}
+				throw new IOException(message);
 			}
 			if (galleryVersion > 1) {
 				this.lastAuthToken = response.getProperty(RESPONSE_AUTH_TOKEN);
