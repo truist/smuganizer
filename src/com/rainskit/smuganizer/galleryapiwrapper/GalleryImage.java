@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.apache.commons.lang.StringEscapeUtils;
 
 public class GalleryImage extends AbstractGalleryTreeable {
 	private GalleryAlbum parent;
@@ -48,12 +49,12 @@ public class GalleryImage extends AbstractGalleryTreeable {
 		return name;
 	}
 
-	private boolean isHidden() {
+	public boolean isHidden() {
 		return Gallery.ARGVAL_YES.equals(imageDetails.getProperty(Gallery.RESPONSE_IMAGE_HIDDEN_INDEXED + imageRefNum));
 	}
 
 	public String getLabel() {
-		return imageDetails.getProperty(Gallery.RESPONSE_IMAGE_CAPTION_INDEXED + imageRefNum);
+		return StringEscapeUtils.unescapeHtml(imageDetails.getProperty(Gallery.RESPONSE_IMAGE_CAPTION_INDEXED + imageRefNum));
 	}
 
 	public boolean canBeLaunched() {

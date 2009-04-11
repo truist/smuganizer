@@ -3,6 +3,7 @@ package com.rainskit.smuganizer.smugmugapiwrapper;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.HideException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -19,6 +20,7 @@ public class SmugImage extends TreeableGalleryItem {
 	private com.kallasoft.smugmug.api.json.entity.Image apiImage;
 	private SmugAlbum parent;
 	private String reLabel;
+	private Boolean hidden;
 
 	public SmugImage(SmugAlbum parent, com.kallasoft.smugmug.api.json.entity.Image apiImage) {
 		this.parent = parent;
@@ -152,8 +154,12 @@ public class SmugImage extends TreeableGalleryItem {
 		return 0;
 	}
 	
-	private boolean isHidden() {
-		return apiImage.isHidden().booleanValue();
+	public boolean isHidden() {
+		if (hidden != null) {
+			return hidden.booleanValue();
+		} else {
+			return apiImage.isHidden().booleanValue();
+		}
 	}
 
 	@Override
@@ -164,5 +170,21 @@ public class SmugImage extends TreeableGalleryItem {
 	@Override
 	public boolean isProtected() {
 		return isHidden();
+	}
+
+	@Override
+	public boolean canChangeHiddenStatus(boolean newState) {
+		return (newState != isHidden());
+	}
+
+	@Override
+	public void setHidden(boolean hidden) {
+		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings changeSettings = new com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings();
+		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings.ChangeSettingsResponse response 
+			= changeSettings.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, apiImage.getID(), null, null, hidden);
+		if (response.isError()) {
+			throw new HideException(this, response.getError());
+		}
+		this.hidden = Boolean.valueOf(hidden);
 	}
 }

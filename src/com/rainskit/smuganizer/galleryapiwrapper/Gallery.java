@@ -233,7 +233,7 @@ public class Gallery extends AbstractGalleryTreeable {
 		return images;
     }
 	
-	boolean isAlbumHidden(GalleryAlbum album) {
+	boolean isAlbumProtected(GalleryAlbum album) {
         GetMethod get = new GetMethod();
 		get.setFollowRedirects(false);
 		try {
@@ -309,6 +309,11 @@ public class Gallery extends AbstractGalleryTreeable {
 
 	@Override
 	public boolean isProtected() {
+		return false;
+	}
+
+	@Override
+	public boolean isHidden() {
 		return false;
 	}
 }

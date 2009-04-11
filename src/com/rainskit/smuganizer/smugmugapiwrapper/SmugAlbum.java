@@ -219,4 +219,19 @@ public class SmugAlbum extends TreeableGalleryItem {
 	public boolean isProtected() {
 		return hasPassword();
 	}
+
+	@Override
+	public boolean canChangeHiddenStatus(boolean newState) {
+		return false;
+	}
+
+	@Override
+	public void setHidden(boolean hidden) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public boolean isHidden() {
+		return false;
+	}
 }

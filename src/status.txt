@@ -1,7 +1,5 @@
 
 
-fix &amp; issue with gallery
-
 implement a "hide" menu for SmugMug images
 
 do the drag-and-drop import

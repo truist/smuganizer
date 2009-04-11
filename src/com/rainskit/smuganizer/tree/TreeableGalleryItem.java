@@ -37,6 +37,10 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public abstract boolean canBeDeleted();
 	public abstract void delete();
 	
+	public abstract boolean isHidden();
+	public abstract boolean canChangeHiddenStatus(boolean newState);
+	public abstract void setHidden(boolean hidden);
+	
 	public abstract URL getPreviewURL() throws MalformedURLException;
 	public abstract boolean canBeLaunched();
 	public abstract void launch() throws IOException, URISyntaxException;

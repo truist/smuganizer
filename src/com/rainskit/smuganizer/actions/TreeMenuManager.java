@@ -48,6 +48,8 @@ class TreeMenuManager implements TreeSelectionListener {
 		newActions.add(new RenameAction(this, main));
 		newActions.add(new DeleteAction(this, main));
 		newActions.add(null);
+		newActions.add(new HideAction(this, main));
+		newActions.add(null);
 		newActions.add(new LaunchAction(this, main));
 		return newActions;
 	}

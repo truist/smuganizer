@@ -136,4 +136,19 @@ public class SmugMug extends TreeableGalleryItem {
 	public boolean isProtected() {
 		return false;
 	}
+
+	@Override
+	public boolean canChangeHiddenStatus(boolean newState) {
+		return false;
+	}
+
+	@Override
+	public void setHidden(boolean hidden) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public boolean isHidden() {
+		return false;
+	}
 }

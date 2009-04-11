@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang.StringEscapeUtils;
 
 public class GalleryAlbum extends AbstractGalleryTreeable {
 	private Gallery gallery;
@@ -21,13 +22,13 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 	private String urlName;
 	private String title;
 	private String description;
-	private Boolean hidden;
+	private Boolean albumProtected;
 	private int albumRefNum;
 
 	public GalleryAlbum(Gallery gallery, String urlName, String title, String description, int albumRefNum) {
 		this.gallery = gallery;
 		this.urlName = urlName;
-		this.title = title;
+		this.title = StringEscapeUtils.unescapeHtml(title);
 		this.description = description;
 		this.albumRefNum = albumRefNum;
 		
@@ -56,7 +57,7 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 	
 	public List<? extends TreeableGalleryItem> loadChildren() throws IOException {
 		if (GallerySettings.getCheckProtectedAlbums()) {
-			hidden = Boolean.valueOf(gallery.isAlbumHidden(GalleryAlbum.this));
+			albumProtected = Boolean.valueOf(gallery.isAlbumProtected(GalleryAlbum.this));
 		}
 		
 		ArrayList<TreeableGalleryItem> children = new ArrayList<TreeableGalleryItem>();
@@ -102,10 +103,15 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 
 	@Override
 	public boolean isProtected() {
-		if (hidden == null) {
+		if (albumProtected == null) {
 			return false;
 		} else {
-			return hidden.booleanValue();
+			return albumProtected.booleanValue();
 		}
+	}
+
+	@Override
+	public boolean isHidden() {
+		return false;
 	}
 }
