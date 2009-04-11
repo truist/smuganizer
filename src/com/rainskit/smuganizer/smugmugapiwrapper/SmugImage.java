@@ -1,0 +1,165 @@
+package com.rainskit.smuganizer.smugmugapiwrapper;
+
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
+import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.List;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+
+public class SmugImage implements TreeableGalleryItem {
+	private static ImageIcon imageIcon = new ImageIcon("lib/images/image.png");
+	
+	private boolean loaded;
+	private com.kallasoft.smugmug.api.json.entity.Image apiImage;
+	private SmugAlbum parent;
+	private String reLabel;
+
+	public SmugImage(SmugAlbum parent, com.kallasoft.smugmug.api.json.entity.Image apiImage) {
+		this.parent = parent;
+		this.apiImage = apiImage;
+	}
+
+	public void setParent(SmugAlbum newParent) {
+		this.parent = newParent;
+		loadImageDetails();
+	}
+	
+	public List<? extends TreeableGalleryItem> loadChildren() {
+		loadImageDetails();
+		return null;
+	}
+
+	private void loadImageDetails() {
+		com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo getInfo
+			= new com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo();
+		com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo.GetInfoResponse response 
+			= getInfo.execute(SmugMug.API_URL, 
+								SmugMug.API_KEY, 
+								SmugMug.sessionID, 
+								apiImage.getID(), 
+								apiImage.getImageKey());
+		if (response.isError()) {
+			throw new SmugException("Error loading image details for image with ID \"" + apiImage.getID() + "\" in album \"" + parent.getFullPathLabel() + "\"", response.getError());
+		}
+		apiImage = response.getImage();
+		loaded = true;
+	}
+
+	public URL getSmallImageURL() throws MalformedURLException {
+		if (!loaded) {
+			loadImageDetails();
+		}
+		return new URL(apiImage.getSmallURL());
+	}
+
+	public URL getPreviewURL() throws MalformedURLException {
+		if (!loaded) {
+			loadImageDetails();
+		}
+		return new URL(apiImage.getMediumURL());
+	}
+
+	public Integer getImageID() {
+		return apiImage.getID();
+	}
+
+	public String getLabel() {
+		if (!loaded) {
+			loadImageDetails();
+		}
+		return (reLabel != null ? reLabel : apiImage.getCaption()) 
+			+ (apiImage.isHidden().booleanValue() ? " (hidden)" : "");
+	}
+	
+	public int getPosition() {
+		if (!loaded) {
+			loadImageDetails();
+		}
+		return apiImage.getPosition().intValue();
+	}
+
+	public String getFullPathLabel() {
+		return parent.getFullPathLabel() + PATH_SEP + getLabel();
+	}
+
+	@Override
+	public String toString() {
+		if (!loaded) {
+			loadImageDetails();
+		}
+		return "".equals(getLabel()) ? apiImage.getFileName() : getLabel();
+	}
+
+	public boolean canBeRelabeled() {
+		return true;
+	}
+
+	public void reLabel(String newName) throws RenameException {
+		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings changeSettings = new com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings();
+		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings.ChangeSettingsResponse response 
+			= changeSettings.execute(SmugMug.API_URL, 
+									SmugMug.API_KEY, 
+									SmugMug.sessionID, 
+									apiImage.getID(), 
+									newName, 
+									null, 
+									null);
+		if (response.isError()) {
+			throw new RenameException(this, newName, response.getError());
+		}
+		reLabel = newName;
+	}
+
+	public boolean canBeLaunched() {
+		return true;
+	}
+
+	public void launch() throws IOException, URISyntaxException  {
+		Desktop.getDesktop().browse(new URI(apiImage.getAlbumURL()));
+	}
+
+	public boolean canBeDeleted() {
+		return true;
+	}
+
+	public void delete() throws DeleteException {
+		com.kallasoft.smugmug.api.json.v1_2_0.images.Delete delete = new com.kallasoft.smugmug.api.json.v1_2_0.images.Delete();
+		com.kallasoft.smugmug.api.json.v1_2_0.images.Delete.DeleteResponse response = delete.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, apiImage.getID());
+		if (response.isError()) {
+			throw new DeleteException(this, response.getError());
+		}
+		parent.removeImage(this);
+	}
+
+	public boolean canAccept(TreeableGalleryItem newChild, int childIndex) {
+		return false;
+	}
+
+	public void receiveChild(TreeableGalleryItem childItem, int childIndex) {
+		throw new RuntimeException("Shouldn't be able to get here");
+	}
+
+	public Icon getIcon() {
+		return imageIcon;
+	}
+
+	public String getType() {
+		return IMAGE;
+	}
+
+	public TreeableGalleryItem getParent() {
+		return parent;
+	}
+
+	public int compareTo(TreeableGalleryItem o) {
+		return 0;
+	}
+}
