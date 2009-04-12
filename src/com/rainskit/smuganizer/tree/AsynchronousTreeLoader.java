@@ -19,7 +19,7 @@ import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 public class AsynchronousTreeLoader {
 	private static final int TREE_LOADER_THREADS = 15;
-	private static final int QUEUE_TIMEOUT = 2;
+	private static final int QUEUE_TIMEOUT = 4;
 	private static final TimeUnit QUEUE_TIMEOUT_UNITS = TimeUnit.SECONDS;
 	
 	private Main main;

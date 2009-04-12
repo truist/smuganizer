@@ -133,11 +133,6 @@ public class SmugMug extends TreeableGalleryItem {
 	}
 
 	@Override
-	public boolean isProtected() {
-		return false;
-	}
-
-	@Override
 	public boolean canChangeHiddenStatus(boolean newState) {
 		return false;
 	}
@@ -150,5 +145,20 @@ public class SmugMug extends TreeableGalleryItem {
 	@Override
 	public boolean isHidden() {
 		return false;
+	}
+
+	@Override
+	public boolean hasPassword() {
+		return false;
+	}
+
+	@Override
+	public boolean canChangePassword(boolean newState) {
+		return false;
+	}
+
+	@Override
+	public void setPassword(String password,String passwordHint) {
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 }

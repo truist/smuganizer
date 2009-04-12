@@ -98,20 +98,20 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 		}
 	}
 	public String getMetaLabel() {
-		return (isProtected() ? " [protected]" : "");
-	}
-
-	@Override
-	public boolean isProtected() {
-		if (albumProtected == null) {
-			return false;
-		} else {
-			return albumProtected.booleanValue();
-		}
+		return (hasPassword() ? " [protected]" : "");
 	}
 
 	@Override
 	public boolean isHidden() {
 		return false;
+	}
+
+	@Override
+	public boolean hasPassword() {
+		if (albumProtected == null) {
+			return false;
+		} else {
+			return albumProtected.booleanValue();
+		}
 	}
 }

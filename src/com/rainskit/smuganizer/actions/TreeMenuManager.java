@@ -45,12 +45,13 @@ class TreeMenuManager implements TreeSelectionListener {
 	
 	private ArrayList<TreeableAction> createActions(Main main) {
 		ArrayList<TreeableAction> newActions = new ArrayList<TreeableAction>();
+		newActions.add(new LaunchAction(this, main));
+		newActions.add(null);
 		newActions.add(new RenameAction(this, main));
 		newActions.add(new DeleteAction(this, main));
 		newActions.add(null);
 		newActions.add(new HideAction(this, main));
-		newActions.add(null);
-		newActions.add(new LaunchAction(this, main));
+		newActions.add(new PasswordAction(this, main));
 		return newActions;
 	}
 

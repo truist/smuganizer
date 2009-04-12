@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 public class Gallery extends AbstractGalleryTreeable {
 	public static final String TYPE = "MenaltoGallery";
@@ -86,6 +87,7 @@ public class Gallery extends AbstractGalleryTreeable {
 		
 		anonHttpClient = new HttpClient();
 		anonHttpClient.setHttpConnectionManager(new MultiThreadedHttpConnectionManager());
+//		anonHttpClient.getHostConfiguration().setProxy("127.0.0.1", 8888);
 		
 		this.galleryVersion = determineGalleryVersion(baseURL);
 		login();
@@ -308,12 +310,12 @@ public class Gallery extends AbstractGalleryTreeable {
 	}
 
 	@Override
-	public boolean isProtected() {
+	public boolean isHidden() {
 		return false;
 	}
 
 	@Override
-	public boolean isHidden() {
+	public boolean hasPassword() {
 		return false;
 	}
 }

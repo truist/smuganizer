@@ -1,12 +1,11 @@
 
 
-implement a "hide" menu for SmugMug images
-
 do the drag-and-drop import
 	figure out import order - sorted (by what?) or not?
 	figure out what metadata (hidden, caption, etc.) to copy over
 
 implement a "password protect" menu for SmugMug albums
+	support password hint
 
 need an application icon
 

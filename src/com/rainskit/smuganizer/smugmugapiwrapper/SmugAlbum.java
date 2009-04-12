@@ -6,6 +6,7 @@ import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MoveException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.ReorderException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.PasswordException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.apache.commons.httpclient.methods.PostMethod;
 
 public class SmugAlbum extends TreeableGalleryItem {
 	private static final int NO_IMAGES_FOUND_ERROR = 15;
@@ -26,6 +28,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 	private boolean childrenLoaded;
 	private ArrayList<SmugImage> images;
 	private String reLabel;
+	private String password;
 
 	public SmugAlbum(SmugCategory parent, com.kallasoft.smugmug.api.json.entity.Album apiAlbum) {
 		this.parent = parent;
@@ -205,19 +208,10 @@ public class SmugAlbum extends TreeableGalleryItem {
 	public URL getPreviewURL() throws MalformedURLException {
 		return null;
 	}
-	
-	private boolean hasPassword() {
-		return !"".equals(apiAlbum.getPassword());
-	}
 
 	@Override
 	public String getMetaLabel() {
 		return (hasPassword() ? " [password protected]" : "");
-	}
-
-	@Override
-	public boolean isProtected() {
-		return hasPassword();
 	}
 
 	@Override
@@ -233,5 +227,46 @@ public class SmugAlbum extends TreeableGalleryItem {
 	@Override
 	public boolean isHidden() {
 		return false;
+	}
+	
+	public boolean hasPassword() {
+		if ("".equals(password)) {
+			return false;
+		}
+		return (password != null || !"".equals(apiAlbum.getPassword()));
+	}
+
+	@Override
+	public boolean canChangePassword(boolean newState) {
+		return true;
+	}
+
+	@Override
+	public void setPassword(final String password, final String passwordHint) {
+		com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings changeSettings = new com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings() {
+			@Override
+			protected void setupPostParameters(PostMethod postMethod, String[] argumentValues) {
+				super.setupPostParameters(postMethod, argumentValues);
+				//have to work around stupid things the API wrapper library is doing
+				if (password == null) {
+					postMethod.addParameter("Password", "");
+				}
+				if (passwordHint == null) {
+					postMethod.addParameter("PasswordHint", "");
+				}
+			}
+		};
+		com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings.ChangeSettingsResponse response 
+			= changeSettings.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, apiAlbum.getID(),
+									null, null, null, null, null, null, null, null,
+									null, null, null, null, null, null, null, null,
+									null, password, passwordHint, null, null, null, null, null,
+									null, null, null, null, null, null, null, null,
+									null, null, null, null, null, null, null, null,
+									null, null, null, null, null, null);
+		if (response.isError()) {
+			throw new PasswordException(this, response.getError());
+		}
+		this.password = (password == null ? "" : password);
 	}
 }

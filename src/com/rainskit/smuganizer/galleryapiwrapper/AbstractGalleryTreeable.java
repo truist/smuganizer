@@ -14,6 +14,16 @@ public abstract class AbstractGalleryTreeable extends TreeableGalleryItem {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
+	@Override
+	public boolean canChangePassword(boolean newState) {
+		return false;
+	}
+
+	@Override
+	public void setPassword(String password, String passwordHint) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+	
 	public final boolean canAccept(TreeableGalleryItem childItem, int childIndex) {
 		return false;
 	}

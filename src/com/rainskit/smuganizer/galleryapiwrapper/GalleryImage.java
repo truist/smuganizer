@@ -4,14 +4,10 @@ import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.apache.commons.lang.StringEscapeUtils;
 
 public class GalleryImage extends AbstractGalleryTreeable {
@@ -86,7 +82,7 @@ public class GalleryImage extends AbstractGalleryTreeable {
 	}
 
 	@Override
-	public boolean isProtected() {
-		return isHidden();
+	public boolean hasPassword() {
+		return false;
 	}
 }

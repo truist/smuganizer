@@ -168,11 +168,6 @@ public class SmugImage extends TreeableGalleryItem {
 	}
 
 	@Override
-	public boolean isProtected() {
-		return isHidden();
-	}
-
-	@Override
 	public boolean canChangeHiddenStatus(boolean newState) {
 		return (newState != isHidden());
 	}
@@ -186,5 +181,20 @@ public class SmugImage extends TreeableGalleryItem {
 			throw new HideException(this, response.getError());
 		}
 		this.hidden = Boolean.valueOf(hidden);
+	}
+
+	@Override
+	public boolean hasPassword() {
+		return false;
+	}
+
+	@Override
+	public boolean canChangePassword(boolean newState) {
+		return false;
+	}
+
+	@Override
+	public void setPassword(String password,String passwordHint) {
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 }

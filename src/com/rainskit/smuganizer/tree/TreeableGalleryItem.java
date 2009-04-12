@@ -24,7 +24,13 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public abstract boolean canBeRelabeled();
 	public abstract void reLabel(String answer);
 	
-	public abstract boolean isProtected();
+	public abstract boolean canBeDeleted();
+	public abstract void delete();
+	
+	public final boolean isProtected() {
+		return isHidden() || hasPassword();
+	}
+	
 	public final boolean isParentProtected() {
 		TreeableGalleryItem parent = getParent();
 		if (parent != null) {
@@ -34,12 +40,13 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 		}
 	}
 	
-	public abstract boolean canBeDeleted();
-	public abstract void delete();
-	
 	public abstract boolean isHidden();
 	public abstract boolean canChangeHiddenStatus(boolean newState);
 	public abstract void setHidden(boolean hidden);
+	
+	public abstract boolean hasPassword();
+	public abstract boolean canChangePassword(boolean newState);
+	public abstract void setPassword(String password, String passwordHint);
 	
 	public abstract URL getPreviewURL() throws MalformedURLException;
 	public abstract boolean canBeLaunched();
