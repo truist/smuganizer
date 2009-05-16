@@ -24,12 +24,11 @@ public class GalleryTree extends JTree {
 		
 		setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		setCellRenderer(new TreeableRenderer());
-		setTransferHandler(new SmugTransferHandler(main));
+//		setTransferHandler(new SmugTransferHandler(main));
 		setDragEnabled(true);
-//		setDropMode(DropMode.INSERT);
 	}
 
-	public void loadTree(Gallery gallery, GallerySettings settings) throws IOException {
+	public void loadTree(Gallery gallery) throws IOException {
 		rootNode.setUserObject(gallery);
 		
 		main.setStatus("Loading gallery data...");

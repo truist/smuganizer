@@ -177,7 +177,7 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 			clearStatus();
 		}
 		try {
-			galleryTree.loadTree(gallery, gallerySettings);
+			galleryTree.loadTree(gallery);
 		} catch (IOException ex) {
 			JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error loading albums", JOptionPane.ERROR_MESSAGE);
 			return false;

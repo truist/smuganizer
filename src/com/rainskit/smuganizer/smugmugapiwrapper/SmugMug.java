@@ -84,11 +84,7 @@ public class SmugMug extends TreeableGalleryItem {
 	}
 
 	public boolean canAccept(TreeableGalleryItem newChild, int childIndex) {
-		if (newChild.getParent() == null || childIndex > -1) {
-			return false;
-		} else {
-			return CATEGORY.equals(newChild.getType());
-		}
+		return false;
 	}
 
 	public void receiveChild(TreeableGalleryItem childItem, int childIndex) {

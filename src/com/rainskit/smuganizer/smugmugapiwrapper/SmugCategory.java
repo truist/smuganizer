@@ -111,28 +111,16 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 
 	public boolean canAccept(TreeableGalleryItem newChild, int childIndex) {
-		if (childIndex != -1) {
-			return false;
-		} else if (ALBUM.equals(newChild.getType())) {
-			return true;
-		} else if (this.parent == null && newChild.getParent() != this) {
-			return (CATEGORY.equals(newChild.getType()) 
-				&& ((SmugCategory)newChild).getSubCategories().size() == 0 
-				&& this != newChild);
-		} else {
-			return false;
-		}
+		return (childIndex == -1 && ALBUM.equals(newChild.getType()));
 	}
 
 	public void receiveChild(TreeableGalleryItem childItem, int childIndex) {
-		if (CATEGORY.equals(childItem.getType())) {
-			
-			throw new UnsupportedOperationException("Not supported yet.");
-			
-		} else {	//must be album, then
+//		if (CATEGORY.equals(childItem.getType())) {
+//			throw new UnsupportedOperationException("Not supported yet.");
+//		} else {	//must be album, then
 			SmugAlbum album = (SmugAlbum)childItem;
-			Integer category = (parent == null ? apiCategory.getID() : apiCategory.getParentCategoryID());
-			Integer subCategory = (parent == null ? new Integer(0) : apiCategory.getID());
+			Integer category = (isASubCategory() ? apiCategory.getParentCategoryID() : apiCategory.getID());
+			Integer subCategory = (isASubCategory() ? apiCategory.getID() : new Integer(0));
 			com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings changeSettings
 				= new com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings();
 			String[] arguments = new String[changeSettings.ARGUMENTS.length];
@@ -151,7 +139,11 @@ public class SmugCategory extends TreeableGalleryItem {
 			((SmugCategory)album.getParent()).removeAlbum(album);
 			albums.add(albums.size(), album);
 			album.setParent(this);
-		}
+//		}
+	}
+	
+	private boolean isASubCategory() {
+		return (parent != null);
 	}
 
 	public String getType() {

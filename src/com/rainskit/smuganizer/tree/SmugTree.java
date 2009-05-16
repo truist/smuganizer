@@ -14,6 +14,7 @@ import javax.swing.DropMode;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
@@ -27,7 +28,17 @@ public class SmugTree extends JTree implements SettingsListener {
 		super();
 		this.main = main;
 		this.model = (DefaultTreeModel)getModel();
-		this.rootNode = new DefaultMutableTreeNode();
+		this.rootNode = new DefaultMutableTreeNode() {
+		    public void remove(int childIndex) {
+				System.err.println("removing");
+				super.remove(childIndex);
+			}
+			
+			public void insert(MutableTreeNode newChild, int childIndex) {
+				System.err.println("adding");
+				super.insert(newChild, childIndex);
+			}
+		};
 		model.setRoot(rootNode);
 		
 		setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));

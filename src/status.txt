@@ -3,20 +3,47 @@
 do the drag-and-drop import
 	figure out import order - sorted (by what?) or not?
 	figure out what metadata (hidden, caption, etc.) to copy over
+	figure out how to copy file names / captions / labels / whatever
 
-implement a "password protect" menu for SmugMug albums
-	support password hint
+import combo order:
+	image -> album
+	album -> category/subcategory
+	multi-select source
+	upload dialog
+	error messages
+	album:album -> category
+	album:album -> smugmug
+	album:mixed -> category
+	album:mixed -> smugmug
+	album:album:album -> smugmug
+	album:mixed:mixed -> smugmug
+	image -> image
+	album -> album
+	all the "upload dialog" combos
+
+implement a "new album" menu for SmugMug
+
+implement a "new category" and "new subcategory" menu for SmutMug
+
+implement category drag-and-drop within the smugmug tree
+
+implement password hint support for password protect dialog
 
 need an application icon
 
 
 -----
 
+add an "import from filesystem" option
+	implement "move" transfer type for uploading
+
 category move isn't implemented, both in SmugCategory and in SmugMug
 	categories (and subcategories) can be moved around, but there is no easy way to
 	update the api???? objects when doing so - I'll have to update the whole tree
 
 "copy" isn't implemented
+
+allow copying from one smugmug gallery to another
 
 need a 'refresh' function for when changes are made via the website or other tools
 

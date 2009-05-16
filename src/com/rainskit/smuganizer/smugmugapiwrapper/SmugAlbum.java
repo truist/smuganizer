@@ -83,7 +83,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 		}
 		return images;
 	}
-
+	
 	public List<SmugImage> getImages() {
 		if (!childrenLoaded) {
 			loadChildren();
