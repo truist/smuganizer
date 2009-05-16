@@ -22,7 +22,7 @@ import javax.swing.tree.TreePath;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
-public class AsynchronousTreeLoader {
+class AsynchronousTreeLoader {
 	private static final int TREE_LOADER_THREADS = 15;
 	private static final int QUEUE_TIMEOUT = 4;
 	private static final TimeUnit QUEUE_TIMEOUT_UNITS = TimeUnit.SECONDS;

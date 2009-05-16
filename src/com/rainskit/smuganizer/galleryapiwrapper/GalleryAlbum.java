@@ -14,7 +14,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 public class GalleryAlbum extends AbstractGalleryTreeable {
 	private Gallery gallery;
 	
-	private GalleryAlbum parent;
 	private ArrayList<GalleryAlbum> subAlbums;
 	private ArrayList<GalleryImage> images;
 	private boolean loaded;
@@ -26,6 +25,8 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 	private int albumRefNum;
 
 	public GalleryAlbum(Gallery gallery, String urlName, String title, String description, int albumRefNum) {
+		super(null);
+		
 		this.gallery = gallery;
 		this.urlName = urlName;
 		this.title = StringEscapeUtils.unescapeHtml(title);

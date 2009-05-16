@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.tree;
 
+import com.rainskit.smuganizer.smugmugapiwrapper.SmugAlbum;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -11,11 +12,21 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public static final String ALBUM = "album";
 	public static final String IMAGE = "image";
 	public static final String PATH_SEP = "/";
+	
+	protected TreeableGalleryItem parent;
+	
+	protected TreeableGalleryItem(TreeableGalleryItem parent) {
+		this.parent = parent;
+	}
 
 	public abstract List<? extends TreeableGalleryItem> loadChildren() throws IOException;
 	
 	public abstract String getType();
-	public abstract TreeableGalleryItem getParent();
+	public TreeableGalleryItem getParent() {
+		return parent;
+	}
+	public abstract void removeChild(TreeableGalleryItem child);
+	
 	public abstract boolean canAccept(TreeableGalleryItem childItem, int childIndex);
 	public abstract void receiveChild(TreeableGalleryItem childItem, int childIndex);
 	

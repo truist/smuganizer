@@ -16,10 +16,10 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 public class SmugTransferHandler extends TransferHandler {
-	private Main main;
+	private AsynchronousTransferManager asyncTransferManager;
 	
-	public SmugTransferHandler(Main main) {
-		this.main = main;
+	public SmugTransferHandler(AsynchronousTransferManager asyncTransferManager) {
+		this.asyncTransferManager = asyncTransferManager;
 	}
 	
 	//################################
@@ -69,52 +69,33 @@ public class SmugTransferHandler extends TransferHandler {
 
 	@Override
 	public boolean importData(TransferSupport transferSupport) {
-		if (!canImport(transferSupport)) {	//have to check, because "paste" doesn't call canImport()
-			return false;
-		}
-		main.setStatus("Moving...");
-		try {
+		if (canImport(transferSupport)) {	//have to check, because "paste" doesn't call canImport()
 			JTree destTree = (JTree)transferSupport.getComponent();
-			DefaultTreeModel destModel = (DefaultTreeModel)destTree.getModel();
-
 			JTree.DropLocation destLocation = (JTree.DropLocation)transferSupport.getDropLocation();
 			TreePath destParentPath = destLocation.getPath();
 			DefaultMutableTreeNode destParentNode = (DefaultMutableTreeNode)destParentPath.getLastPathComponent();
-			TreeableGalleryItem destParentItem = (TreeableGalleryItem)destParentNode.getUserObject();
-
 			int destChildIndex = destLocation.getChildIndex();
 			if (destChildIndex == -1) {
-				destChildIndex = destModel.getChildCount(destParentNode);
+				destChildIndex = destParentNode.getChildCount();
 			}
-
 			for (TreePath srcPath : retrieveData(transferSupport.getTransferable())) {
 				DefaultMutableTreeNode srcNode = (DefaultMutableTreeNode)srcPath.getLastPathComponent();
-				TreeableGalleryItem srcItem = (TreeableGalleryItem)srcNode.getUserObject();
-				try {
-					destParentItem.receiveChild(srcItem, destChildIndex);
-					
-					if (srcNode.getParent() == destParentNode && destChildIndex > destParentNode.getIndex(srcNode)) { 
-						destChildIndex--;
-					}
-					destModel.removeNodeFromParent(srcNode);
-					destModel.insertNodeInto(srcNode, destParentNode, destChildIndex++);
-					TreePath newDestPath = destParentPath.pathByAddingChild(srcNode);
-					destTree.makeVisible(newDestPath);
-					destTree.scrollRectToVisible(destTree.getPathBounds(newDestPath));
-					destTree.addSelectionPath(newDestPath);
-				} catch (RuntimeException se) {
-					JOptionPane.showMessageDialog(main, "Oh no!  Something went wrong: " + se.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-					Logger.getLogger(SmugTransferHandler.class.getName()).log(Level.SEVERE, "Error transfering data", se);
-					return false;
+				asyncTransferManager.submit(new AsynchronousTransferManager.MoveLocal(srcNode, 
+												destTree, 
+												destParentPath, 
+												destParentNode, 
+												destChildIndex++));
+
+				if (srcNode.getParent() == destParentNode && destChildIndex > destParentNode.getIndex(srcNode)) { 
+					destChildIndex--;
 				}
 			}
-		} finally {
-			main.clearStatus();
+			return true;
+		} else {
+			return false;
 		}
-
-		return true;
 	}
-	
+
 	private TreePath[] retrieveData(Transferable transferable) {
 		try {
 			return ((SmugTransferable.FlavorClass)transferable.getTransferData(SmugTransferable.transferFlavor)).getTreePaths();

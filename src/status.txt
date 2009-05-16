@@ -1,9 +1,12 @@
 
 
+fix bug with dragging images into an empty album
+
 do the drag-and-drop import
 	figure out import order - sorted (by what?) or not?
 	figure out what metadata (hidden, caption, etc.) to copy over
 	figure out how to copy file names / captions / labels / whatever
+	turn things blue to indicate that they are 'active', and don't allow further changes until they are 'complete'
 
 import combo order:
 	image -> album

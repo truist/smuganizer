@@ -29,6 +29,8 @@ public class SmugMug extends TreeableGalleryItem {
 	private ArrayList<SmugCategory> categories;
 
 	public SmugMug() {
+		super(null);
+		
 		WithPassword withPassword = new WithPassword();
 		
 		WithPassword.WithPasswordResponse response 
@@ -60,7 +62,7 @@ public class SmugMug extends TreeableGalleryItem {
 			List<com.kallasoft.smugmug.api.json.entity.Category> smCategories = response.getCategoryList();
 			for (com.kallasoft.smugmug.api.json.entity.Category each : smCategories) {
 				if (each.getAlbumList().size() > 0 || each.getSubCategoryList().size() > 0) {
-					categories.add(new SmugCategory(null, each));
+					categories.add(new SmugCategory(this, each));
 				}
 			}
 		}
@@ -111,10 +113,6 @@ public class SmugMug extends TreeableGalleryItem {
 		throw new UnsupportedOperationException("Cannot delete SmugMug");
 	}
 
-	public TreeableGalleryItem getParent() {
-		return null;
-	}
-
 	public int compareTo(TreeableGalleryItem o) {
 		return 0;
 	}
@@ -156,5 +154,10 @@ public class SmugMug extends TreeableGalleryItem {
 	@Override
 	public void setPassword(String password,String passwordHint) {
 		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public void removeChild(TreeableGalleryItem child) {
+		categories.remove(child);
 	}
 }

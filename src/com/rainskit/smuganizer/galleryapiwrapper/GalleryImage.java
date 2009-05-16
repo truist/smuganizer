@@ -11,12 +11,12 @@ import java.util.Properties;
 import org.apache.commons.lang.StringEscapeUtils;
 
 public class GalleryImage extends AbstractGalleryTreeable {
-	private GalleryAlbum parent;
 	private Properties imageDetails;
 	private int imageRefNum;
 	
 	public GalleryImage(GalleryAlbum parent, Properties imageDetails, int imageRefNum) {
-		this.parent = parent;
+		super(parent);
+		
 		this.imageDetails = imageDetails;
 		this.imageRefNum = imageRefNum;
 //		this.title = response.getProperty(Gallery.RESPONSE_IMAGE_TITLE_INDEXED + imageRefNum);
@@ -58,15 +58,11 @@ public class GalleryImage extends AbstractGalleryTreeable {
 	}
 
 	public void launch() throws IOException, URISyntaxException {
-		Desktop.getDesktop().browse(Gallery.generateUrlFor(parent.getUrlName(), getUrlName()));
+		Desktop.getDesktop().browse(Gallery.generateUrlFor(((GalleryAlbum)parent).getUrlName(), getUrlName()));
 	}
 
 	public String getType() {
 		return IMAGE;
-	}
-
-	public TreeableGalleryItem getParent() {
-		return parent;
 	}
 
 	public int compareTo(TreeableGalleryItem other) {

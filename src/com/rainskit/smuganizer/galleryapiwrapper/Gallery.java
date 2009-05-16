@@ -77,6 +77,8 @@ public class Gallery extends AbstractGalleryTreeable {
     private String lastAuthToken;
 
     public Gallery(GallerySettings settings) throws IOException {
+		super(null);
+		
 		this.settings = settings;
 		String settingsURL = settings.getURL().toExternalForm();
 		this.baseURL = settingsURL + (settingsURL.endsWith("/") ? "" : "/");
@@ -295,10 +297,6 @@ public class Gallery extends AbstractGalleryTreeable {
 
 	public String getType() {
 		return TYPE;
-	}
-
-	public TreeableGalleryItem getParent() {
-		return null;
 	}
 
 	public int compareTo(TreeableGalleryItem o) {

@@ -24,14 +24,13 @@ public class SmugAlbum extends TreeableGalleryItem {
 	private static final int NO_IMAGES_FOUND_ERROR = 15;
 	
 	private com.kallasoft.smugmug.api.json.entity.Album apiAlbum;
-	private SmugCategory parent;
 	private boolean childrenLoaded;
 	private ArrayList<SmugImage> images;
 	private String reLabel;
 	private String password;
 
 	public SmugAlbum(SmugCategory parent, com.kallasoft.smugmug.api.json.entity.Album apiAlbum) {
-		this.parent = parent;
+		super(parent);
 		this.apiAlbum = apiAlbum;
 	}
 
@@ -133,10 +132,10 @@ public class SmugAlbum extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new DeleteException(this, response.getError());
 		}
-		parent.removeAlbum(this);
+		parent.removeChild(this);
 	}
 
-	public void removeImage(SmugImage image) {
+	public void removeChild(TreeableGalleryItem image) {
 		images.remove(image);
 	}
 
@@ -165,7 +164,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new ReorderException(this, response.getError());
 		}
-		((SmugAlbum)childImage.getParent()).removeImage(childImage);
+		((SmugAlbum)childImage.getParent()).removeChild(childImage);
 		images.add(childIndex, childImage);
 		childImage.setParent(this);
 	}
@@ -180,10 +179,6 @@ public class SmugAlbum extends TreeableGalleryItem {
 
 	public String getType() {
 		return ALBUM;
-	}
-
-	public TreeableGalleryItem getParent() {
-		return parent;
 	}
 
 	public int compareTo(TreeableGalleryItem o) {

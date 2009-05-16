@@ -3,6 +3,9 @@ package com.rainskit.smuganizer.galleryapiwrapper;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 
 public abstract class AbstractGalleryTreeable extends TreeableGalleryItem {
+	public AbstractGalleryTreeable(TreeableGalleryItem parent) {
+		super(parent);
+	}
 
 	@Override
 	public boolean canChangeHiddenStatus(boolean newState) {
@@ -45,6 +48,11 @@ public abstract class AbstractGalleryTreeable extends TreeableGalleryItem {
 	}
 
 	public final void receiveChild(TreeableGalleryItem childItem, int childIndex) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public void removeChild(TreeableGalleryItem child) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 }

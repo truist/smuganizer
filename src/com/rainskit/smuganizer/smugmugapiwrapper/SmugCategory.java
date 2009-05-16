@@ -18,24 +18,23 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 public class SmugCategory extends TreeableGalleryItem {
-
+	private static final int NON_CATEGORY = 0;
+	
 	protected com.kallasoft.smugmug.api.json.entity.Category apiCategory;
-	protected SmugCategory parent;
-	protected ArrayList<SmugCategory> subCategories;
-	protected ArrayList<SmugAlbum> albums;
-	protected String reLabel;
+	private ArrayList<SmugSubCategory> subCategories;
+	private ArrayList<SmugAlbum> albums;
+	private String reLabel;
 
-	public SmugCategory(SmugCategory parent, com.kallasoft.smugmug.api.json.entity.Category apiCategory) {
-		super();
-		this.parent = parent;
+	public SmugCategory(TreeableGalleryItem parent, com.kallasoft.smugmug.api.json.entity.Category apiCategory) {
+		super(parent);
 		this.apiCategory = apiCategory;
 	}
 
-	public List<SmugCategory> getSubCategories() {
+	public List<SmugSubCategory> getSubCategories() {
 		if (subCategories == null) {
-			subCategories = new ArrayList<SmugCategory>();
+			subCategories = new ArrayList<SmugSubCategory>();
 			for (com.kallasoft.smugmug.api.json.entity.Category each : apiCategory.getSubCategoryList()) {
-				subCategories.add(new SmugCategory(this, each));
+				subCategories.add(new SmugSubCategory(this, each));
 			}
 		}
 		return subCategories;
@@ -82,11 +81,7 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 
 	public void launch() throws IOException, URISyntaxException {
-		if (parent != null) {
-			Desktop.getDesktop().browse(new URI("http", SmugMug.getBaseURL(), "/" + parent.getLabel() + "/" + apiCategory.getID(), null));
-		} else {
-			Desktop.getDesktop().browse(new URI("http", SmugMug.getBaseURL(), "/" + getLabel(), null));
-		}
+		Desktop.getDesktop().browse(new URI("http", SmugMug.getBaseURL(), "/" + getLabel(), null));
 	}
 
 	public boolean canBeDeleted() {
@@ -100,9 +95,6 @@ public class SmugCategory extends TreeableGalleryItem {
 			= delete.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, apiCategory.getID());
 		if (response.isError()) {
 			throw new DeleteException(this, response.getError());
-		}
-		if (parent != null) {
-			parent.subCategories.remove(this);
 		}
 	}
 
@@ -118,9 +110,9 @@ public class SmugCategory extends TreeableGalleryItem {
 //		if (CATEGORY.equals(childItem.getType())) {
 //			throw new UnsupportedOperationException("Not supported yet.");
 //		} else {	//must be album, then
+			Integer category = getCategoryID();
+			Integer subCategory = getSubCategoryID();
 			SmugAlbum album = (SmugAlbum)childItem;
-			Integer category = (isASubCategory() ? apiCategory.getParentCategoryID() : apiCategory.getID());
-			Integer subCategory = (isASubCategory() ? apiCategory.getID() : new Integer(0));
 			com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings changeSettings
 				= new com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings();
 			String[] arguments = new String[changeSettings.ARGUMENTS.length];
@@ -142,16 +134,16 @@ public class SmugCategory extends TreeableGalleryItem {
 //		}
 	}
 	
-	private boolean isASubCategory() {
-		return (parent != null);
+	protected Integer getCategoryID() {
+		return apiCategory.getID();
 	}
-
+	
+	protected Integer getSubCategoryID() {
+		return new Integer(NON_CATEGORY);
+	}
+	
 	public String getType() {
 		return CATEGORY;
-	}
-
-	public TreeableGalleryItem getParent() {
-		return parent;
 	}
 
 	public int compareTo(TreeableGalleryItem o) {
@@ -200,5 +192,11 @@ public class SmugCategory extends TreeableGalleryItem {
 	@Override
 	public void setPassword(String password,String passwordHint) {
 		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public void removeChild(TreeableGalleryItem child) {
+		albums.remove(child);
+		subCategories.remove(child);
 	}
 }

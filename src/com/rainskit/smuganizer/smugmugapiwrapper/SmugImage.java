@@ -23,7 +23,7 @@ public class SmugImage extends TreeableGalleryItem {
 	private Boolean hidden;
 
 	public SmugImage(SmugAlbum parent, com.kallasoft.smugmug.api.json.entity.Image apiImage) {
-		this.parent = parent;
+		super(parent);
 		this.apiImage = apiImage;
 	}
 
@@ -131,7 +131,7 @@ public class SmugImage extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new DeleteException(this, response.getError());
 		}
-		parent.removeImage(this);
+		parent.removeChild(this);
 	}
 
 	public boolean canAccept(TreeableGalleryItem newChild, int childIndex) {
@@ -144,10 +144,6 @@ public class SmugImage extends TreeableGalleryItem {
 
 	public String getType() {
 		return IMAGE;
-	}
-
-	public TreeableGalleryItem getParent() {
-		return parent;
 	}
 
 	public int compareTo(TreeableGalleryItem o) {
@@ -195,6 +191,11 @@ public class SmugImage extends TreeableGalleryItem {
 
 	@Override
 	public void setPassword(String password,String passwordHint) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public void removeChild(TreeableGalleryItem child) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 }

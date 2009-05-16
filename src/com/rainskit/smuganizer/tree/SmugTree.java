@@ -24,26 +24,16 @@ public class SmugTree extends JTree implements SettingsListener {
 	private DefaultTreeModel model;
 	
 	
-	public SmugTree(Main main) {
+	public SmugTree(Main main, AsynchronousTransferManager asyncTransferManager) {
 		super();
 		this.main = main;
 		this.model = (DefaultTreeModel)getModel();
-		this.rootNode = new DefaultMutableTreeNode() {
-		    public void remove(int childIndex) {
-				System.err.println("removing");
-				super.remove(childIndex);
-			}
-			
-			public void insert(MutableTreeNode newChild, int childIndex) {
-				System.err.println("adding");
-				super.insert(newChild, childIndex);
-			}
-		};
+		this.rootNode = new DefaultMutableTreeNode();
 		model.setRoot(rootNode);
 		
 		setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		setCellRenderer(new TreeableRenderer());
-		setTransferHandler(new SmugTransferHandler(main));
+		setTransferHandler(new SmugTransferHandler(asyncTransferManager));
 		setDragEnabled(true);
 		setDropMode(DropMode.INSERT);
 	}

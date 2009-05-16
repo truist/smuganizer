@@ -6,6 +6,7 @@ import com.rainskit.smuganizer.actions.MenuManager;
 import com.rainskit.smuganizer.galleryapiwrapper.Gallery;
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugMug;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
+import com.rainskit.smuganizer.tree.AsynchronousTransferManager;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.waitcursoreventqueue.WaitCursorEventQueue;
 import java.awt.BorderLayout;
@@ -70,7 +71,7 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		super("Smuganizer");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		smugTree = new SmugTree(this);
+		smugTree = new SmugTree(this, new AsynchronousTransferManager(this));
 		smugTree.addTreeSelectionListener(this);
 		
 		galleryTree = new GalleryTree(this);
@@ -126,6 +127,7 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 	}
 
 	public void valueChanged(TreeSelectionEvent e) {
+		System.err.println("**** " + (e.getNewLeadSelectionPath() == e.getOldLeadSelectionPath()) + ", " + e.isAddedPath());
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
 		if (node.getUserObject() instanceof TreeableGalleryItem) {
 			setStatus("Loading image...");
