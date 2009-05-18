@@ -12,6 +12,7 @@ import com.rainskit.smuganizer.waitcursoreventqueue.WaitCursorEventQueue;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
@@ -30,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -39,8 +41,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class Main extends JFrame implements TreeSelectionListener, PropertyChangeListener, StatusCallback {
-	private JSplitPane splitPane;
-	
 	private JPanel statusPanel;
 	private JLabel statusLabel;
 	private String baseStatus;
@@ -71,7 +71,8 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		super("Smuganizer");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		smugTree = new SmugTree(this, new AsynchronousTransferManager(this));
+		AsynchronousTransferManager transferManagerModel = new AsynchronousTransferManager();
+		smugTree = new SmugTree(this, transferManagerModel);
 		smugTree.addTreeSelectionListener(this);
 		
 		galleryTree = new GalleryTree(this);
@@ -88,11 +89,18 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		leftPanel.add(new JScrollPane(galleryTree), BorderLayout.CENTER);
 		leftPanel.add(newHeaderLabel("Gallery"), BorderLayout.NORTH);
 		
-		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, 
-									true, 
-									leftPanel, 
-									rightPanel);
-		splitPane.setResizeWeight(0.5);
+		JSplitPane lrSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, 
+												true, 
+												leftPanel, 
+												rightPanel);
+		lrSplitPane.setResizeWeight(0.5);
+		
+		JTable transferTable = new TransferTable(transferManagerModel);
+		JSplitPane tbSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+												true,
+												lrSplitPane,
+												new JScrollPane(transferTable));
+		tbSplitPane.setResizeWeight(0.8);
 		
 		statusLabel = new JLabel(" ");
 		statusLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
@@ -101,7 +109,7 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		statusPanel.add(statusLabel);
 		
 		getContentPane().setLayout(new BorderLayout());
-		getContentPane().add(splitPane, BorderLayout.CENTER);
+		getContentPane().add(tbSplitPane, BorderLayout.CENTER);
 		getContentPane().add(statusPanel, BorderLayout.SOUTH);
 		
 		setJMenuBar(new MenuManager(this, smugTree, galleryTree).getMenuBar());
@@ -115,7 +123,7 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		setVisible(true);
 		floatingImageWindow.setVisible(true);
 	}
-	
+
 	private JLabel newHeaderLabel(String text) {
 		JLabel label = new JLabel(text);
 		Font font = label.getFont();
@@ -127,22 +135,18 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 	}
 
 	public void valueChanged(TreeSelectionEvent e) {
-		System.err.println("**** " + (e.getNewLeadSelectionPath() == e.getOldLeadSelectionPath()) + ", " + e.isAddedPath());
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
-		if (node.getUserObject() instanceof TreeableGalleryItem) {
-			setStatus("Loading image...");
-			try {
+		try {
+			if (node.getUserObject() instanceof TreeableGalleryItem) {
 				TreeableGalleryItem image = (TreeableGalleryItem)node.getUserObject();
-				try {
-					floatingImageWindow.displayImage(image.getPreviewURL());
-				} catch (MalformedURLException ex) {
-					Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			} finally {
-				clearStatus();
+				floatingImageWindow.displayImage(image.getPreviewURL());
+			} else {
+				floatingImageWindow.displayImage(null);
 			}
-		} else {
-			floatingImageWindow.displayImage(null);
+		} catch (MalformedURLException ex) {
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (IOException ex) {
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 			

@@ -1,18 +1,13 @@
 package com.rainskit.smuganizer.tree;
 
-import com.rainskit.smuganizer.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DropMode;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.TransferHandler;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 public class SmugTransferHandler extends TransferHandler {
@@ -44,7 +39,7 @@ public class SmugTransferHandler extends TransferHandler {
 		if (itemType == null) {
 			return false;
 		}
-		((JTree)transferSupport.getComponent()).setDropMode(TreeableGalleryItem.IMAGE.equals(itemType) ? DropMode.INSERT : DropMode.ON);
+		((JTree)transferSupport.getComponent()).setDropMode(TreeableGalleryItem.IMAGE.equals(itemType) ? DropMode.ON_OR_INSERT : DropMode.ON);
 		
 		DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode)parentPath.getLastPathComponent();
 		TreeableGalleryItem parentItem = (TreeableGalleryItem)parentNode.getUserObject();
@@ -85,10 +80,6 @@ public class SmugTransferHandler extends TransferHandler {
 												destParentPath, 
 												destParentNode, 
 												destChildIndex++));
-
-				if (srcNode.getParent() == destParentNode && destChildIndex > destParentNode.getIndex(srcNode)) { 
-					destChildIndex--;
-				}
 			}
 			return true;
 		} else {

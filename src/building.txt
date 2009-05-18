@@ -1,0 +1,12 @@
+
+to build this project for yourself, I suggest using NetBeans
+	check out the code using the 'Versioning' menu
+	create a project based on the checked-out code
+	add the following libraries:
+		kallasoft smugmug java api
+			http://www.kallasoft.com/smugmug-java-api/download/
+		be sure to import all the jars from the 'lib' folder of the kallasoft library
+		apache commons-lang
+			http://commons.apache.org/lang/
+
+(also need the tree icons)
