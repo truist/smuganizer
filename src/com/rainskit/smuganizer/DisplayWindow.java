@@ -91,22 +91,15 @@ public class DisplayWindow extends JFrame {
 		setLocation(currentLocation.x, Math.max(currentLocation.y, parentLocation.y + 100));
 	}
 	
-	private void clearImage(boolean showProgressBar) {
-		imageLabel.setIcon(null);
-		imageLabel.setBorder(null);
-		if (showProgressBar) {
-			cardLayout.show(displayPanel, PROGRESS_CARD);
-		}
-	}
-
 	public void displayImage(URL previewURL) throws IOException {
+		++lastCallID;
 		if (previewURL != null) {
 			ImageIcon cachedImage = imageLoader.getImage(previewURL);
 			if (cachedImage != null) {
-				imageLoaded(cachedImage, ++lastCallID);
+				imageLoaded(cachedImage, lastCallID);
 			} else {
 				clearImage(true);
-				imageLoader.addImage(previewURL, ++lastCallID);
+				imageLoader.addImage(previewURL, lastCallID);
 			}
 			reShowIfNeeded();
 		} else {
@@ -114,6 +107,12 @@ public class DisplayWindow extends JFrame {
 		}
 	}
 	
+	private void clearImage(boolean showProgressBar) {
+		imageLabel.setIcon(null);
+		imageLabel.setBorder(null);
+		cardLayout.show(displayPanel, (showProgressBar ? PROGRESS_CARD : IMAGE_CARD));
+	}
+
 	private void imageLoaded(ImageIcon imageIcon, int callID) {
 		if (callID < lastCallID) {
 			return;
@@ -159,11 +158,11 @@ public class DisplayWindow extends JFrame {
 	
 	
 	private class ImageLoader implements Runnable {
-		private HashMap<URL, SoftReference<ImageIcon>> cachedImageData;
+		private HashMap<String, SoftReference<ImageIcon>> cachedImageData;
 		private BlockingDeque<AddImageCall> imageQueue;
 		
 		private ImageLoader() {
-			cachedImageData = new HashMap<URL, SoftReference<ImageIcon>>();
+			cachedImageData = new HashMap<String, SoftReference<ImageIcon>>();
 			imageQueue = new LinkedBlockingDeque<AddImageCall>();
 			
 			new Thread(this).start();
@@ -174,8 +173,10 @@ public class DisplayWindow extends JFrame {
 				ImageIcon cachedImage = getImage(imageLocation);
 				if (cachedImage != null) {
 					imageLoaded(cachedImage, ID);
+				} else {
+					System.err.println("Adding to queue: " + imageLocation.toExternalForm());
+					imageQueue.putFirst(new AddImageCall(imageLocation, ID));
 				}
-				imageQueue.putFirst(new AddImageCall(imageLocation, ID));
 			} catch (InterruptedException ex) {
 				Logger.getLogger(DisplayWindow.class.getName()).log(Level.SEVERE, null, ex);
 			}
@@ -183,12 +184,13 @@ public class DisplayWindow extends JFrame {
 		
 		public ImageIcon getImage(URL imageLocation) {
 			ImageIcon cachedImage = null;
-			synchronized(this) {
-				SoftReference<ImageIcon> softRef = cachedImageData.get(imageLocation);
+			synchronized(cachedImageData) {
+				SoftReference<ImageIcon> softRef = cachedImageData.get(imageLocation.toString());
 				if (softRef != null) {
 					cachedImage = softRef.get();
 					if (cachedImage == null) {
-						cachedImageData.remove(imageLocation);
+						System.err.println("Cache miss");
+						cachedImageData.remove(imageLocation.toString());
 					}
 				}
 			}
@@ -199,26 +201,39 @@ public class DisplayWindow extends JFrame {
 			try {
 				while (true) {
 					final AddImageCall nextCall = imageQueue.takeFirst();
-					try {
-						InputStream urlStream = nextCall.imageLocation.openStream();
-						byte[] imageData = IOUtils.toByteArray(urlStream);
-						final ImageIcon imageIcon = new ImageIcon(imageData);
-						synchronized(this) {
-							cachedImageData.put(nextCall.imageLocation, new SoftReference<ImageIcon>(imageIcon));
-						}
-						urlStream.close();
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-								imageLoaded(imageIcon, nextCall.ID);
+					//check if someone jumped ahead of us and already cached it, 
+					//which is possible because of the pre-emptive queueing
+					ImageIcon cachedImage = getImage(nextCall.imageLocation);
+					if (cachedImage != null) {
+						notifyImageLoaded(cachedImage, nextCall.ID);
+					} else {
+						try {
+							System.err.println("Loading: " + nextCall.imageLocation.toExternalForm());
+							InputStream urlStream = nextCall.imageLocation.openStream();
+							byte[] imageData = IOUtils.toByteArray(urlStream);
+							final ImageIcon imageIcon = new ImageIcon(imageData);
+							synchronized(cachedImageData) {
+								cachedImageData.put(nextCall.imageLocation.toString(), new SoftReference<ImageIcon>(imageIcon));
 							}
-						});
-					} catch (IOException ex) {
-						Logger.getLogger(DisplayWindow.class.getName()).log(Level.SEVERE, null, ex);
+							urlStream.close();
+							notifyImageLoaded(imageIcon, nextCall.ID);
+							System.err.println("Done loading");
+						} catch (IOException ex) {
+							Logger.getLogger(DisplayWindow.class.getName()).log(Level.SEVERE, null, ex);
+						}
 					}
 				}
 			} catch (InterruptedException ex) {
 				Logger.getLogger(DisplayWindow.class.getName()).log(Level.SEVERE, null, ex);
 			}
+		}
+
+		private void notifyImageLoaded(final ImageIcon imageIcon, final int ID) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					imageLoaded(imageIcon, ID);
+				}
+			});
 		}
 		
 		

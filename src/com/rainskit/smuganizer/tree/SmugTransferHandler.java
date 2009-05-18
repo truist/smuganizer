@@ -73,7 +73,9 @@ public class SmugTransferHandler extends TransferHandler {
 			if (destChildIndex == -1) {
 				destChildIndex = destParentNode.getChildCount();
 			}
-			for (TreePath srcPath : retrieveData(transferSupport.getTransferable())) {
+			TreePath[] transferData = retrieveData(transferSupport.getTransferable());
+			destTree.clearSelection();
+			for (TreePath srcPath : transferData) {
 				DefaultMutableTreeNode srcNode = (DefaultMutableTreeNode)srcPath.getLastPathComponent();
 				asyncTransferManager.submit(new AsynchronousTransferManager.MoveLocal(srcNode, 
 												destTree, 

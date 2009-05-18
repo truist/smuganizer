@@ -1,16 +1,14 @@
 package com.rainskit.smuganizer.tree;
 
-import com.rainskit.smuganizer.Main;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.AbstractTableModel;
@@ -121,9 +119,11 @@ public class AsynchronousTransferManager extends AbstractTableModel implements P
 	
 	public static class MoveLocal extends SwingWorker<String, String> {
 		private DefaultMutableTreeNode srcNode;
+		private TreeableGalleryItem srcItem;
 		private JTree tree;
 		private TreePath destParentPath;
 		private DefaultMutableTreeNode destParentNode;
+		private TreeableGalleryItem destParentItem;
 		private int destChildIndex;
 		
 		public MoveLocal(DefaultMutableTreeNode srcNode,
@@ -132,10 +132,14 @@ public class AsynchronousTransferManager extends AbstractTableModel implements P
 							DefaultMutableTreeNode destParentNode,
 							int destChildIndex) {
 			this.srcNode = srcNode;
+			this.srcItem = ((TreeableGalleryItem)srcNode.getUserObject());
 			this.tree = tree;
 			this.destParentPath = destParentPath;
 			this.destParentNode = destParentNode;
+			this.destParentItem = (TreeableGalleryItem)destParentNode.getUserObject();
 			this.destChildIndex = destChildIndex;
+			
+			switchTransferStatus(true);
 		}
 
 		@Override
@@ -152,14 +156,30 @@ public class AsynchronousTransferManager extends AbstractTableModel implements P
 			if (srcNode.getParent() == destParentNode && destChildIndex > destParentNode.getIndex(srcNode)) { 
 				destChildIndex--;
 			}
-			DefaultTreeModel destModel = (DefaultTreeModel)tree.getModel();
-			destModel.removeNodeFromParent(srcNode);
-			destModel.insertNodeInto(srcNode, destParentNode, destChildIndex);
-			tree.makeVisible(destParentPath.pathByAddingChild(srcNode));
-//			destTree.scrollRectToVisible(destTree.getPathBounds(newDestPath));
-//			destTree.addSelectionPath(newDestPath);
+			SwingUtilities.invokeAndWait(new Runnable() {
+				public void run() {
+					DefaultTreeModel destModel = (DefaultTreeModel)tree.getModel();
+					destModel.removeNodeFromParent(srcNode);
+					destModel.insertNodeInto(srcNode, destParentNode, destChildIndex);
+					tree.makeVisible(destParentPath.pathByAddingChild(srcNode));
+//					destTree.scrollRectToVisible(destTree.getPathBounds(newDestPath));
+//					destTree.addSelectionPath(newDestPath);
+				}
+			});
 			setProgress(100);
 			return null;
+		}
+
+		@Override
+		protected void done() {
+			switchTransferStatus(false);
+		}
+		
+		private void switchTransferStatus(boolean newStatus) {
+			srcItem.setTransferActive(newStatus);
+			destParentItem.setTransferRecipient(newStatus);
+			((DefaultTreeModel)tree.getModel()).nodeChanged(srcNode);
+			((DefaultTreeModel)tree.getModel()).nodeChanged(destParentNode);
 		}
 	}
 }

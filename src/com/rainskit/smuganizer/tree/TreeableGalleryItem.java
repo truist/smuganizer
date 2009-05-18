@@ -14,6 +14,9 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public static final String PATH_SEP = "/";
 	
 	protected TreeableGalleryItem parent;
+	protected boolean transferActive;
+	protected volatile int transferRecipient;
+	protected boolean hasBeenTransferred;
 	
 	protected TreeableGalleryItem(TreeableGalleryItem parent) {
 		this.parent = parent;
@@ -29,6 +32,27 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	
 	public abstract boolean canAccept(TreeableGalleryItem childItem, int childIndex);
 	public abstract void receiveChild(TreeableGalleryItem childItem, int childIndex);
+	
+	public final void setTransferActive(boolean active) {
+		this.transferActive = active;
+		this.hasBeenTransferred |= active;
+	}
+	public final boolean isTransferActive() {
+		return transferActive;
+	}
+	public final void setTransferRecipient(boolean active) {
+		if (active) {
+			++transferRecipient;
+		} else {
+			--transferRecipient;
+		}
+	}
+	public final boolean isTransferRecipient() {
+		return (transferRecipient > 0);
+	}
+	public final boolean hasBeenTransferred() {
+		return hasBeenTransferred;
+	}
 	
 	public abstract String getLabel();
 	public abstract String getMetaLabel();
