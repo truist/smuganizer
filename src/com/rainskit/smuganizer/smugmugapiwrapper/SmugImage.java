@@ -12,13 +12,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 
 public class SmugImage extends TreeableGalleryItem {
 	private boolean loaded;
 	private com.kallasoft.smugmug.api.json.entity.Image apiImage;
-	private SmugAlbum parent;
 	private String reLabel;
 	private Boolean hidden;
 
@@ -53,13 +50,6 @@ public class SmugImage extends TreeableGalleryItem {
 		loaded = true;
 	}
 
-	public URL getSmallImageURL() throws MalformedURLException {
-		if (!loaded) {
-			loadImageDetails();
-		}
-		return new URL(apiImage.getSmallURL());
-	}
-
 	public URL getPreviewURL() throws MalformedURLException {
 		if (!loaded) {
 			loadImageDetails();
@@ -67,6 +57,13 @@ public class SmugImage extends TreeableGalleryItem {
 		return new URL(apiImage.getMediumURL());
 	}
 
+	public URL getDataURL() throws MalformedURLException {
+		if (!loaded) {
+			loadImageDetails();
+		}
+		return new URL(apiImage.getOriginalURL());
+	}
+	
 	public Integer getImageID() {
 		return apiImage.getID();
 	}
@@ -77,13 +74,17 @@ public class SmugImage extends TreeableGalleryItem {
 		}
 		if (reLabel != null) {
 			return reLabel;
-		} 
+		}
 		String caption = apiImage.getCaption();
 		if ("".equals(apiImage.getCaption())) {
-			return apiImage.getFileName();
+			return getName();
 		} else {
 			return caption;
 		}
+	}
+	
+	public String getName() {
+		return apiImage.getFileName();
 	}
 	
 	public int getPosition() {
@@ -134,14 +135,22 @@ public class SmugImage extends TreeableGalleryItem {
 		parent.removeChild(this);
 	}
 
-	public boolean canAccept(TreeableGalleryItem newChild, int childIndex) {
+	public boolean canMove(TreeableGalleryItem newChild, int childIndex) {
 		return false;
 	}
 
-	public void receiveChild(TreeableGalleryItem childItem, int childIndex) {
-		throw new RuntimeException("Shouldn't be able to get here");
+	public void moveItem(TreeableGalleryItem childItem, int childIndex) {
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
+	public boolean canImport(TreeableGalleryItem newItem, int childIndex) {
+		return false;
+	}
+
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+	
 	public String getType() {
 		return IMAGE;
 	}

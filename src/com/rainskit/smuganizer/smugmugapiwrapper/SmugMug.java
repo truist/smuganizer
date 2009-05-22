@@ -16,11 +16,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Icon;
 
 public class SmugMug extends TreeableGalleryItem {
 	public static final String TYPE = "SmugMug";
 	static final String API_URL = "https://api.smugmug.com/hack/json/1.2.0/";
+	static final String API_UPLOAD_URL = "http://upload.smugmug.com/";
 	static final String API_KEY = "aR8ks0WWmboWAcclI9poAboELIqNj3wW";
 
 	static String sessionID;
@@ -85,11 +85,19 @@ public class SmugMug extends TreeableGalleryItem {
 		throw new UnsupportedOperationException("Cannot rename SmugMug");
 	}
 
-	public boolean canAccept(TreeableGalleryItem newChild, int childIndex) {
+	public boolean canMove(TreeableGalleryItem newChild, int childIndex) {
 		return false;
 	}
 
-	public void receiveChild(TreeableGalleryItem childItem, int childIndex) {
+	public void moveItem(TreeableGalleryItem childItem, int childIndex) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+	
+	public boolean canImport(TreeableGalleryItem newItem, int childIndex) {
+		return false;
+	}
+
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	
@@ -102,7 +110,7 @@ public class SmugMug extends TreeableGalleryItem {
 	}
 	
 	public static String getBaseURL() {
-		return SmugMug.userNickName + ".smugmug.com";
+		return userNickName + ".smugmug.com";
 	}
 
 	public boolean canBeDeleted() {
@@ -115,10 +123,6 @@ public class SmugMug extends TreeableGalleryItem {
 
 	public int compareTo(TreeableGalleryItem o) {
 		return 0;
-	}
-
-	public URL getPreviewURL() throws MalformedURLException {
-		return null;
 	}
 
 	@Override
@@ -159,5 +163,20 @@ public class SmugMug extends TreeableGalleryItem {
 	@Override
 	public void removeChild(TreeableGalleryItem child) {
 		categories.remove(child);
+	}
+
+	@Override
+	public String getName() {
+		return getBaseURL();
+	}
+
+	@Override
+	public URL getDataURL() throws MalformedURLException {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public URL getPreviewURL() throws MalformedURLException {
+		return null;
 	}
 }

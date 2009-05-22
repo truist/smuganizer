@@ -44,7 +44,7 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 		subAlbums.add(newChild);
 	}
 
-	String getUrlName() {
+	public String getName() {
 		return urlName;
 	}
 	
@@ -76,11 +76,7 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 	}
 
 	public void launch() throws IOException, URISyntaxException {
-		Desktop.getDesktop().browse(Gallery.generateUrlFor(getUrlName(), null));
-	}
-
-	public URL getPreviewURL() throws MalformedURLException {
-		return null;
+		Desktop.getDesktop().browse(Gallery.generateUrlFor(getName(), null));
 	}
 
 	public String getType() {
@@ -114,5 +110,15 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 		} else {
 			return albumProtected.booleanValue();
 		}
+	}
+
+	@Override
+	public URL getDataURL() throws MalformedURLException {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public URL getPreviewURL() throws MalformedURLException {
+		return null;
 	}
 }

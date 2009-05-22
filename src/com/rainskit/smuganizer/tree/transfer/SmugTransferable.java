@@ -1,4 +1,4 @@
-package com.rainskit.smuganizer.tree;
+package com.rainskit.smuganizer.tree.transfer;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;

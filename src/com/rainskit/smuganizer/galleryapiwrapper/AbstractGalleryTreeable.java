@@ -27,10 +27,22 @@ public abstract class AbstractGalleryTreeable extends TreeableGalleryItem {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	
-	public final boolean canAccept(TreeableGalleryItem childItem, int childIndex) {
+	public final boolean canMove(TreeableGalleryItem childItem, int childIndex) {
 		return false;
 	}
 
+	public final void moveItem(TreeableGalleryItem childItem, int childIndex) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	public boolean canImport(TreeableGalleryItem newItem, int childIndex) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+	
 	public final boolean canBeDeleted() {
 		return false;
 	}
@@ -44,10 +56,6 @@ public abstract class AbstractGalleryTreeable extends TreeableGalleryItem {
 	}
 
 	public final void reLabel(String answer) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	public final void receiveChild(TreeableGalleryItem childItem, int childIndex) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 

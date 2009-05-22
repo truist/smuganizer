@@ -19,8 +19,6 @@ public class GalleryImage extends AbstractGalleryTreeable {
 		
 		this.imageDetails = imageDetails;
 		this.imageRefNum = imageRefNum;
-//		this.title = response.getProperty(Gallery.RESPONSE_IMAGE_TITLE_INDEXED + imageRefNum);
-//		this.url = new URL(response.getProperty(Gallery.RESPONSE_BASEURL) + this.name);
 	}
 
 	public List<? extends TreeableGalleryItem> loadChildren() {
@@ -28,10 +26,19 @@ public class GalleryImage extends AbstractGalleryTreeable {
 	}
 
 	public URL getPreviewURL() throws MalformedURLException {
-		return new URL(imageDetails.getProperty(Gallery.RESPONSE_BASEURL) + imageDetails.getProperty(Gallery.RESPONSE_IMAGE_RESIZED_NAME_INDEXED + imageRefNum));
+		String previewFileName = imageDetails.getProperty(Gallery.RESPONSE_IMAGE_RESIZED_NAME_INDEXED + imageRefNum);
+		if (previewFileName == null) {
+			return getDataURL();
+		} else {
+			return new URL(imageDetails.getProperty(Gallery.RESPONSE_BASEURL) + previewFileName);
+		}
 	}
 	
-	private String getName() {
+	public URL getDataURL() throws MalformedURLException {
+		return new URL(imageDetails.getProperty(Gallery.RESPONSE_BASEURL) + getName());
+	}
+	
+	public String getName() {
 		return imageDetails.getProperty(Gallery.RESPONSE_IMAGE_NAME_INDEXED + imageRefNum);
 	}
 	
@@ -58,7 +65,7 @@ public class GalleryImage extends AbstractGalleryTreeable {
 	}
 
 	public void launch() throws IOException, URISyntaxException {
-		Desktop.getDesktop().browse(Gallery.generateUrlFor(((GalleryAlbum)parent).getUrlName(), getUrlName()));
+		Desktop.getDesktop().browse(Gallery.generateUrlFor(((GalleryAlbum)parent).getName(), getUrlName()));
 	}
 
 	public String getType() {

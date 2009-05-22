@@ -1,6 +1,5 @@
 package com.rainskit.smuganizer.tree;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.SmugAlbum;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -30,8 +29,10 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	}
 	public abstract void removeChild(TreeableGalleryItem child);
 	
-	public abstract boolean canAccept(TreeableGalleryItem childItem, int childIndex);
-	public abstract void receiveChild(TreeableGalleryItem childItem, int childIndex);
+	public abstract boolean canMove(TreeableGalleryItem item, int childIndex);
+	public abstract void moveItem(TreeableGalleryItem item, int childIndex);
+	public abstract boolean canImport(TreeableGalleryItem newItem, int childIndex);
+	public abstract TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex) throws IOException;
 	
 	public final void setTransferActive(boolean active) {
 		this.transferActive = active;
@@ -50,14 +51,23 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public final boolean isTransferRecipient() {
 		return (transferRecipient > 0);
 	}
+	public final void setHasBeenTransferred(boolean hasBeenTransferred) {
+		this.hasBeenTransferred = hasBeenTransferred;
+	}
 	public final boolean hasBeenTransferred() {
 		return hasBeenTransferred;
 	}
 	
+	/** The label to show in the Smuganizer tree */
 	public abstract String getLabel();
 	public abstract String getMetaLabel();
 	public abstract boolean canBeRelabeled();
 	public abstract void reLabel(String answer);
+	public final String getFullPathLabel() {
+		return (getParent() != null ? getParent().getFullPathLabel() : "") + PATH_SEP + getLabel();
+	}
+	/** The file name, for images */
+	public abstract String getName();
 	
 	public abstract boolean canBeDeleted();
 	public abstract void delete();
@@ -65,7 +75,6 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public final boolean isProtected() {
 		return isHidden() || hasPassword();
 	}
-	
 	public final boolean isParentProtected() {
 		TreeableGalleryItem parent = getParent();
 		if (parent != null) {
@@ -83,14 +92,11 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public abstract boolean canChangePassword(boolean newState);
 	public abstract void setPassword(String password, String passwordHint);
 	
+	public abstract URL getDataURL() throws MalformedURLException;
 	public abstract URL getPreviewURL() throws MalformedURLException;
 	public abstract boolean canBeLaunched();
 	public abstract void launch() throws IOException, URISyntaxException;
 	
-	public final String getFullPathLabel() {
-		return (getParent() != null ? getParent().getFullPathLabel() : "") + PATH_SEP + getLabel();
-	}
-
 	@Override
 	public final String toString() {
 		return getLabel() + getMetaLabel();

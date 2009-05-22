@@ -174,7 +174,6 @@ public class DisplayWindow extends JFrame {
 				if (cachedImage != null) {
 					imageLoaded(cachedImage, ID);
 				} else {
-					System.err.println("Adding to queue: " + imageLocation.toExternalForm());
 					imageQueue.putFirst(new AddImageCall(imageLocation, ID));
 				}
 			} catch (InterruptedException ex) {
@@ -189,7 +188,6 @@ public class DisplayWindow extends JFrame {
 				if (softRef != null) {
 					cachedImage = softRef.get();
 					if (cachedImage == null) {
-						System.err.println("Cache miss");
 						cachedImageData.remove(imageLocation.toString());
 					}
 				}
@@ -208,7 +206,6 @@ public class DisplayWindow extends JFrame {
 						notifyImageLoaded(cachedImage, nextCall.ID);
 					} else {
 						try {
-							System.err.println("Loading: " + nextCall.imageLocation.toExternalForm());
 							InputStream urlStream = nextCall.imageLocation.openStream();
 							byte[] imageData = IOUtils.toByteArray(urlStream);
 							final ImageIcon imageIcon = new ImageIcon(imageData);
@@ -217,7 +214,6 @@ public class DisplayWindow extends JFrame {
 							}
 							urlStream.close();
 							notifyImageLoaded(imageIcon, nextCall.ID);
-							System.err.println("Done loading");
 						} catch (IOException ex) {
 							Logger.getLogger(DisplayWindow.class.getName()).log(Level.SEVERE, null, ex);
 						}

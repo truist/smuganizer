@@ -23,7 +23,7 @@ public class SmugCategory extends TreeableGalleryItem {
 	protected com.kallasoft.smugmug.api.json.entity.Category apiCategory;
 	private ArrayList<SmugSubCategory> subCategories;
 	private ArrayList<SmugAlbum> albums;
-	private String reLabel;
+	private String reName;
 
 	public SmugCategory(TreeableGalleryItem parent, com.kallasoft.smugmug.api.json.entity.Category apiCategory) {
 		super(parent);
@@ -58,7 +58,11 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 
 	public String getLabel() {
-		return (reLabel != null) ? reLabel : apiCategory.getName();
+		return getName();
+	}
+
+	public String getName() {
+		return (reName != null) ? reName : apiCategory.getName();
 	}
 
 	public boolean canBeRelabeled() {
@@ -73,7 +77,7 @@ public class SmugCategory extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new RenameException(this, newName, response.getError());
 		}
-		reLabel = newName;
+		reName = newName;
 	}
 
 	public boolean canBeLaunched() {
@@ -102,11 +106,11 @@ public class SmugCategory extends TreeableGalleryItem {
 		albums.remove(album);
 	}
 
-	public boolean canAccept(TreeableGalleryItem newChild, int childIndex) {
+	public boolean canMove(TreeableGalleryItem newChild, int childIndex) {
 		return (childIndex == -1 && ALBUM.equals(newChild.getType()));
 	}
 
-	public void receiveChild(TreeableGalleryItem childItem, int childIndex) {
+	public void moveItem(TreeableGalleryItem childItem, int childIndex) {
 //		if (CATEGORY.equals(childItem.getType())) {
 //			throw new UnsupportedOperationException("Not supported yet.");
 //		} else {	//must be album, then
@@ -134,6 +138,14 @@ public class SmugCategory extends TreeableGalleryItem {
 //		}
 	}
 	
+	public boolean canImport(TreeableGalleryItem newItem, int childIndex) {
+		return false;
+	}
+
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+	
 	protected Integer getCategoryID() {
 		return apiCategory.getID();
 	}
@@ -153,10 +165,6 @@ public class SmugCategory extends TreeableGalleryItem {
 		}
 		
 		return toString().compareToIgnoreCase(other.toString());
-	}
-
-	public URL getPreviewURL() throws MalformedURLException {
-		return null;
 	}
 
 	@Override
@@ -198,5 +206,15 @@ public class SmugCategory extends TreeableGalleryItem {
 	public void removeChild(TreeableGalleryItem child) {
 		albums.remove(child);
 		subCategories.remove(child);
+	}
+
+	@Override
+	public URL getDataURL() throws MalformedURLException {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public URL getPreviewURL() throws MalformedURLException {
+		return null;
 	}
 }

@@ -26,7 +26,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 	private com.kallasoft.smugmug.api.json.entity.Album apiAlbum;
 	private boolean childrenLoaded;
 	private ArrayList<SmugImage> images;
-	private String reLabel;
+	private String reName;
 	private String password;
 
 	public SmugAlbum(SmugCategory parent, com.kallasoft.smugmug.api.json.entity.Album apiAlbum) {
@@ -91,7 +91,11 @@ public class SmugAlbum extends TreeableGalleryItem {
 	}
 
 	public String getLabel() {
-		return (reLabel != null) ? reLabel : apiAlbum.getTitle();
+		return getName();
+	}
+
+	public String getName() {
+		return (reName != null) ? reName : apiAlbum.getTitle();
 	}
 
 	public boolean canBeRelabeled() {
@@ -109,7 +113,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new RenameException(this, newName, response.getError());
 		}
-		reLabel = newName;
+		reName = newName;
 	}
 
 	public boolean canBeLaunched() {
@@ -139,11 +143,11 @@ public class SmugAlbum extends TreeableGalleryItem {
 		images.remove(image);
 	}
 
-	public boolean canAccept(TreeableGalleryItem newChild, int childIndex) {
+	public boolean canMove(TreeableGalleryItem newChild, int childIndex) {
 		return (IMAGE.equals(newChild.getType()));
 	}
 
-	public void receiveChild(TreeableGalleryItem childItem, int childIndex) {
+	public void moveItem(TreeableGalleryItem childItem, int childIndex) {
 		SmugImage childImage = (SmugImage)childItem;
 		if (childItem.getParent() != this) {
 			com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings changeSettings
@@ -154,7 +158,49 @@ public class SmugAlbum extends TreeableGalleryItem {
 				throw new MoveException(this, response.getError());
 			}
 		}
-		if (childImage.getParent() == this && childIndex > images.indexOf(childImage)) {
+		
+		reorderItem(childImage, childIndex);
+		
+		((SmugAlbum)childImage.getParent()).removeChild(childImage);
+		images.add(childIndex, childImage);
+		childImage.setParent(this);
+	}
+
+	public boolean canImport(TreeableGalleryItem newItem, int childIndex) {
+		return (IMAGE.equals(newItem.getType()));
+	}
+
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex) throws IOException {
+		com.kallasoft.smugmug.api.json.v1_2_0.images.UploadHTTPPut uploadMethod
+			= new com.kallasoft.smugmug.api.json.v1_2_0.images.UploadHTTPPut();
+		com.kallasoft.smugmug.api.json.v1_2_0.images.UploadHTTPPut.UploadHTTPPutResponse uploadResponse
+			= uploadMethod.execute(SmugMug.API_UPLOAD_URL, SmugMug.sessionID, 
+									apiAlbum.getID(), null, 
+									newItem.getName(), newItem.getDataURL().openStream(), 
+									null, null, 
+									null, null, null);
+		if (uploadResponse.isError()) {
+			throw new MoveException(this, uploadResponse.getError());
+		}
+
+		com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo getInfo
+			= new com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo();
+		com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo.GetInfoResponse getInfoResponse
+			= getInfo.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, uploadResponse.getImageID(), uploadResponse.getImageKey());
+		if (getInfoResponse.isError()) {
+			throw new MoveException(this, getInfoResponse.getError());
+		}
+		
+		SmugImage newImage = new SmugImage(this, getInfoResponse.getImage());
+		newImage.setHasBeenTransferred(true);
+		reorderItem(newImage, childIndex);
+		images.add(childIndex, newImage);
+
+		return newImage;
+	}
+	
+	private void reorderItem(SmugImage childImage, int childIndex) {
+		if (childImage.getParent() == this && images.contains(childImage) && childIndex > images.indexOf(childImage)) {
 			childIndex--;
 		}
 		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangePosition changePosition 
@@ -164,11 +210,8 @@ public class SmugAlbum extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new ReorderException(this, response.getError());
 		}
-		((SmugAlbum)childImage.getParent()).removeChild(childImage);
-		images.add(childIndex, childImage);
-		childImage.setParent(this);
 	}
-
+	
 	public Integer getAlbumID() {
 		return apiAlbum.getID();
 	}
@@ -198,10 +241,6 @@ public class SmugAlbum extends TreeableGalleryItem {
 		}
 
 		return toString().compareToIgnoreCase(other.toString());
-	}
-
-	public URL getPreviewURL() throws MalformedURLException {
-		return null;
 	}
 
 	@Override
@@ -263,5 +302,13 @@ public class SmugAlbum extends TreeableGalleryItem {
 			throw new PasswordException(this, response.getError());
 		}
 		this.password = (password == null ? "" : password);
+	}
+
+	public URL getDataURL() throws MalformedURLException {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	public URL getPreviewURL() throws MalformedURLException {
+		return null;
 	}
 }

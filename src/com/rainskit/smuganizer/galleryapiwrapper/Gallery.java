@@ -226,7 +226,7 @@ public class Gallery extends AbstractGalleryTreeable {
 
 		ArrayList<NameValuePair> arguments = newBaseArguments(COMMAND_FETCH_ALBUM_IMAGES);
 		arguments.add(newArgument(ARG_ALBUMS_TOO, ARGVAL_NO));
-        arguments.add(newArgument(ARG_SET_ALBUMNAME, album.getUrlName()));
+        arguments.add(newArgument(ARG_SET_ALBUMNAME, album.getName()));
 		
 		Properties response = executePost(arguments, loginHttpClient);
 		int numImages = Integer.parseInt(response.getProperty(RESPONSE_IMAGE_COUNT));
@@ -241,7 +241,7 @@ public class Gallery extends AbstractGalleryTreeable {
         GetMethod get = new GetMethod();
 		get.setFollowRedirects(false);
 		try {
-			String url = generateUrlFor(album.getUrlName(), null).toString();
+			String url = generateUrlFor(album.getName(), null).toString();
 			get.setURI(new org.apache.commons.httpclient.URI(url));
 			try {
 				return (HttpStatus.SC_MOVED_TEMPORARILY == anonHttpClient.executeMethod(get));
@@ -291,10 +291,6 @@ public class Gallery extends AbstractGalleryTreeable {
 		}
 	}
 
-	public URL getPreviewURL() throws MalformedURLException {
-		return null;
-	}
-
 	public String getType() {
 		return TYPE;
 	}
@@ -315,5 +311,20 @@ public class Gallery extends AbstractGalleryTreeable {
 	@Override
 	public boolean hasPassword() {
 		return false;
+	}
+
+	@Override
+	public String getName() {
+		return getBaseURL();
+	}
+
+	@Override
+	public URL getDataURL() throws MalformedURLException {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public URL getPreviewURL() throws MalformedURLException {
+		return null;
 	}
 }

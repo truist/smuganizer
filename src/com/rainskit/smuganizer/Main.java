@@ -6,7 +6,7 @@ import com.rainskit.smuganizer.actions.MenuManager;
 import com.rainskit.smuganizer.galleryapiwrapper.Gallery;
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugMug;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
-import com.rainskit.smuganizer.tree.AsynchronousTransferManager;
+import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.waitcursoreventqueue.WaitCursorEventQueue;
 import java.awt.BorderLayout;
@@ -137,9 +137,9 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 	public void valueChanged(TreeSelectionEvent e) {
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
 		try {
-			if (node.getUserObject() instanceof TreeableGalleryItem) {
-				TreeableGalleryItem image = (TreeableGalleryItem)node.getUserObject();
-				floatingImageWindow.displayImage(image.getPreviewURL());
+			if (node.getUserObject() instanceof TreeableGalleryItem && ((JTree)e.getSource()).getSelectionCount() == 1) {
+				TreeableGalleryItem item = (TreeableGalleryItem)node.getUserObject();
+				floatingImageWindow.displayImage(item.getPreviewURL());
 			} else {
 				floatingImageWindow.displayImage(null);
 			}

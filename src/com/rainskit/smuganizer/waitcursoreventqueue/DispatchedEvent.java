@@ -27,7 +27,9 @@ class DispatchedEvent {
 	public boolean resetCursor() {
 		synchronized (mutex) {
 			if (parent != null) {
-				parent.setCursor(lastCursor);
+				if (parent.isCursorSet()) {
+					parent.setCursor(lastCursor);
+				}
 				parent = null;
 				return true;
 			}

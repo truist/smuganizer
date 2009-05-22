@@ -1,5 +1,7 @@
 package com.rainskit.smuganizer.tree;
 
+import com.rainskit.smuganizer.tree.transfer.SmugTransferHandler;
+import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import com.kallasoft.smugmug.api.APIConstants;
 import com.rainskit.smuganizer.*;
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugMug;

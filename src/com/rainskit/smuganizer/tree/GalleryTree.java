@@ -2,6 +2,7 @@ package com.rainskit.smuganizer.tree;
 
 import com.rainskit.smuganizer.*;
 import com.rainskit.smuganizer.galleryapiwrapper.Gallery;
+import com.rainskit.smuganizer.tree.transfer.GalleryTransferHandler;
 import java.io.IOException;
 import javax.swing.BorderFactory;
 import javax.swing.JTree;
@@ -24,10 +25,10 @@ public class GalleryTree extends JTree {
 		
 		setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		setCellRenderer(new TreeableRenderer());
-//		setTransferHandler(new SmugTransferHandler(main));
+		setTransferHandler(new GalleryTransferHandler());
 		setDragEnabled(true);
 	}
-
+	
 	public void loadTree(Gallery gallery) throws IOException {
 		rootNode.setUserObject(gallery);
 		

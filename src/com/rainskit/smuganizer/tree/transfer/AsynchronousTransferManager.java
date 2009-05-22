@@ -1,20 +1,13 @@
-package com.rainskit.smuganizer.tree;
+package com.rainskit.smuganizer.tree.transfer;
 
+import com.rainskit.smuganizer.tree.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 
 public class AsynchronousTransferManager extends AbstractTableModel implements PropertyChangeListener {
 	public static final int PROGRESS_COLUMN = 0;
@@ -31,15 +24,15 @@ public class AsynchronousTransferManager extends AbstractTableModel implements P
 	private static final int DEST_COLUMN_WIDTH = 400;
 	public static final int COLUMN_COUNT = 4;
 	
-	private ArrayList<MoveLocal> visibleTasks;
+	private ArrayList<AbstractTransferTask> visibleTasks;
 	private ExecutorService transferExecutor;
 	
 	public AsynchronousTransferManager() {
 		this.transferExecutor = Executors.newSingleThreadExecutor();
-		this.visibleTasks = new ArrayList<MoveLocal>();
+		this.visibleTasks = new ArrayList<AbstractTransferTask>();
 	}
 
-	public void submit(MoveLocal asyncTransferObject) {
+	public void submit(AbstractTransferTask asyncTransferObject) {
 		synchronized(visibleTasks) {
 			visibleTasks.add(asyncTransferObject);
 			fireTableRowsInserted(visibleTasks.size() - 1, visibleTasks.size() - 1);
@@ -50,7 +43,7 @@ public class AsynchronousTransferManager extends AbstractTableModel implements P
 	
 	public void propertyChange(PropertyChangeEvent evt) {
 		synchronized(visibleTasks) {
-			MoveLocal source = (MoveLocal)evt.getSource();
+			AbstractTransferTask source = (AbstractTransferTask)evt.getSource();
 			int row = visibleTasks.indexOf(source);
 			if (StateValue.DONE == evt.getNewValue()) {
 				visibleTasks.remove(row);
@@ -101,10 +94,10 @@ public class AsynchronousTransferManager extends AbstractTableModel implements P
 	}
 	
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		MoveLocal row = visibleTasks.get(rowIndex);
+		AbstractTransferTask row = visibleTasks.get(rowIndex);
 		switch (columnIndex) {
 			case PROGRESS_COLUMN:
-				return row.getProgress();
+				return row.getState();
 			case ACTION_COLUMN:
 				return "MOVE";
 			case SOURCE_COLUMN:
@@ -113,73 +106,6 @@ public class AsynchronousTransferManager extends AbstractTableModel implements P
 				return ((TreeableGalleryItem)row.destParentNode.getUserObject()).getFullPathLabel();
 			default:
 				throw new IllegalArgumentException("Invalid column: " + columnIndex);
-		}
-	}
-	
-	
-	public static class MoveLocal extends SwingWorker<String, String> {
-		private DefaultMutableTreeNode srcNode;
-		private TreeableGalleryItem srcItem;
-		private JTree tree;
-		private TreePath destParentPath;
-		private DefaultMutableTreeNode destParentNode;
-		private TreeableGalleryItem destParentItem;
-		private int destChildIndex;
-		
-		public MoveLocal(DefaultMutableTreeNode srcNode,
-							JTree tree, 
-							TreePath destParentPath, 
-							DefaultMutableTreeNode destParentNode,
-							int destChildIndex) {
-			this.srcNode = srcNode;
-			this.srcItem = ((TreeableGalleryItem)srcNode.getUserObject());
-			this.tree = tree;
-			this.destParentPath = destParentPath;
-			this.destParentNode = destParentNode;
-			this.destParentItem = (TreeableGalleryItem)destParentNode.getUserObject();
-			this.destChildIndex = destChildIndex;
-			
-			switchTransferStatus(true);
-		}
-
-		@Override
-		protected String doInBackground() throws Exception {
-			TreeableGalleryItem srcItem = (TreeableGalleryItem)srcNode.getUserObject();
-			TreeableGalleryItem destParentItem = (TreeableGalleryItem)destParentNode.getUserObject();
-			Logger.getLogger(AsynchronousTransferManager.class.getName()).log(Level.INFO, 
-				"Moving " + srcItem.getFullPathLabel() + " to " + destParentItem.getFullPathLabel() + " at position " + destChildIndex);
-			setProgress(0);
-			destParentItem.receiveChild(srcItem, destChildIndex);
-			setProgress(90);
-			//check to see if we are just changing an image's location within it's parent,
-			//and fix up the index var to work correctly with the tree model
-			if (srcNode.getParent() == destParentNode && destChildIndex > destParentNode.getIndex(srcNode)) { 
-				destChildIndex--;
-			}
-			SwingUtilities.invokeAndWait(new Runnable() {
-				public void run() {
-					DefaultTreeModel destModel = (DefaultTreeModel)tree.getModel();
-					destModel.removeNodeFromParent(srcNode);
-					destModel.insertNodeInto(srcNode, destParentNode, destChildIndex);
-					tree.makeVisible(destParentPath.pathByAddingChild(srcNode));
-//					destTree.scrollRectToVisible(destTree.getPathBounds(newDestPath));
-//					destTree.addSelectionPath(newDestPath);
-				}
-			});
-			setProgress(100);
-			return null;
-		}
-
-		@Override
-		protected void done() {
-			switchTransferStatus(false);
-		}
-		
-		private void switchTransferStatus(boolean newStatus) {
-			srcItem.setTransferActive(newStatus);
-			destParentItem.setTransferRecipient(newStatus);
-			((DefaultTreeModel)tree.getModel()).nodeChanged(srcNode);
-			((DefaultTreeModel)tree.getModel()).nodeChanged(destParentNode);
 		}
 	}
 }
