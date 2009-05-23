@@ -139,7 +139,7 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		try {
 			if (node.getUserObject() instanceof TreeableGalleryItem && ((JTree)e.getSource()).getSelectionCount() == 1) {
 				TreeableGalleryItem item = (TreeableGalleryItem)node.getUserObject();
-				floatingImageWindow.displayImage(item.getPreviewURL());
+				floatingImageWindow.displayImage(item);
 			} else {
 				floatingImageWindow.displayImage(null);
 			}
