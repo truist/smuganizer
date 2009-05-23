@@ -2,7 +2,6 @@ package com.rainskit.smuganizer.actions;
 
 import com.rainskit.smuganizer.Main;
 import java.awt.event.ActionEvent;
-import java.util.Iterator;
 import javax.swing.AbstractAction;
 
 class HelpAction extends AbstractAction {

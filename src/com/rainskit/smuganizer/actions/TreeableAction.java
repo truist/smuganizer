@@ -9,7 +9,7 @@ import javax.swing.AbstractAction;
 
 abstract class TreeableAction extends AbstractAction {
 	private String statusText;
-	private Main main;
+	protected Main main;
 
 	public TreeableAction(String name, String statusText, Main main) {
 		super(name);

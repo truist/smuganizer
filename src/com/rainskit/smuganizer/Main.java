@@ -16,6 +16,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.FileNotFoundException;
@@ -39,17 +42,16 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 
-public class Main extends JFrame implements TreeSelectionListener, PropertyChangeListener, StatusCallback {
-	private JPanel statusPanel;
+public class Main extends JFrame implements TreeSelectionListener, StatusCallback {
 	private JLabel statusLabel;
 	private String baseStatus;
 	
 	private SmugTree smugTree;
 	private GalleryTree galleryTree;
-	private JTree currentTree;
 	
-	private DisplayWindow floatingImageWindow;
+	private ImageWindow floatingImageWindow;
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, FileNotFoundException, IOException{
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -71,20 +73,32 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		super("Smuganizer");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+		MouseListener doubleClickListener = new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent me) {
+				if (me.getClickCount() == 2) {
+					 TreePath clickPath = ((JTree)me.getSource()).getPathForLocation(me.getX(), me.getY());
+					 if (clickPath != null) {
+						 TreeableGalleryItem clickItem = (TreeableGalleryItem)((DefaultMutableTreeNode)clickPath.getLastPathComponent()).getUserObject();
+						 if (clickItem != null && TreeableGalleryItem.IMAGE.equals(clickItem.getType())) {
+							showImageWindow();
+						 }
+					 }
+				}
+			}
+		};
+		
 		AsynchronousTransferManager transferManagerModel = new AsynchronousTransferManager();
 		smugTree = new SmugTree(this, transferManagerModel);
 		smugTree.addTreeSelectionListener(this);
-		
-		galleryTree = new GalleryTree(this);
-		galleryTree.addTreeSelectionListener(this);
-		
-		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-		focusManager.addPropertyChangeListener("focusOwner", this);
-		
+		smugTree.addMouseListener(doubleClickListener);
 		JPanel rightPanel = new JPanel(new BorderLayout());
 		rightPanel.add(new JScrollPane(smugTree), BorderLayout.CENTER);
 		rightPanel.add(newHeaderLabel("SmugMug"), BorderLayout.NORTH);
 		
+		galleryTree = new GalleryTree(this);
+		galleryTree.addTreeSelectionListener(this);
+		galleryTree.addMouseListener(doubleClickListener);
 		JPanel leftPanel = new JPanel(new BorderLayout());
 		leftPanel.add(new JScrollPane(galleryTree), BorderLayout.CENTER);
 		leftPanel.add(newHeaderLabel("Gallery"), BorderLayout.NORTH);
@@ -104,7 +118,7 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		
 		statusLabel = new JLabel(" ");
 		statusLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
-		statusPanel = new JPanel(new BorderLayout());
+		JPanel statusPanel = new JPanel(new BorderLayout());
 		statusPanel.setBorder(BorderFactory.createLoweredBevelBorder());
 		statusPanel.add(statusLabel);
 		
@@ -118,10 +132,9 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		setSize(800, 600);
 		setLocationRelativeTo(null);
 		
-		floatingImageWindow = new DisplayWindow(this);
+		floatingImageWindow = new ImageWindow(this);
 		
 		setVisible(true);
-		floatingImageWindow.setVisible(true);
 	}
 
 	private JLabel newHeaderLabel(String text) {
@@ -134,10 +147,14 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		return label;
 	}
 
-	public void valueChanged(TreeSelectionEvent e) {
-		DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
+	public void showImageWindow() {
+		floatingImageWindow.setVisible(true);
+	}
+	
+	public void valueChanged(TreeSelectionEvent tse) {
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode) tse.getPath().getLastPathComponent();
 		try {
-			if (node.getUserObject() instanceof TreeableGalleryItem && ((JTree)e.getSource()).getSelectionCount() == 1) {
+			if (node.getUserObject() instanceof TreeableGalleryItem && ((JTree)tse.getSource()).getSelectionCount() == 1) {
 				TreeableGalleryItem item = (TreeableGalleryItem)node.getUserObject();
 				floatingImageWindow.displayImage(item);
 			} else {
@@ -191,18 +208,13 @@ public class Main extends JFrame implements TreeSelectionListener, PropertyChang
 		return true;
 	}
 	
-	public void propertyChange(PropertyChangeEvent event) {
-		if (event.getNewValue() instanceof JTree) {
-			currentTree = (JTree)event.getNewValue();
-		}
-	}
-	
-	public JTree getCurrentTree() {
-		return currentTree;
-	}
-	
 	public void showHelp() {
-		floatingImageWindow.showHelp();
+		try {
+			new HelpWindow(this).setVisible(true);
+		} catch (IOException ex) {
+			JOptionPane.showMessageDialog(this, "Error showing help: " + ex.getLocalizedMessage(), "Error loading help", JOptionPane.ERROR_MESSAGE);
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 	
 	public void setStatus(String status) {

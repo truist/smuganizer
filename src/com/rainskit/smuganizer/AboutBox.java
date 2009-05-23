@@ -40,7 +40,7 @@ public class AboutBox extends javax.swing.JDialog {
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Smuganizer v1.0");
 
-        jLabel2.setText("Copyright 2009 Nathan Arthur");
+        jLabel2.setText("Copyright 2009 Nathan Arthur, http://www.rainskit.com/");
 
         jLabel3.setText("Icons Copyright 2009 Yasuke Kamiyamane, http://www.pinvoke.com/");
 

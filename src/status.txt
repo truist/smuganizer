@@ -1,9 +1,4 @@
 
-make 'help' window be its own window; don't show it at startup
-
-make double-click be the "preview" action?
-	also create a context menu
-
 do the drag-and-drop import
 	figure out import order - sorted (by what?) or not?
 	figure out what metadata (hidden, caption, etc.) to copy over

@@ -11,12 +11,10 @@ import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -24,7 +22,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -33,10 +30,9 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import org.apache.commons.io.IOUtils;
 
-public class DisplayWindow extends JFrame {
+public class ImageWindow extends JFrame {
 	private static final String IMAGE_CARD = "image.card";
 	private static final String PROGRESS_CARD = "progress.card";
-	private static final String HELP_CARD = "help.card";
 	private static final String NO_IMAGE_TITLE = "No image";
 	
 	private ImageLoader imageLoader;
@@ -46,17 +42,10 @@ public class DisplayWindow extends JFrame {
 	private CardLayout cardLayout;
 	private JLabel imageLabel;
 	
-	public DisplayWindow(Main parent) throws FileNotFoundException, IOException {
+	public ImageWindow(Main parent) throws FileNotFoundException, IOException {
 		super("Image Viewer");
 		
 		this.imageLoader = new ImageLoader();
-		
-		JEditorPane helpPane = new JEditorPane();
-		helpPane.setContentType("text/html");
-		FileReader fileReader = new FileReader("src/intro.html");
-		helpPane.read(fileReader, null);
-		fileReader.close();
-		helpPane.setEditable(false);
 		
 		imageLabel = new JLabel("");
 		imageLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -74,7 +63,6 @@ public class DisplayWindow extends JFrame {
 		
 		cardLayout = new CardLayout();
 		displayPanel = new JPanel(cardLayout);
-		displayPanel.add(new JScrollPane(helpPane), HELP_CARD);
 		displayPanel.add(new JScrollPane(imagePanel), IMAGE_CARD);
 		displayPanel.add(progressPanel, PROGRESS_CARD);
 		
@@ -99,7 +87,6 @@ public class DisplayWindow extends JFrame {
 				clearImage(true);
 				imageLoader.addImage(image, lastCallID);
 			}
-			reShowIfNeeded();
 		} else {
 			clearImage(false);
 		}
@@ -145,17 +132,6 @@ public class DisplayWindow extends JFrame {
 		return size;
 	}
 
-	public void showHelp() {
-		cardLayout.show(displayPanel, HELP_CARD);
-		reShowIfNeeded();
-	}
-	
-	public void reShowIfNeeded() {
-		if (!isVisible()) {
-			setVisible(true);
-		}
-	}
-	
 	
 	private class ImageLoader implements Runnable {
 		private HashMap<String, SoftReference<ImageIcon>> cachedImageData;
@@ -177,7 +153,7 @@ public class DisplayWindow extends JFrame {
 					imageQueue.putFirst(new AddImageCall(image, ID));
 				}
 			} catch (InterruptedException ex) {
-				Logger.getLogger(DisplayWindow.class.getName()).log(Level.SEVERE, null, ex);
+				Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 		
@@ -216,11 +192,11 @@ public class DisplayWindow extends JFrame {
 							notifyImageLoaded(imageIcon, nextCall.image, nextCall.ID);
 						}
 					} catch (IOException ex) {
-						Logger.getLogger(DisplayWindow.class.getName()).log(Level.SEVERE, null, ex);
+						Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
 					}
 				}
 			} catch (InterruptedException ex) {
-				Logger.getLogger(DisplayWindow.class.getName()).log(Level.SEVERE, null, ex);
+				Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 

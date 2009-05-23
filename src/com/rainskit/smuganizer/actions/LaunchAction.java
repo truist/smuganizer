@@ -3,13 +3,11 @@ package com.rainskit.smuganizer.actions;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JTree;
 
 class LaunchAction extends TreeableAction {
 	private TreeMenuManager menuManager;
