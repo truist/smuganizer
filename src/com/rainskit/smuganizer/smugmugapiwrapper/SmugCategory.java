@@ -100,6 +100,7 @@ public class SmugCategory extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new DeleteException(this, response.getError());
 		}
+		parent.removeChild(this);
 	}
 
 	public void removeAlbum(SmugAlbum album) {

@@ -16,15 +16,12 @@ public class SmugSubCategory extends SmugCategory {
 		Desktop.getDesktop().browse(new URI("http", SmugMug.getBaseURL(), "/" + parent.getLabel() + "/" + apiCategory.getID(), null));
 	}
 	
-	public void delete() throws DeleteException {
-		super.delete();
-		parent.removeChild(this);
-	}
-	
+	@Override
 	protected Integer getCategoryID() {
 		return apiCategory.getParentCategoryID();
 	}
 	
+	@Override
 	protected Integer getSubCategoryID() {
 		return apiCategory.getID();
 	}
