@@ -32,7 +32,7 @@ public class GalleryTree extends JTree {
 	public void loadTree(Gallery gallery) throws IOException {
 		rootNode.setUserObject(gallery);
 		
-		main.setStatus("Loading gallery data...");
+		main.setStatus("Loading data...");
 		rootNode.removeAllChildren();
 		model.nodeStructureChanged(rootNode);
 		

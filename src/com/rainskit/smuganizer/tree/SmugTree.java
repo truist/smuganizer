@@ -51,7 +51,7 @@ public class SmugTree extends JTree implements SettingsListener {
 		rootNode.setUserObject(smugMug);
 		SmugMugSettings.setSettingsListener(this);
 		
-		main.setStatus("Loading SmugMug data into the tree...");
+		main.setStatus("Loading data...");
 		rootNode.removeAllChildren();
 		model.nodeStructureChanged(rootNode);
 		

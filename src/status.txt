@@ -1,4 +1,6 @@
 
+keyboard support
+
 do the drag-and-drop import
 	figure out import order - sorted (by what?) or not?
 	figure out what metadata (hidden, caption, etc.) to copy over
@@ -20,9 +22,11 @@ import combo order:
 	album -> album
 	all the "upload dialog" combos
 
+import album descriptions
+
 implement a "new album" menu for SmugMug
 
-implement a "new category" and "new subcategory" menu for SmutMug
+implement a "new category" and "new subcategory" menu for SmugMug
 
 implement category drag-and-drop within the smugmug tree
 

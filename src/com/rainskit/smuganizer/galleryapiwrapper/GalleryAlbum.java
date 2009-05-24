@@ -48,6 +48,10 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 		return urlName;
 	}
 	
+	public String getCaption() {
+		return null;
+	}
+
 	private List<GalleryImage> getImages() throws IOException {
 		if (!loaded) {
 			loaded = true;

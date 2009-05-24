@@ -65,6 +65,10 @@ public class SmugCategory extends TreeableGalleryItem {
 		return (reName != null) ? reName : apiCategory.getName();
 	}
 
+	public String getCaption() {
+		return null;
+	}
+	
 	public boolean canBeRelabeled() {
 		return apiCategory.getID().intValue() > 1000;
 	}

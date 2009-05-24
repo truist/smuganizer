@@ -21,7 +21,8 @@ public class TransferTable extends JTable {
 //	private class ProgressCellRenderer extends JProgressBar implements TableCellRenderer {
 //		public ProgressCellRenderer() {
 //			super(0, 100);
-//			setStringPainted(true);
+//			setStringPainted(false);
+//			setIndeterminate(true);
 //			setBorderPainted(false);
 //			setBackground(TransferTable.this.getBackground());
 //		}

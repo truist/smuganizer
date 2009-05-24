@@ -75,11 +75,20 @@ public class SmugImage extends TreeableGalleryItem {
 		if (reLabel != null) {
 			return reLabel;
 		}
-		String caption = apiImage.getCaption();
-		if ("".equals(apiImage.getCaption())) {
-			return getName();
-		} else {
+		String caption = getCaption();
+		if (caption != null) {
 			return caption;
+		} else {
+			return getName();
+		}
+	}
+	
+	public String getCaption() {
+		String caption = apiImage.getCaption();
+		if (!"".equals(caption)) {
+			return caption;
+		} else {
+			return null;
 		}
 	}
 	

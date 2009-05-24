@@ -68,6 +68,8 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	}
 	/** The file name, for images */
 	public abstract String getName();
+	/** The caption to show online; should be 'null' unless the caption is different than the filename */
+	public abstract String getCaption();
 	
 	public abstract boolean canBeDeleted();
 	public abstract void delete();

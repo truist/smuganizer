@@ -11,16 +11,11 @@ import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.waitcursoreventqueue.WaitCursorEventQueue;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -31,7 +26,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
@@ -56,49 +50,24 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, FileNotFoundException, IOException{
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		Toolkit.getDefaultToolkit().getSystemEventQueue().push(new WaitCursorEventQueue(70));
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					new Main();
-				} catch (FileNotFoundException ex) {
-					Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-				} catch (IOException ex) {
-					Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-		});
+		new Main();
     }
 
 	private Main() throws FileNotFoundException, IOException {
 		super("Smuganizer");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		MouseListener doubleClickListener = new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent me) {
-				if (me.getClickCount() == 2) {
-					 TreePath clickPath = ((JTree)me.getSource()).getPathForLocation(me.getX(), me.getY());
-					 if (clickPath != null) {
-						 TreeableGalleryItem clickItem = (TreeableGalleryItem)((DefaultMutableTreeNode)clickPath.getLastPathComponent()).getUserObject();
-						 if (clickItem != null && TreeableGalleryItem.IMAGE.equals(clickItem.getType())) {
-							showImageWindow();
-						 }
-					 }
-				}
-			}
-		};
-		
 		AsynchronousTransferManager transferManagerModel = new AsynchronousTransferManager();
 		smugTree = new SmugTree(this, transferManagerModel);
 		smugTree.addTreeSelectionListener(this);
-		smugTree.addMouseListener(doubleClickListener);
+		smugTree.addMouseListener(new DoubleClickListener());
 		JPanel rightPanel = new JPanel(new BorderLayout());
 		rightPanel.add(new JScrollPane(smugTree), BorderLayout.CENTER);
 		rightPanel.add(newHeaderLabel("SmugMug"), BorderLayout.NORTH);
 		
 		galleryTree = new GalleryTree(this);
 		galleryTree.addTreeSelectionListener(this);
-		galleryTree.addMouseListener(doubleClickListener);
+		galleryTree.addMouseListener(new DoubleClickListener());
 		JPanel leftPanel = new JPanel(new BorderLayout());
 		leftPanel.add(new JScrollPane(galleryTree), BorderLayout.CENTER);
 		leftPanel.add(newHeaderLabel("Gallery"), BorderLayout.NORTH);
@@ -233,5 +202,29 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 	
 	public void clearStatus() {
 		setStatus(" ");
+	}
+	
+	
+	private class DoubleClickListener extends MouseAdapter {
+		@Override
+		public void mouseClicked(MouseEvent me) {
+			if (me.getClickCount() == 2) {
+				JTree tree = (JTree)me.getSource();
+				TreePath clickPath = tree.getPathForLocation(me.getX(), me.getY());
+				if (clickPath != null) {
+					TreeableGalleryItem clickItem = (TreeableGalleryItem)((DefaultMutableTreeNode)clickPath.getLastPathComponent()).getUserObject();
+					if (clickItem != null && TreeableGalleryItem.IMAGE.equals(clickItem.getType())) {
+						TreePath selectedPath = tree.getSelectionPath();
+						if (selectedPath != null) {
+							DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)selectedPath.getLastPathComponent();
+							TreeableGalleryItem selectedItem = (TreeableGalleryItem)selectedNode.getUserObject();
+							if (TreeableGalleryItem.IMAGE.equals(selectedItem.getType())) {
+								showImageWindow();
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }

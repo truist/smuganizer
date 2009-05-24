@@ -8,5 +8,7 @@ to build this project for yourself, I suggest using NetBeans
 		be sure to import all the jars from the 'lib' folder of the kallasoft library
 		apache commons-lang
 			http://commons.apache.org/lang/
+		sanselan EXIF library (0.97)
+			http://incubator.apache.org/sanselan/site/index.html
 
-(also need the tree icons)
+to run with the icons appearing correctly in the tree, ensure that the 'lib' directory is on the classpath

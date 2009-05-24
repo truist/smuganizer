@@ -77,6 +77,10 @@ public class SmugMug extends TreeableGalleryItem {
 		return getBaseURL();
 	}
 
+	public String getCaption() {
+		return null;
+	}
+	
 	public boolean canBeRelabeled() {
 		return false;
 	}

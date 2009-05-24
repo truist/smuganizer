@@ -6,11 +6,9 @@ import java.awt.Desktop;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import javax.swing.Icon;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import java.io.IOException;
@@ -23,7 +21,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 public class Gallery extends AbstractGalleryTreeable {
 	public static final String TYPE = "MenaltoGallery";
@@ -260,6 +257,10 @@ public class Gallery extends AbstractGalleryTreeable {
 	
 	public String getLabel() {
 		return getBaseURL();
+	}
+
+	public String getCaption() {
+		return null;
 	}
 
 	public boolean canBeLaunched() {

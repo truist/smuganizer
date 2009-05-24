@@ -16,8 +16,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.apache.commons.httpclient.methods.PostMethod;
 
 public class SmugAlbum extends TreeableGalleryItem {
@@ -96,6 +94,10 @@ public class SmugAlbum extends TreeableGalleryItem {
 
 	public String getName() {
 		return (reName != null) ? reName : apiAlbum.getTitle();
+	}
+	
+	public String getCaption() {
+		return null;
 	}
 
 	public boolean canBeRelabeled() {
@@ -177,7 +179,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 			= uploadMethod.execute(SmugMug.API_UPLOAD_URL, SmugMug.sessionID, 
 									apiAlbum.getID(), null, 
 									newItem.getName(), newItem.getDataURL().openStream(), 
-									null, null, 
+									newItem.getCaption(), null, 
 									null, null, null);
 		if (uploadResponse.isError()) {
 			throw new MoveException(this, uploadResponse.getError());
