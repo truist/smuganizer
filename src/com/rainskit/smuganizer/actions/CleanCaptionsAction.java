@@ -5,18 +5,19 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 
-class CheckForProtectedAlbumsAction extends AbstractAction {
-	public CheckForProtectedAlbumsAction() {
-		super("Check if albums are public or protected (slows down the initial load)");
-		setSelected(GallerySettings.getCheckProtectedAlbums());
+class CleanCaptionsAction extends AbstractAction {
+
+	public CleanCaptionsAction() {
+		super("Fix \"&amp;\" and remove captions that match filename when importing into SmugMug");
+		setSelected(GallerySettings.getCleanCaptions());
 	}
-	
+
 	public void actionPerformed(ActionEvent e) {
 		setSelected(((JMenuItem)e.getSource()).isSelected());
 	}
 	
 	void setSelected(boolean selected) {
 		putValue(SELECTED_KEY, Boolean.valueOf(selected));
-		GallerySettings.setCheckProtectedAlbums(selected);
+		GallerySettings.setCleanCaptions(selected);
 	}
 }

@@ -18,9 +18,7 @@ public class ConnectSmugMugAction extends AbstractAction {
 		SmugMugLoginDialog settingsDialog = new SmugMugLoginDialog(main);
 		settingsDialog.setVisible(true);
 		if (settingsDialog.wasClosedWithOK()) {
-			if (main.loadSmugTree()) {
-				setEnabled(false);
-			}
+			main.loadSmugTree();
 		}
 	}
 }

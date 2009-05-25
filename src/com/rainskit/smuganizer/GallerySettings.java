@@ -12,6 +12,7 @@ public class GallerySettings {
 	private static final String PASSWORD = "gallery.password";
 	private static final String NULL_PASSWORD = "";
 	private static final String CHECK_PROTECTED_ALBUMS = "gallery.check_protected_albums";
+	private static final String CLEAN_CAPTIONS = "gallery.clean_captions";
 	
 	private static Preferences storage = Preferences.userNodeForPackage(Main.class);
 
@@ -59,6 +60,14 @@ public class GallerySettings {
 	
 	public static void setCheckProtectedAlbums(boolean selected) {
 		storage.putBoolean(CHECK_PROTECTED_ALBUMS, selected);
+	}
+	
+	public static boolean getCleanCaptions() {
+		return storage.getBoolean(CLEAN_CAPTIONS, true);
+	}
+	
+	public static void setCleanCaptions(boolean selected) {
+		storage.putBoolean(CLEAN_CAPTIONS, selected);
 	}
 
 	public void addSettingListener(final SettingsListener listener) {

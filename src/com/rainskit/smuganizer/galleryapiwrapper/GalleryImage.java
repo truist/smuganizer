@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.galleryapiwrapper;
 
+import com.rainskit.smuganizer.GallerySettings;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -58,7 +59,12 @@ public class GalleryImage extends AbstractGalleryTreeable {
 	}
 
 	public String getCaption() {
-		return generateCleanCaption(getName(), imageDetails.getProperty(Gallery.RESPONSE_IMAGE_CAPTION_INDEXED + imageRefNum));
+		String rawCaption = imageDetails.getProperty(Gallery.RESPONSE_IMAGE_CAPTION_INDEXED + imageRefNum);
+		if (GallerySettings.getCleanCaptions()) {
+			return generateCleanCaption(getName(), rawCaption);
+		} else {
+			return rawCaption;
+		}
 	}
 
 	static String generateCleanCaption(String rawName, String rawCaption) {

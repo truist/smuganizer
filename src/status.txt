@@ -1,5 +1,7 @@
 
-keyboard support
+fix problem with "Image Description" EXIF header
+
+"show EXIF" menu
 
 do the drag-and-drop import
 	figure out import order - sorted (by what?) or not?
@@ -26,6 +28,10 @@ import album descriptions
 
 implement a "new album" menu for SmugMug
 
+create settings for gallery sort order (default/date vs. name)
+
+create help instructions about converting "hidden" albums to actually being "protected" (permissions)
+
 implement a "new category" and "new subcategory" menu for SmugMug
 
 implement category drag-and-drop within the smugmug tree
@@ -49,9 +55,3 @@ category move isn't implemented, both in SmugCategory and in SmugMug
 allow copying from one smugmug gallery to another
 
 need a 'refresh' function for when changes are made via the website or other tools
-
------
-
-need to figure out sorting in the Gallery tree
-	and the Settings menu
-

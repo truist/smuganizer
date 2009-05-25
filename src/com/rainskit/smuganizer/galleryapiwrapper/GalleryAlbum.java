@@ -87,6 +87,7 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 		return ALBUM;
 	}
 
+	@Override
 	public TreeableGalleryItem getParent() {
 		return (parent == null ? gallery : parent);
 	}

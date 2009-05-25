@@ -52,6 +52,7 @@ public class MenuManager {
 	private JMenu createGallerySettingsMenu() {
 		JMenu settingsMenu = new JMenu("Settings");
 		settingsMenu.add(new JCheckBoxMenuItem(new CheckForProtectedAlbumsAction()));
+		settingsMenu.add(new JCheckBoxMenuItem(new CleanCaptionsAction()));
 		return settingsMenu;
 	}
 	

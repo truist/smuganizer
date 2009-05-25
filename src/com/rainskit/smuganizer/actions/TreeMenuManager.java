@@ -22,7 +22,7 @@ class TreeMenuManager implements TreeSelectionListener {
 
 	public TreeMenuManager(Main main, JTree tree) {
 		this.tree = tree;
-		this.actions = createActions(main);
+		this.actions = createActions(main, tree);
 		
 		popupMenu = new JPopupMenu();
 		for (TreeableAction each : actions) {
@@ -43,13 +43,13 @@ class TreeMenuManager implements TreeSelectionListener {
 		return actions;
 	}
 	
-	private ArrayList<TreeableAction> createActions(Main main) {
+	private ArrayList<TreeableAction> createActions(Main main, JTree tree) {
 		ArrayList<TreeableAction> newActions = new ArrayList<TreeableAction>();
-		newActions.add(new PreviewAction(this, main));
+		newActions.add(new PreviewAction(this, main, tree));
 		newActions.add(new LaunchAction(this, main));
 		newActions.add(null);
-		newActions.add(new RenameAction(this, main));
-		newActions.add(new DeleteAction(this, main));
+		newActions.add(new RenameAction(this, main, tree));
+		newActions.add(new DeleteAction(this, main, tree));
 		newActions.add(null);
 		newActions.add(new HideAction(this, main));
 		newActions.add(new PasswordAction(this, main));

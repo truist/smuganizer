@@ -57,7 +57,7 @@ public class SmugTree extends JTree implements SettingsListener {
 		
 		HttpConnectionManagerParams params = APIConstants.HTTP_CLIENT.getHttpConnectionManager().getParams();
 		HostConfiguration hostConfig = APIConstants.HTTP_CLIENT.getHostConfiguration();
-		new AsynchronousTreeLoader(main, this, rootNode, smugMug).start(params, hostConfig);
+		new AsynchronousTreeLoader(main, this, rootNode, smugMug, SmugMugSettings.getTreeSort()).start(params, hostConfig);
 	}
 	
 	private void sortTree(DefaultMutableTreeNode parentNode) {

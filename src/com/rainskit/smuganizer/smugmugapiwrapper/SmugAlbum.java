@@ -49,8 +49,6 @@ public class SmugAlbum extends TreeableGalleryItem {
 	}
 
 	public List<? extends TreeableGalleryItem> loadChildren() {
-		childrenLoaded = true;
-		
 		com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo albumGet = new com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo();
 		com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo.GetInfoResponse albumResponse
 			= albumGet.execute(SmugMug.API_URL, 
@@ -78,6 +76,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 		for (com.kallasoft.smugmug.api.json.entity.Image each : imageResponse.getImageList()) {
 			images.add(new SmugImage(this, each));
 		}
+		childrenLoaded = true;
 		return images;
 	}
 	

@@ -3,24 +3,29 @@ package com.rainskit.smuganizer.actions;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 class RenameAction extends TreeableAction {
+	private static final String ACTION_MAP_KEY = "rename";
+	
 	private TreeMenuManager menuManager;
-	private Main main;
 
-	public RenameAction(TreeMenuManager menuManager, Main main) {
+	public RenameAction(TreeMenuManager menuManager, Main main, JTree tree) {
 		super("Rename...", "Renaming...", main);
 		this.menuManager = menuManager;
-		this.main = main;
+		
+		tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), ACTION_MAP_KEY);
+		tree.getActionMap().put(ACTION_MAP_KEY, this);
 	}
 
 	protected void performAction() {

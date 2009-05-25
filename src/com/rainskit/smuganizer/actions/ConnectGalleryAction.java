@@ -23,9 +23,7 @@ class ConnectGalleryAction extends AbstractAction {
 		if (!settingsDialog.wasClosedWithOK()) {
 			return;
 		}
-		if (main.loadGalleryTree(gallerySettings)) {
-			setEnabled(false);
-		}
+		main.loadGalleryTree(gallerySettings);
 	}
 
 }

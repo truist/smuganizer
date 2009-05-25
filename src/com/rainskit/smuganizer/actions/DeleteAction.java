@@ -3,24 +3,29 @@ package com.rainskit.smuganizer.actions;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
 class DeleteAction extends TreeableAction {
+	private static final String ACTION_MAP_KEY = "delete";
+	
 	private TreeMenuManager menuManager;
-	private Main main;
 
-	public DeleteAction(TreeMenuManager menuManager, Main main) {
+	public DeleteAction(TreeMenuManager menuManager, Main main, JTree tree) {
 		super("Delete...", "Deleting...", main);
 		this.menuManager = menuManager;
-		this.main = main;
+		
+		tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), ACTION_MAP_KEY);
+		tree.getActionMap().put(ACTION_MAP_KEY, this);
 	}
 
 	protected void performAction() {

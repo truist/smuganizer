@@ -38,6 +38,6 @@ public class GalleryTree extends JTree {
 		
 		HttpConnectionManagerParams params = gallery.getHttpClient().getHttpConnectionManager().getParams();
 		HostConfiguration hostConfig = gallery.getHttpClient().getHostConfiguration();
-		new AsynchronousTreeLoader(main, this, rootNode, gallery).start(params, hostConfig);
+		new AsynchronousTreeLoader(main, this, rootNode, gallery, true).start(params, hostConfig);
 	}
 }

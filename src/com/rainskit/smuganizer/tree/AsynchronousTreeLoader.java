@@ -1,8 +1,10 @@
 package com.rainskit.smuganizer.tree;
 
 import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.SmugMugSettings;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -32,16 +34,20 @@ class AsynchronousTreeLoader {
 	private DefaultMutableTreeNode rootNode;
 	private TreeableGalleryItem rootItem;
 	
+	private boolean sort;
+	
 	private int errorCount;
 	
 	public AsynchronousTreeLoader(Main main, 
-								JTree tree, 
-								DefaultMutableTreeNode rootNode, 
-								TreeableGalleryItem rootItem) {
+									JTree tree, 
+									DefaultMutableTreeNode rootNode, 
+									TreeableGalleryItem rootItem,
+									boolean sort) {
 		this.main = main;
 		this.tree = tree;
 		this.rootNode = rootNode;
 		this.rootItem = rootItem;
+		this.sort = sort;
 	}
 	
 	public void start(HttpConnectionManagerParams params, HostConfiguration hostConfig) throws IOException {
@@ -121,6 +127,9 @@ class AsynchronousTreeLoader {
 				List<LoadTask> grandChildTasks = new ArrayList<LoadTask>();
 				List<? extends TreeableGalleryItem> grandChildren = childItem.loadChildren();
 				if (grandChildren != null) {
+					if (sort) {
+						Collections.sort(grandChildren);
+					}
 					for (TreeableGalleryItem each : grandChildren) {
 						if (each != null) {
 							grandChildTasks.add(new LoadTask(childNode, each));
