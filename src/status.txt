@@ -1,12 +1,9 @@
 
 fix problem with "Image Description" EXIF header
 
-"show EXIF" menu
-
 do the drag-and-drop import
 	figure out import order - sorted (by what?) or not?
 	figure out what metadata (hidden, caption, etc.) to copy over
-	figure out how to copy file names / captions / labels / whatever
 
 import combo order:
 	image -> album

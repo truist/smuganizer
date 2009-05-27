@@ -2,7 +2,7 @@ package com.rainskit.smuganizer;
 
 import com.rainskit.smuganizer.tree.SmugTree;
 import com.rainskit.smuganizer.tree.GalleryTree;
-import com.rainskit.smuganizer.actions.MenuManager;
+import com.rainskit.smuganizer.menu.MenuManager;
 import com.rainskit.smuganizer.galleryapiwrapper.Gallery;
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugMug;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
@@ -175,15 +175,6 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 			return false;
 		}
 		return true;
-	}
-	
-	public void showHelp() {
-		try {
-			new HelpWindow(this).setVisible(true);
-		} catch (IOException ex) {
-			JOptionPane.showMessageDialog(this, "Error showing help: " + ex.getLocalizedMessage(), "Error loading help", JOptionPane.ERROR_MESSAGE);
-			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-		}
 	}
 	
 	public void setStatus(String status) {

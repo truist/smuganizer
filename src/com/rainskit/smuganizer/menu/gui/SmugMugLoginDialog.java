@@ -1,34 +1,22 @@
-package com.rainskit.smuganizer;
+package com.rainskit.smuganizer.menu.gui;
 
-import java.net.MalformedURLException;
+import com.rainskit.smuganizer.*;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-public class GalleryLoginDialog extends javax.swing.JDialog {
+public class SmugMugLoginDialog extends javax.swing.JDialog {
 	private boolean closedWithOK;
-	private GallerySettings settings;
 
-    public GalleryLoginDialog(JFrame parent, GallerySettings settings) {
+    public SmugMugLoginDialog(JFrame parent) {
         super(parent, true);
-		this.settings = settings;
 		
         initComponents();
 		getRootPane().setDefaultButton(okButton);
-		try {
-			String urlString = settings.getURL().toExternalForm();
-			if (urlString.endsWith(":")) {
-				urlString += "//";
-			}
-			urlField.setText(urlString);
-		} catch (MalformedURLException ex) {
-			urlField.setText("http://");
-		}
-		usernameField.setText(settings.getUsername());
-		passwordField.setText(String.valueOf(settings.getPassword()));
-		passwordCheck.setSelected(settings.isPasswordSaved());
+		
+		usernameField.setText(SmugMugSettings.getUsername());
+		passwordField.setText(String.valueOf(SmugMugSettings.getPassword()));
+		passwordCheck.setSelected(SmugMugSettings.isPasswordSaved());
 		setLocationRelativeTo(parent);
 		
 		if (usernameField.getText().length() > 0) {
@@ -41,8 +29,7 @@ public class GalleryLoginDialog extends javax.swing.JDialog {
 	}
 
 	private boolean validateFields() {
-		return (urlField.getText().length() > 0)
-			&& (usernameField.getText().length() > 0) 
+		return (usernameField.getText().length() > 0) 
 			&& (passwordField.getPassword().length > 0);
 	}
 	
@@ -57,23 +44,21 @@ public class GalleryLoginDialog extends javax.swing.JDialog {
 
         jButton2 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        urlField = new javax.swing.JTextField();
+        usernameField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
         cancelButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
         passwordCheck = new javax.swing.JCheckBox();
-        jLabel4 = new javax.swing.JLabel();
-        usernameField = new javax.swing.JTextField();
 
         jButton2.setText("OK");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Gallery Settings");
+        setTitle("SmugMug Settings");
         setModal(true);
         setResizable(false);
 
-        jLabel2.setText("Gallery URL:");
+        jLabel2.setText("SmugMug Username (email address):");
 
         jLabel3.setText("Password:");
 
@@ -93,8 +78,6 @@ public class GalleryLoginDialog extends javax.swing.JDialog {
 
         passwordCheck.setText("Save password");
 
-        jLabel4.setText("Gallery Username:");
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -109,14 +92,12 @@ public class GalleryLoginDialog extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel3)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel4))
+                            .addComponent(jLabel2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
-                            .addComponent(urlField, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
-                            .addComponent(passwordCheck)
-                            .addComponent(usernameField, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE))))
+                            .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+                            .addComponent(usernameField, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+                            .addComponent(passwordCheck))))
                 .addContainerGap())
         );
 
@@ -127,19 +108,15 @@ public class GalleryLoginDialog extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(urlField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jLabel2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(passwordCheck)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
                     .addComponent(okButton))
@@ -156,17 +133,11 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 	if (validateFields()) {
 		closedWithOK = true;
-			try {
-				settings.setURL(new URL(urlField.getText()));
-			} catch (MalformedURLException ex) {
-				JOptionPane.showMessageDialog(this, "Invalid URL", "Input error", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-		settings.setUsername(usernameField.getText());
-		settings.setPassword(passwordField.getPassword(), passwordCheck.isSelected());
+		SmugMugSettings.setUsername(usernameField.getText());
+		SmugMugSettings.setPassword(passwordField.getPassword(), passwordCheck.isSelected());
 		setVisible(false);
 	} else {
-		JOptionPane.showMessageDialog(this, "Please fill in all fields with valid values", "Input error", JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this, "Please fill in all fields", "Input error", JOptionPane.ERROR_MESSAGE);
 	}
 }//GEN-LAST:event_okButtonActionPerformed
 
@@ -175,11 +146,9 @@ private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JButton okButton;
     private javax.swing.JCheckBox passwordCheck;
     private javax.swing.JPasswordField passwordField;
-    private javax.swing.JTextField urlField;
     private javax.swing.JTextField usernameField;
     // End of variables declaration//GEN-END:variables
 

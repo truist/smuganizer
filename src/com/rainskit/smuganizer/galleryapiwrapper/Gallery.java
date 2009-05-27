@@ -160,6 +160,7 @@ public class Gallery extends AbstractGalleryTreeable {
 				if (message == null) {
 					message = "Error!  Unable to read the response from the server";
 				}
+				response.list(System.err);
 				throw new IOException(message);
 			}
 			if (galleryVersion > 1) {

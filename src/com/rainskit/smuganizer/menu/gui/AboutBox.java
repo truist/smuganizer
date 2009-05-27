@@ -4,7 +4,7 @@
  * Created on January 30, 2009, 11:08 PM
  */
 
-package com.rainskit.smuganizer;
+package com.rainskit.smuganizer.menu.gui;
 
 /**
  *

@@ -1,5 +1,6 @@
-package com.rainskit.smuganizer;
+package com.rainskit.smuganizer.menu.gui;
 
+import com.rainskit.smuganizer.*;
 import java.awt.BorderLayout;
 import java.awt.Point;
 import java.io.FileNotFoundException;
