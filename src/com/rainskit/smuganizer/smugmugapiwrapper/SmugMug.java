@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SmugMug extends TreeableGalleryItem {
-	public static final String TYPE = "SmugMug";
 	static final String API_URL = "https://api.smugmug.com/hack/json/1.2.0/";
 	static final String API_UPLOAD_URL = "http://upload.smugmug.com/";
 	static final String API_KEY = "aR8ks0WWmboWAcclI9poAboELIqNj3wW";
@@ -69,8 +68,8 @@ public class SmugMug extends TreeableGalleryItem {
 		return categories;
 	}
 
-	public String getType() {
-		return TYPE;
+	public ItemType getType() {
+		return ItemType.ROOT;
 	}
 
 	public String getLabel() {

@@ -16,7 +16,6 @@ import javax.swing.DropMode;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
@@ -24,7 +23,6 @@ public class SmugTree extends JTree implements SettingsListener {
 	private Main main;
 	private DefaultMutableTreeNode rootNode;
 	private DefaultTreeModel model;
-	
 	
 	public SmugTree(Main main, AsynchronousTransferManager asyncTransferManager) {
 		super();

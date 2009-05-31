@@ -160,8 +160,8 @@ public class SmugImage extends TreeableGalleryItem {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	
-	public String getType() {
-		return IMAGE;
+	public ItemType getType() {
+		return ItemType.IMAGE;
 	}
 
 	public int compareTo(TreeableGalleryItem o) {

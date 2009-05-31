@@ -1,19 +1,20 @@
 package com.rainskit.smuganizer.menu;
 
-import com.rainskit.smuganizer.menu.actions.itemactions.ExifAction;
-import com.rainskit.smuganizer.menu.actions.itemactions.TreeableAction;
-import com.rainskit.smuganizer.menu.actions.itemactions.LaunchAction;
-import com.rainskit.smuganizer.menu.actions.itemactions.PasswordAction;
-import com.rainskit.smuganizer.menu.actions.itemactions.PreviewAction;
-import com.rainskit.smuganizer.menu.actions.itemactions.HideAction;
-import com.rainskit.smuganizer.menu.actions.itemactions.RenameAction;
-import com.rainskit.smuganizer.menu.actions.itemactions.DeleteAction;
+import com.rainskit.smuganizer.menu.actions.treeactions.ExifAction;
+import com.rainskit.smuganizer.menu.actions.treeactions.TreeableAction;
+import com.rainskit.smuganizer.menu.actions.treeactions.LaunchAction;
+import com.rainskit.smuganizer.menu.actions.treeactions.PasswordAction;
+import com.rainskit.smuganizer.menu.actions.treeactions.PreviewAction;
+import com.rainskit.smuganizer.menu.actions.treeactions.HideAction;
+import com.rainskit.smuganizer.menu.actions.treeactions.RenameAction;
+import com.rainskit.smuganizer.menu.actions.treeactions.DeleteAction;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -47,7 +48,7 @@ public class TreeMenuManager implements TreeSelectionListener {
 		tree.addMouseListener(new RightClickListener());
 	}
 	
-	public List<TreeableAction> getActions() {
+	public List<? extends AbstractAction> getActions() {
 		return actions;
 	}
 	

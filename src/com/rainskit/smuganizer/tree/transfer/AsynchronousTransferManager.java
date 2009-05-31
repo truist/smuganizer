@@ -1,111 +1,88 @@
 package com.rainskit.smuganizer.tree.transfer;
 
-import com.rainskit.smuganizer.tree.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import javax.swing.SwingWorker.StateValue;
-import javax.swing.table.AbstractTableModel;
+import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
-public class AsynchronousTransferManager extends AbstractTableModel implements PropertyChangeListener {
-	public static final int PROGRESS_COLUMN = 0;
-	private static final String PROGRESS_COLUMN_NAME = "Progress";
-	private static final int PROGRESS_COLUMN_WIDTH = 100;
-	public static final int ACTION_COLUMN = 1;
-	private static final String ACTION_COLUMN_NAME = "Action";
-	private static final int ACTION_COLUMN_WIDTH = 100;
-	public static final int SOURCE_COLUMN = 2;
-	private static final String SOURCE_COLUMN_NAME = "Source";
-	private static final int SOURCE_COLUMN_WIDTH = 400;
-	public static final int DEST_COLUMN = 3;
-	private static final String DEST_COLUMN_NAME = "Destination";
-	private static final int DEST_COLUMN_WIDTH = 400;
-	public static final int COLUMN_COUNT = 4;
+public class AsynchronousTransferManager implements StatusListener {
+	private LinkedBlockingDeque<AbstractTransferTask> taskDeque;
+	private TransferTableModel visibleTable;
 	
-	private ArrayList<AbstractTransferTask> visibleTasks;
-	private ExecutorService transferExecutor;
-	
-	public AsynchronousTransferManager() {
-		this.transferExecutor = Executors.newSingleThreadExecutor();
-		this.visibleTasks = new ArrayList<AbstractTransferTask>();
-	}
-
-	public void submit(AbstractTransferTask asyncTransferObject) {
-		synchronized(visibleTasks) {
-			visibleTasks.add(asyncTransferObject);
-			fireTableRowsInserted(visibleTasks.size() - 1, visibleTasks.size() - 1);
-			asyncTransferObject.addPropertyChangeListener(this);
-			transferExecutor.submit(asyncTransferObject, asyncTransferObject);
-		}
+	public AsynchronousTransferManager(TransferTableModel visibleTable) {
+		this.taskDeque = new LinkedBlockingDeque<AbstractTransferTask>();
+		this.visibleTable = visibleTable;
+		
+		startTransferThread();
 	}
 	
-	public void propertyChange(PropertyChangeEvent evt) {
-		synchronized(visibleTasks) {
-			AbstractTransferTask source = (AbstractTransferTask)evt.getSource();
-			int row = visibleTasks.indexOf(source);
-			if (StateValue.DONE == evt.getNewValue()) {
-				visibleTasks.remove(row);
-				fireTableRowsDeleted(row, row);
-			} else {
-				fireTableCellUpdated(visibleTasks.indexOf(source), 0);
+	private void startTransferThread() {
+		Thread transferThread = new Thread(new Runnable(){
+			public void run() {
+				try {
+					AbstractTransferTask nextTask = null;
+					while ((nextTask = taskDeque.takeFirst()) != null) {
+						TreeableGalleryItem newItem = nextTask.doInBackground();
+						if (newItem != null) {
+							cleanUp(nextTask, newItem);
+							removeVisibleRow(nextTask);
+						} else {
+							repaintVisibleRow(nextTask);
+						}
+					}
+				} catch (InterruptedException ex) {
+					Logger.getLogger(AsynchronousTransferManager.class.getName()).log(Level.SEVERE, null, ex);
+				}
 			}
-		}
+		});
+		transferThread.start();
 	}
 
-	public int getRowCount() {
-		return visibleTasks.size();
+	public void submit(AbstractTransferTask transferTask) {
+		transferTask.addStatusListener(this);
+		visibleTable.addTask(transferTask);
+		taskDeque.addLast(transferTask);
 	}
 
-	public int getColumnCount() {
-		return COLUMN_COUNT;
-	}
-
-	@Override
-	public String getColumnName(int column) {
-		switch (column) {
-			case PROGRESS_COLUMN:
-				return PROGRESS_COLUMN_NAME;
-			case ACTION_COLUMN:
-				return ACTION_COLUMN_NAME;
-			case SOURCE_COLUMN:
-				return SOURCE_COLUMN_NAME;
-			case DEST_COLUMN:
-				return DEST_COLUMN_NAME;
-			default:
-				throw new IllegalArgumentException("Invalid column: " + column);
-		}
-	}
-
-	public int getPreferredColumnWidth(int column) {
-		switch (column) {
-			case PROGRESS_COLUMN:
-				return PROGRESS_COLUMN_WIDTH;
-			case ACTION_COLUMN:
-				return ACTION_COLUMN_WIDTH;
-			case SOURCE_COLUMN:
-				return SOURCE_COLUMN_WIDTH;
-			case DEST_COLUMN:
-				return DEST_COLUMN_WIDTH;
-			default:
-				throw new IllegalArgumentException("Invalid column: " + column);
+	public void cancel(AbstractTransferTask task) {
+		if (task.isInterrupted() || taskDeque.remove(task)) {
+			task.cancel();
+			removeVisibleRow(task);
 		}
 	}
 	
-	public Object getValueAt(int rowIndex, int columnIndex) {
-		AbstractTransferTask row = visibleTasks.get(rowIndex);
-		switch (columnIndex) {
-			case PROGRESS_COLUMN:
-				return row.getState();
-			case ACTION_COLUMN:
-				return "MOVE";
-			case SOURCE_COLUMN:
-				return ((TreeableGalleryItem)row.srcNode.getUserObject()).getFullPathLabel();
-			case DEST_COLUMN:
-				return ((TreeableGalleryItem)row.destParentNode.getUserObject()).getFullPathLabel();
-			default:
-				throw new IllegalArgumentException("Invalid column: " + columnIndex);
+	public void statusChanged(AbstractTransferTask task) {
+		repaintVisibleRow(task);
+	}
+	
+	private void cleanUp(final AbstractTransferTask task, final TreeableGalleryItem newItem) throws InterruptedException {
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				public void run() {
+					task.cleanUp(newItem);
+				}
+			});
+		} catch (InvocationTargetException ex) {
+			Logger.getLogger(AsynchronousTransferManager.class.getName()).log(Level.SEVERE, null, ex);
 		}
+	}
+	
+	private void repaintVisibleRow(final AbstractTransferTask task) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				visibleTable.taskUpdated(task);
+			}
+		});
+	}
+	
+	private void removeVisibleRow(final AbstractTransferTask task) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				visibleTable.removeTask(task);
+				task.removeStatusListener(AsynchronousTransferManager.this);
+			}
+		});
 	}
 }

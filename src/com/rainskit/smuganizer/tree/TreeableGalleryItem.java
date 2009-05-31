@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.tree;
 
+import com.rainskit.smuganizer.tree.transfer.TransferException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -7,15 +8,14 @@ import java.net.URL;
 import java.util.List;
 
 public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryItem> {
-	public static final String CATEGORY = "category";
-	public static final String ALBUM = "album";
-	public static final String IMAGE = "image";
+	public enum ItemType { ROOT, CATEGORY, ALBUM, IMAGE }
+	
 	public static final String PATH_SEP = "/";
 	
 	protected TreeableGalleryItem parent;
-	protected boolean transferActive;
-	protected volatile int transferRecipient;
-	protected boolean hasBeenTransferred;
+	private int sending;
+	private volatile int receiving;
+	private boolean hasBeenSent;
 	
 	protected TreeableGalleryItem(TreeableGalleryItem parent) {
 		this.parent = parent;
@@ -23,7 +23,7 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 
 	public abstract List<? extends TreeableGalleryItem> loadChildren() throws IOException;
 	
-	public abstract String getType();
+	public abstract ItemType getType();
 	public TreeableGalleryItem getParent() {
 		return parent;
 	}
@@ -32,30 +32,32 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public abstract boolean canMove(TreeableGalleryItem item, int childIndex);
 	public abstract void moveItem(TreeableGalleryItem item, int childIndex);
 	public abstract boolean canImport(TreeableGalleryItem newItem, int childIndex);
-	public abstract TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex) throws IOException;
+	public abstract TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex) throws IOException, TransferException;
 	
-	public final void setTransferActive(boolean active) {
-		this.transferActive = active;
-		this.hasBeenTransferred |= active;
-	}
-	public final boolean isTransferActive() {
-		return transferActive;
-	}
-	public final void setTransferRecipient(boolean active) {
-		if (active) {
-			++transferRecipient;
+	public final void transferStarted(boolean recipient) {
+		if (recipient) {
+			++receiving;
 		} else {
-			--transferRecipient;
+			++sending;
+			hasBeenSent = true;
 		}
 	}
-	public final boolean isTransferRecipient() {
-		return (transferRecipient > 0);
+	public final void transferEnded(boolean recipient, boolean succeeded) {
+		if (recipient) {
+			--receiving;
+		} else {
+			--sending;
+			hasBeenSent = succeeded;
+		}
 	}
-	public final void setHasBeenTransferred(boolean hasBeenTransferred) {
-		this.hasBeenTransferred = hasBeenTransferred;
+	public final boolean isSending() {
+		return (sending > 0);
 	}
-	public final boolean hasBeenTransferred() {
-		return hasBeenTransferred;
+	public final boolean isReceiving() {
+		return (receiving > 0);
+	}
+	public final boolean hasBeenSent() {
+		return hasBeenSent;
 	}
 	
 	/** The label to show in the Smuganizer tree */

@@ -23,8 +23,6 @@ import java.util.logging.Logger;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 
 public class Gallery extends AbstractGalleryTreeable {
-	public static final String TYPE = "MenaltoGallery";
-	
 	static final String ARG_ALBUMS_TOO = "albums_too";
 	static final String ARG_COMMAND = "cmd";
 	static final String ARG_G2_CONTROLLER = "g2_controller";
@@ -293,8 +291,8 @@ public class Gallery extends AbstractGalleryTreeable {
 		}
 	}
 
-	public String getType() {
-		return TYPE;
+	public ItemType getType() {
+		return ItemType.ROOT;
 	}
 
 	public int compareTo(TreeableGalleryItem o) {

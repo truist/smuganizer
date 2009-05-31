@@ -1,8 +1,9 @@
-package com.rainskit.smuganizer.menu.actions.itemactions;
+package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.menu.TreeMenuManager;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,6 +28,6 @@ public class PreviewAction extends TreeableAction {
 	@Override
 	public void updateState() {
 		ArrayList<TreeableGalleryItem> currentItems = menuManager.getCurrentItems();
-		setEnabled(currentItems.size() == 1 && TreeableGalleryItem.IMAGE.equals(currentItems.get(0).getType()));
+		setEnabled(currentItems.size() == 1 && ItemType.IMAGE == currentItems.get(0).getType());
 	}
 }

@@ -83,8 +83,8 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 		Desktop.getDesktop().browse(Gallery.generateUrlFor(getName(), null));
 	}
 
-	public String getType() {
-		return ALBUM;
+	public ItemType getType() {
+		return ItemType.ALBUM;
 	}
 
 	@Override

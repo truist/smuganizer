@@ -4,13 +4,17 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 public class SmugTransferable implements Transferable {
 	public static DataFlavor transferFlavor = new DataFlavor(FlavorClass.class, "tree/smugtree");
+	
+	private DefaultTreeModel treeModel;
 	private TreePath[] selectionPaths;
 	
-	public SmugTransferable(TreePath[] selectionPaths) {
+	public SmugTransferable(DefaultTreeModel treeModel, TreePath[] selectionPaths) {
+		this.treeModel = treeModel;
 		this.selectionPaths = selectionPaths;
 	}
 
@@ -28,6 +32,10 @@ public class SmugTransferable implements Transferable {
 	
 	
 	public class FlavorClass {
+		public DefaultTreeModel getTreeModel() {
+			return treeModel;
+		}
+		
 		public TreePath[] getTreePaths() {
 			return selectionPaths;
 		}

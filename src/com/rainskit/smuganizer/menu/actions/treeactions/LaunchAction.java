@@ -1,4 +1,4 @@
-package com.rainskit.smuganizer.menu.actions.itemactions;
+package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.menu.*;
 import com.rainskit.smuganizer.Main;

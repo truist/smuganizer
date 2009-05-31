@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.tree;
 
+import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -18,12 +19,10 @@ public class TreeableRenderer extends DefaultTreeCellRenderer {
 	
 	private Icon getIconForType() {
 		if (currentItem != null) {
-			if (TreeableGalleryItem.CATEGORY.equals(currentItem.getType())) {
-				return categoryIcon;
-			} else if (TreeableGalleryItem.ALBUM.equals(currentItem.getType())) {
-				return albumIcon;
-			} else if (TreeableGalleryItem.IMAGE.equals(currentItem.getType())) {
-				return imageIcon;
+			switch (currentItem.getType()) {
+				case CATEGORY: return categoryIcon;
+				case ALBUM: return albumIcon;
+				case IMAGE: return imageIcon;
 			}
 		}
 		return null;
@@ -61,18 +60,18 @@ public class TreeableRenderer extends DefaultTreeCellRenderer {
 	}
 
 	private void setCellColor(Component rendererComponent, TreeableGalleryItem currentItem) {
-		if (currentItem.isTransferActive() || currentItem.isTransferRecipient()) {
-			if (currentItem.isTransferActive()) {
+		if (currentItem.isSending() || currentItem.isReceiving()) {
+			if (currentItem.isSending()) {
 				rendererComponent.setForeground(Color.RED);
 				rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.ITALIC));
-			} else if (currentItem.isTransferRecipient()) {
+			} else if (currentItem.isReceiving()) {
 				rendererComponent.setForeground(Color.ORANGE);
 				rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.BOLD));
 			}
 		} else {
 			if (currentItem.isProtected() || currentItem.isParentProtected()) {
 				rendererComponent.setForeground(Color.GRAY);
-			} else if (currentItem.hasBeenTransferred()) {
+			} else if (currentItem.hasBeenSent()) {
 				rendererComponent.setForeground(Color.BLUE);
 			}
 			rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.PLAIN));

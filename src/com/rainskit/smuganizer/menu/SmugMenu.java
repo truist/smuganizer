@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.menu;
 
-import com.rainskit.smuganizer.menu.actions.itemactions.TreeableAction;
+import com.rainskit.smuganizer.menu.actions.treeactions.TreeableAction;
 import com.rainskit.smuganizer.menu.actions.SettingsSortCategoryAction;
 import com.rainskit.smuganizer.menu.actions.AboutAction;
 import com.rainskit.smuganizer.menu.actions.CleanCaptionsAction;
@@ -12,6 +12,9 @@ import com.rainskit.smuganizer.menu.actions.HelpAction;
 import com.rainskit.smuganizer.*;
 import com.rainskit.smuganizer.tree.GalleryTree;
 import com.rainskit.smuganizer.tree.SmugTree;
+import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
+import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
@@ -19,16 +22,16 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JTree;
 
-public class MenuManager {
-	private JMenuBar menuBar;
-	
-	public MenuManager(Main main, SmugTree smugTree, GalleryTree galleryTree) {
-		menuBar = new JMenuBar();
+public class SmugMenu extends JMenuBar {
+	public SmugMenu(Main main, SmugTree smugTree, GalleryTree galleryTree, TransferTable transferTable, AsynchronousTransferManager transferManager) {
+		super();
 		
-		menuBar.add(makeTreeMenu(main, galleryTree, "Gallery", new ConnectGalleryAction(main), createGallerySettingsMenu()));
-		menuBar.add(makeTreeMenu(main, smugTree, "SmugMug", new ConnectSmugMugAction(main), createSmugMugSettingsMenu()));
+		add(makeTreeMenu(main, galleryTree, "Gallery", new ConnectGalleryAction(main), createGallerySettingsMenu()));
+		add(makeTreeMenu(main, smugTree, "SmugMug", new ConnectSmugMugAction(main), createSmugMugSettingsMenu()));
 		
-		menuBar.add(createHelpMenu(main));
+		add(makeTableMenu(main, transferTable, transferManager));
+		
+		add(createHelpMenu(main));
 	}
 
 	private JMenu makeTreeMenu(Main main, JTree tree, String title, Action connectAction, JMenu settings) {
@@ -39,16 +42,27 @@ public class MenuManager {
 		}
 		menu.addSeparator();
 		TreeMenuManager manager = new TreeMenuManager(main, tree);
-		for (TreeableAction each : manager.getActions()) {
+		addActionsToMenu(manager.getActions(), menu);
+		return menu;
+	}
+	
+	private JMenu makeTableMenu(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
+		JMenu menu = new JMenu("Transfer");
+		TableMenuManager manager = new TableMenuManager(main, transferTable, transferManager);
+		addActionsToMenu(manager.getActions(), menu);
+		return menu;
+	}
+	
+	private void addActionsToMenu(List<? extends AbstractAction> actions, JMenu menu) {
+		for (AbstractAction each : actions) {
 			if (each != null) {
 				menu.add(new JMenuItem(each));
 			} else {
 				menu.addSeparator();
 			}
 		}
-		return menu;
 	}
-	
+
 	private JMenu createSmugMugSettingsMenu() {
 		JMenu settingsMenu = new JMenu("Settings");
 		SettingsSortCategoryAction sortAlbumsAction = new SettingsSortCategoryAction();
@@ -70,9 +84,5 @@ public class MenuManager {
 		helpMenu.add(new HelpAction(main));
 		helpMenu.add(new AboutAction(main));
 		return helpMenu;
-	}
-	
-	public JMenuBar getMenuBar() {
-		return menuBar;
 	}
 }

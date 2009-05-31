@@ -17,7 +17,7 @@ class CursorManager {
 
 	private void cleanUp() {
 		if (dispatchedEvents.peek().resetCursor()) {
-//			clearQueueOfInputEvents();
+			clearQueueOfInputEvents();
 		}
 	}
 

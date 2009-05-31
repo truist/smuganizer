@@ -1,12 +1,8 @@
-package com.rainskit.smuganizer.menu.actions.itemactions;
+package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.menu.TreeMenuManager;
-import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.AbstractAction;
 
 public abstract class TreeableAction extends AbstractAction {

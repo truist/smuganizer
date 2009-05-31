@@ -2,12 +2,14 @@ package com.rainskit.smuganizer;
 
 import com.rainskit.smuganizer.tree.SmugTree;
 import com.rainskit.smuganizer.tree.GalleryTree;
-import com.rainskit.smuganizer.menu.MenuManager;
+import com.rainskit.smuganizer.menu.SmugMenu;
 import com.rainskit.smuganizer.galleryapiwrapper.Gallery;
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugMug;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
+import com.rainskit.smuganizer.tree.transfer.TransferTableModel;
 import com.rainskit.smuganizer.waitcursoreventqueue.WaitCursorEventQueue;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -15,7 +17,6 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -30,7 +31,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.TreeSelectionEvent;
@@ -49,7 +49,7 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, FileNotFoundException, IOException{
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		Toolkit.getDefaultToolkit().getSystemEventQueue().push(new WaitCursorEventQueue(70));
+		Toolkit.getDefaultToolkit().getSystemEventQueue().push(new WaitCursorEventQueue(170));
 		new Main();
     }
 
@@ -57,8 +57,9 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 		super("Smuganizer");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		AsynchronousTransferManager transferManagerModel = new AsynchronousTransferManager();
-		smugTree = new SmugTree(this, transferManagerModel);
+		TransferTableModel transferTableModel = new TransferTableModel();
+		AsynchronousTransferManager transferManager = new AsynchronousTransferManager(transferTableModel);
+		smugTree = new SmugTree(this, transferManager);
 		smugTree.addTreeSelectionListener(this);
 		smugTree.addMouseListener(new DoubleClickListener());
 		JPanel rightPanel = new JPanel(new BorderLayout());
@@ -78,7 +79,7 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 												rightPanel);
 		lrSplitPane.setResizeWeight(0.5);
 		
-		JTable transferTable = new TransferTable(transferManagerModel);
+		TransferTable transferTable = new TransferTable(transferTableModel);
 		JSplitPane tbSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 												true,
 												lrSplitPane,
@@ -95,7 +96,7 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 		getContentPane().add(tbSplitPane, BorderLayout.CENTER);
 		getContentPane().add(statusPanel, BorderLayout.SOUTH);
 		
-		setJMenuBar(new MenuManager(this, smugTree, galleryTree).getMenuBar());
+		setJMenuBar(new SmugMenu(this, smugTree, galleryTree, transferTable, transferManager));
 		
 		pack();
 		setSize(800, 600);
@@ -204,12 +205,12 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 				TreePath clickPath = tree.getPathForLocation(me.getX(), me.getY());
 				if (clickPath != null) {
 					TreeableGalleryItem clickItem = (TreeableGalleryItem)((DefaultMutableTreeNode)clickPath.getLastPathComponent()).getUserObject();
-					if (clickItem != null && TreeableGalleryItem.IMAGE.equals(clickItem.getType())) {
+					if (clickItem != null && ItemType.IMAGE == clickItem.getType()) {
 						TreePath selectedPath = tree.getSelectionPath();
 						if (selectedPath != null) {
 							DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)selectedPath.getLastPathComponent();
 							TreeableGalleryItem selectedItem = (TreeableGalleryItem)selectedNode.getUserObject();
-							if (TreeableGalleryItem.IMAGE.equals(selectedItem.getType())) {
+							if (ItemType.IMAGE == selectedItem.getType()) {
 								showImageWindow();
 							}
 						}

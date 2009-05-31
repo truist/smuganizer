@@ -1,9 +1,10 @@
-package com.rainskit.smuganizer.menu.actions.itemactions;
+package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.menu.*;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.menu.gui.ExifBox;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +37,6 @@ public class ExifAction extends TreeableAction {
 	@Override
 	public void updateState() {
 		ArrayList<TreeableGalleryItem> currentItems = menuManager.getCurrentItems();
-		setEnabled(currentItems.size() == 1 && TreeableGalleryItem.IMAGE.equals(currentItems.get(0).getType()));
+		setEnabled(currentItems.size() == 1 && ItemType.IMAGE == currentItems.get(0).getType());
 	}
 }

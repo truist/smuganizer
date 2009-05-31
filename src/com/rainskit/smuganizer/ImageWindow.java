@@ -192,7 +192,7 @@ public class ImageWindow extends JFrame {
 							notifyImageLoaded(imageIcon, nextCall.image, nextCall.ID);
 						}
 					} catch (IOException ex) {
-						Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
+						Logger.getLogger(ImageWindow.class.getName()).log(Level.WARNING, null, ex);
 					}
 				}
 			} catch (InterruptedException ex) {

@@ -112,7 +112,7 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 
 	public boolean canMove(TreeableGalleryItem newChild, int childIndex) {
-		return (childIndex == -1 && ALBUM.equals(newChild.getType()));
+		return (childIndex == -1 && ItemType.ALBUM == newChild.getType());
 	}
 
 	public void moveItem(TreeableGalleryItem childItem, int childIndex) {
@@ -159,13 +159,13 @@ public class SmugCategory extends TreeableGalleryItem {
 		return new Integer(NON_CATEGORY);
 	}
 	
-	public String getType() {
-		return CATEGORY;
+	public ItemType getType() {
+		return ItemType.CATEGORY;
 	}
 
 	public int compareTo(TreeableGalleryItem o) {
 		TreeableGalleryItem other = (TreeableGalleryItem)o;
-		if (SmugMugSettings.getTreeCategorySort()&& !CATEGORY.equals(other.getType())) {
+		if (SmugMugSettings.getTreeCategorySort() && ItemType.CATEGORY != other.getType()) {
 			return -1;
 		}
 		

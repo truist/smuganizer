@@ -100,8 +100,8 @@ public class GalleryImage extends AbstractGalleryTreeable {
 		Desktop.getDesktop().browse(Gallery.generateUrlFor(((GalleryAlbum)parent).getName(), getUrlName()));
 	}
 
-	public String getType() {
-		return IMAGE;
+	public ItemType getType() {
+		return ItemType.IMAGE;
 	}
 
 	public int compareTo(TreeableGalleryItem other) {
