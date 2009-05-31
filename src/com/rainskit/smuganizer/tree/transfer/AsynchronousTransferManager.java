@@ -2,6 +2,8 @@ package com.rainskit.smuganizer.tree.transfer;
 
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,16 +42,36 @@ public class AsynchronousTransferManager implements StatusListener {
 		transferThread.start();
 	}
 
-	public void submit(AbstractTransferTask transferTask) {
-		transferTask.addStatusListener(this);
-		visibleTable.addTask(transferTask);
-		taskDeque.addLast(transferTask);
+	public void submit(AbstractTransferTask task) {
+		task.addStatusListener(this);
+		visibleTable.addTask(task);
+		taskDeque.addLast(task);
+	}
+	
+	public void retry(List<AbstractTransferTask> tasks) {
+		for (AbstractTransferTask each : tasks) {
+			each.prepareForRetry();
+		}
+		//it gets tricky to insert all the new items at the front of the queue,
+		//while also ensuring that they are added in the correct order.  to solve this,
+		//I empty the queue first, then just add the new items onto the "end" of the 
+		//empty queue, then re-add the emptied items
+		ArrayList<AbstractTransferTask> tempCache = new ArrayList<AbstractTransferTask>();
+		taskDeque.drainTo(tempCache);	
+		taskDeque.addAll(tasks);
+		taskDeque.addAll(tempCache);
 	}
 
 	public void cancel(AbstractTransferTask task) {
-		if (task.isInterrupted() || taskDeque.remove(task)) {
+		if (task.isInterrupted() || task.isErrored() || taskDeque.remove(task)) {
 			task.cancel();
 			removeVisibleRow(task);
+		}
+	}
+
+	public void cancel(List<AbstractTransferTask> tasks) {
+		for (AbstractTransferTask each : tasks) {
+			cancel(each);
 		}
 	}
 	

@@ -30,6 +30,7 @@ import org.apache.sanselan.formats.tiff.constants.TiffConstants;
 public class ExifBox extends JDialog {
 	public ExifBox(Main main, TreeableGalleryItem image) throws IOException {
 		super(main, "EXIF Tags", true);
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
 		JpegImageMetadata metadata = loadMetaData(image.getDataURL());
 		if (metadata == null) {

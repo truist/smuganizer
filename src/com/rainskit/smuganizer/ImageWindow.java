@@ -174,8 +174,8 @@ public class ImageWindow extends JFrame {
 		public void run() {
 			try {
 				while (true) {
+					final AddImageCall nextCall = imageQueue.takeFirst();
 					try {
-						final AddImageCall nextCall = imageQueue.takeFirst();
 						//check if someone jumped ahead of us and already cached it, 
 						//which is possible because of the pre-emptive queueing
 						ImageIcon cachedImage = getImage(nextCall.image);
@@ -191,8 +191,12 @@ public class ImageWindow extends JFrame {
 							urlStream.close();
 							notifyImageLoaded(imageIcon, nextCall.image, nextCall.ID);
 						}
+					} catch (FileNotFoundException fnfe) {
+						if (nextCall.image.getParent() != null) {	//check to see if image was deleted out from under us
+							Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, fnfe);
+						}
 					} catch (IOException ex) {
-						Logger.getLogger(ImageWindow.class.getName()).log(Level.WARNING, null, ex);
+						Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
 					}
 				}
 			} catch (InterruptedException ex) {

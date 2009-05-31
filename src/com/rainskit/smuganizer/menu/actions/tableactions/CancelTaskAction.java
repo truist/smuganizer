@@ -6,7 +6,6 @@ import com.rainskit.smuganizer.tree.transfer.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import java.util.List;
 import javax.swing.JOptionPane;
-import javax.swing.SwingWorker.StateValue;
 
 public class CancelTaskAction extends TableableAction {
 

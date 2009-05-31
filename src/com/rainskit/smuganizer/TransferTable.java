@@ -53,7 +53,7 @@ public class TransferTable extends JTable {
 			setToolTipText(null);
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			AbstractTransferTask task = getTaskForRow(row);
-			if (task.isInterrupted()) {
+			if (task.isInterrupted() || task.isErrored()) {
 				setForeground(Color.RED);
 				setToolTipText(task.getErrorMessage());
 			} else if (task.isActive()) {

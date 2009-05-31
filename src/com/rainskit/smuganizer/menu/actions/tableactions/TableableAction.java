@@ -11,25 +11,25 @@ import javax.swing.AbstractAction;
 
 public abstract class TableableAction extends AbstractAction {
 	protected Main main;
-	protected TransferTable table;
+	protected TransferTable transferTable;
 	protected AsynchronousTransferManager transferManager;
 	private String statusText;
 	
-	public TableableAction(Main main, TransferTable table, AsynchronousTransferManager transferManager, String name, String statusText) {
+	public TableableAction(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager, String name, String statusText) {
 		super(name);
 		
 		this.main = main;
-		this.table = table;
+		this.transferTable = transferTable;
 		this.transferManager = transferManager;
 		this.statusText = statusText;
 		
-		updateState(table.getSelectedItems());
+		updateState(transferTable.getSelectedItems());
 	}
 	
 	public final void actionPerformed(ActionEvent e) {
 		main.setStatus(statusText);
 		try {
-			performAction(table.getSelectedItems(), transferManager);
+			performAction(transferTable.getSelectedItems(), transferManager);
 		} finally {
 			main.clearStatus();
 		}

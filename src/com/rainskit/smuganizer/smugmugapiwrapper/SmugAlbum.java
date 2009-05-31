@@ -198,8 +198,11 @@ public class SmugAlbum extends TreeableGalleryItem {
 				JpegImageMetadata metadata = loadMetaData(new ByteArrayInputStream(imageData), newItem.getDataURL().getFile());
 				if (metadata != null) {
 					TiffField description = metadata.findEXIFValue(TiffConstants.EXIF_TAG_IMAGE_DESCRIPTION);
-					if (description != null && description.getStringValue().trim().length() > 0) {
-						throw new UnexpectedCaptionException(imageData);
+					if (description != null) {
+						String descriptionString = description.getStringValue().trim();
+						if (descriptionString.length() > 0) {
+							throw new UnexpectedCaptionException(imageData, descriptionString);
+						}
 					}
 				}
 			} catch (ImageReadException ex) {

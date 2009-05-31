@@ -142,6 +142,7 @@ public class SmugImage extends TreeableGalleryItem {
 			throw new DeleteException(this, response.getError());
 		}
 		parent.removeChild(this);
+		parent = null;
 	}
 
 	public boolean canMove(TreeableGalleryItem newChild, int childIndex) {

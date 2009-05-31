@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.tree.transfer;
 
-import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 public class TransferTableModel extends AbstractTableModel {
@@ -23,6 +23,12 @@ public class TransferTableModel extends AbstractTableModel {
 	
 	public TransferTableModel() {
 		this.transferTasks = new ArrayList<AbstractTransferTask>();
+	}
+
+	public TransferTableModel(List<AbstractTransferTask> selectedItems) {
+		this();
+		transferTasks.addAll(selectedItems);
+		fireTableRowsInserted(0, transferTasks.size() - 1);
 	}
 
 	public void addTask(AbstractTransferTask transferTask) {

@@ -2,6 +2,8 @@ package com.rainskit.smuganizer.tree.transfer;
 
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,7 +12,28 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 public abstract class AbstractTransferTask {
-	private enum TaskStatus { QUEUED, STARTED, INTERRUPTED, ERRORED, CANCELED, DONE }
+	private enum TaskStatus { 
+		QUEUED, QUEUED_FOR_RETRY, STARTED, INTERRUPTED, ERRORED, CANCELED, DONE;
+
+		@Override
+		public String toString() {
+			switch (this) {
+				case QUEUED:
+				case STARTED:
+				case CANCELED:
+				case DONE:
+					return super.toString();
+				case INTERRUPTED:
+					return "Input required";
+				case ERRORED:
+					return "ERROR";
+				case QUEUED_FOR_RETRY:
+					return "RETRY";
+				default:
+					throw new IllegalArgumentException("Impossible status: " + this.name());
+			}
+		}
+	}
 	
 	protected TreeableGalleryItem srcItem;
 	protected JTree destTree;
@@ -38,8 +61,13 @@ public abstract class AbstractTransferTask {
 		setStatus(TaskStatus.QUEUED);
 	}
 
+	public void prepareForRetry() {
+		this.transferException = null;
+		setStatus(TaskStatus.QUEUED_FOR_RETRY);
+	}
+
 	public final TreeableGalleryItem doInBackground() {
-		if (TaskStatus.QUEUED != status) {
+		if (TaskStatus.QUEUED != status && TaskStatus.QUEUED_FOR_RETRY != status) {
 			return null;
 		}
 		setStatus(TaskStatus.STARTED);
@@ -51,10 +79,10 @@ public abstract class AbstractTransferTask {
 			setStatus(TaskStatus.INTERRUPTED);
 			this.transferException = te;
 			return null;
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			Logger.getLogger(AbstractTransferTask.class.getName()).log(Level.SEVERE, null, ex);
-			setStatus(TaskStatus.ERRORED);
 			this.transferException = new UnexpectedTransferException(ex);
+			setStatus(TaskStatus.ERRORED);
 			return null;
 		}
 	}
@@ -109,7 +137,15 @@ public abstract class AbstractTransferTask {
 		return (TaskStatus.INTERRUPTED == status);
 	}
 	
+	public boolean isErrored() {
+		return (TaskStatus.ERRORED == status);
+	}
+	
 	public String getErrorMessage() {
 		return transferException.getLocalizedMessage();
+	}
+	
+	public String getErrorText() {
+		return transferException.getErrorText();
 	}
 }

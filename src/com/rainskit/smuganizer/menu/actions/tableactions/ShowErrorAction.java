@@ -2,27 +2,36 @@ package com.rainskit.smuganizer.menu.actions.tableactions;
 
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.TransferTable;
+import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
+import com.rainskit.smuganizer.menu.gui.TransferErrorDialog.ErrorAction;
 import com.rainskit.smuganizer.tree.transfer.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 public class ShowErrorAction extends TableableAction {
 	public ShowErrorAction(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
-		super(main, transferTable, transferManager, "Resolve error...", "Resolving error...");
+		super(main, transferTable, transferManager, "Show error...", "Showing error...");
 	}
 
 	@Override
 	protected void performAction(List<AbstractTransferTask> selectedItems, AsynchronousTransferManager transferManager) {
-		JOptionPane.showMessageDialog(main, "It worked!");
+		TransferErrorDialog dialog = new TransferErrorDialog(main, selectedItems);
+		dialog.setVisible(true);
+		ErrorAction chosenAction = dialog.getChosenAction();
+		List<AbstractTransferTask> chosenTasks = dialog.getActionTasks();
+		if (ErrorAction.RETRY == chosenAction) {
+			transferManager.retry(chosenTasks);
+		} else if (ErrorAction.CANCEL == chosenAction) {
+			transferManager.cancel(chosenTasks);
+		}
 	}
 
 	@Override
 	public void updateState(List<AbstractTransferTask> selectedTasks) {
-		boolean allInterrupted = !selectedTasks.isEmpty();
+		boolean allErrored = !selectedTasks.isEmpty();
 		for (AbstractTransferTask each : selectedTasks) {
-			allInterrupted &= each.isInterrupted();
+			allErrored &= each.isErrored();
 		}
-		setEnabled(allInterrupted);
+		setEnabled(allErrored);
 	}
 }

@@ -1,4 +1,10 @@
 
+provide settings menus for tree-loading threads
+provide settings menu for transfer threads
+provide a delete keyboard shortcut for canceling a task
+provie keyboard shortcut hints in menus
+fix FileNotFoundException that happens when deleting things out from under the preview window
+
 fix problem with "Image Description" EXIF header
 
 do the drag-and-drop import
