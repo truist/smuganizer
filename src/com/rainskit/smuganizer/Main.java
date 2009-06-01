@@ -79,7 +79,7 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 												rightPanel);
 		lrSplitPane.setResizeWeight(0.5);
 		
-		TransferTable transferTable = new TransferTable(transferTableModel);
+		TransferTable transferTable = new TransferTable(transferTableModel, true);
 		JSplitPane tbSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 												true,
 												lrSplitPane,

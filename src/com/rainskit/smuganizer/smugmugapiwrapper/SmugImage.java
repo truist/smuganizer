@@ -5,6 +5,7 @@ import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.HideException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.transfer.TransferInterruption;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -149,7 +150,7 @@ public class SmugImage extends TreeableGalleryItem {
 		return false;
 	}
 
-	public void moveItem(TreeableGalleryItem childItem, int childIndex) {
+	public void moveItem(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
@@ -157,7 +158,7 @@ public class SmugImage extends TreeableGalleryItem {
 		return false;
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex) {
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex, TransferInterruption previousInterruption) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	

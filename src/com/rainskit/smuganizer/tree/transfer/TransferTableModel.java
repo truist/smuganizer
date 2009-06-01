@@ -65,7 +65,7 @@ public class TransferTableModel extends AbstractTableModel {
 			case PROGRESS_COLUMN:
 				return row.getStatus().toString();
 			case ACTION_COLUMN:
-				return "MOVE";
+				return row.getActionString();
 			case SOURCE_COLUMN:
 				return row.srcItem.getFullPathLabel();
 			case DEST_COLUMN:

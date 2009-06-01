@@ -3,7 +3,6 @@ package com.rainskit.smuganizer.menu.actions.tableactions;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.TransferTable;
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
-import com.rainskit.smuganizer.menu.gui.TransferErrorDialog.ErrorAction;
 import com.rainskit.smuganizer.tree.transfer.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import java.util.List;
@@ -15,14 +14,15 @@ public class ShowErrorAction extends TableableAction {
 
 	@Override
 	protected void performAction(List<AbstractTransferTask> selectedItems, AsynchronousTransferManager transferManager) {
-		TransferErrorDialog dialog = new TransferErrorDialog(main, selectedItems);
+		handleActionDialog(new TransferErrorDialog(main, selectedItems, false), transferManager, selectedItems);
+	}
+	
+	public static void handleActionDialog(TransferErrorDialog dialog, 
+											AsynchronousTransferManager transferManager,
+											List<AbstractTransferTask> selectedItems) {
 		dialog.setVisible(true);
-		ErrorAction chosenAction = dialog.getChosenAction();
-		List<AbstractTransferTask> chosenTasks = dialog.getActionTasks();
-		if (ErrorAction.RETRY == chosenAction) {
-			transferManager.retry(chosenTasks);
-		} else if (ErrorAction.CANCEL == chosenAction) {
-			transferManager.cancel(chosenTasks);
+		if (dialog.shouldRetryTasks()) {
+			transferManager.retry(selectedItems);
 		}
 	}
 

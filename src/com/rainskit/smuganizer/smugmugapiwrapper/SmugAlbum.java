@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.smugmugapiwrapper;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.UnexpectedCaptionException;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.UnexpectedCaptionInterruption;
 import com.rainskit.smuganizer.SmugMugSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
@@ -8,7 +8,7 @@ import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MoveException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.ReorderException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.PasswordException;
-import com.rainskit.smuganizer.tree.transfer.TransferException;
+import com.rainskit.smuganizer.tree.transfer.TransferInterruption;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;
 import java.io.ByteArrayInputStream;
@@ -161,7 +161,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 		return (ItemType.IMAGE == newChild.getType());
 	}
 
-	public void moveItem(TreeableGalleryItem childItem, int childIndex) {
+	public void moveItem(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) {
 		SmugImage childImage = (SmugImage)childItem;
 		if (childItem.getParent() != this) {
 			com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings changeSettings
@@ -184,30 +184,39 @@ public class SmugAlbum extends TreeableGalleryItem {
 		return (ItemType.IMAGE == newItem.getType());
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex) throws IOException, TransferException {
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex, TransferInterruption previousInterruption) throws IOException, TransferInterruption {
 		byte[] imageData = null;
-		InputStream sourceInputStream = newItem.getDataURL().openStream();
-		try {
-			imageData = IOUtils.toByteArray(sourceInputStream);
-		} finally {
-			sourceInputStream.close();
-		}
-		
-		if (newItem.getCaption() == null) {
+		String caption = null;
+		if (previousInterruption != null && previousInterruption instanceof UnexpectedCaptionInterruption) {
+			UnexpectedCaptionInterruption uci = (UnexpectedCaptionInterruption)previousInterruption;
+			imageData = uci.getImageData();
+			caption = uci.getFixedCaption();
+		} else {
+			InputStream sourceInputStream = newItem.getDataURL().openStream();
 			try {
-				JpegImageMetadata metadata = loadMetaData(new ByteArrayInputStream(imageData), newItem.getDataURL().getFile());
-				if (metadata != null) {
-					TiffField description = metadata.findEXIFValue(TiffConstants.EXIF_TAG_IMAGE_DESCRIPTION);
-					if (description != null) {
-						String descriptionString = description.getStringValue().trim();
-						if (descriptionString.length() > 0) {
-							throw new UnexpectedCaptionException(imageData, descriptionString);
+				imageData = IOUtils.toByteArray(sourceInputStream);
+			} finally {
+				sourceInputStream.close();
+			}
+			
+			caption = newItem.getCaption();
+			if (caption == null) {
+				try {
+					String fileName = newItem.getDataURL().getFile();
+					JpegImageMetadata metadata = loadMetaData(new ByteArrayInputStream(imageData), fileName);
+					if (metadata != null) {
+						TiffField description = metadata.findEXIFValue(TiffConstants.EXIF_TAG_IMAGE_DESCRIPTION);
+						if (description != null) {
+							String descriptionString = description.getStringValue().trim();
+							if (descriptionString.length() > 0) {
+								throw new UnexpectedCaptionInterruption(imageData, fileName, descriptionString);
+							}
 						}
 					}
-				}
-			} catch (ImageReadException ex) {
-				Logger.getLogger(SmugAlbum.class.getName()).log(Level.SEVERE, null, ex);
-			} 
+				} catch (ImageReadException ex) {
+					Logger.getLogger(SmugAlbum.class.getName()).log(Level.SEVERE, null, ex);
+				} 
+			}
 		}
 		
 		com.kallasoft.smugmug.api.json.v1_2_0.images.UploadHTTPPut uploadMethod
@@ -216,7 +225,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 			= uploadMethod.execute(SmugMug.API_UPLOAD_URL, SmugMug.sessionID, 
 									apiAlbum.getID(), null, 
 									newItem.getName(), new ByteArrayInputStream(imageData),
-									newItem.getCaption(), null, 
+									caption, null, 
 									null, null, null);
 		if (uploadResponse.isError()) {
 			throw new MoveException(this, uploadResponse.getError());
@@ -237,7 +246,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 		return newImage;
 	}
 	
-    private JpegImageMetadata loadMetaData(InputStream inputStream, String fileName) {
+    public static JpegImageMetadata loadMetaData(InputStream inputStream, String fileName) {
 		try {
 			IImageMetadata metadata = Sanselan.getMetadata(inputStream, fileName);
 			if (metadata instanceof JpegImageMetadata) {

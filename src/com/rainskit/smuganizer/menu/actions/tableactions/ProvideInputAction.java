@@ -2,10 +2,10 @@ package com.rainskit.smuganizer.menu.actions.tableactions;
 
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.TransferTable;
+import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
 import com.rainskit.smuganizer.tree.transfer.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 public class ProvideInputAction extends TableableAction {
 	public ProvideInputAction(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
@@ -14,7 +14,7 @@ public class ProvideInputAction extends TableableAction {
 
 	@Override
 	protected void performAction(List<AbstractTransferTask> selectedItems, AsynchronousTransferManager transferManager) {
-		JOptionPane.showMessageDialog(main, "It worked!");
+		ShowErrorAction.handleActionDialog(new TransferErrorDialog(main, selectedItems, true), transferManager, selectedItems);
 	}
 
 	@Override

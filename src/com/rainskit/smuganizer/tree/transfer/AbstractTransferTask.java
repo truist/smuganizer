@@ -1,12 +1,15 @@
 package com.rainskit.smuganizer.tree.transfer;
 
+import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import java.awt.Component;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
@@ -41,7 +44,8 @@ public abstract class AbstractTransferTask {
 	protected TreeableGalleryItem destParentItem;
 	protected int destChildIndex;
 	
-	protected TransferException transferException;
+	protected TransferInterruption transferInterruption;
+	protected Throwable transferError;
 	
 	private TaskStatus status;
 	private ArrayList<StatusListener> listeners;
@@ -62,7 +66,7 @@ public abstract class AbstractTransferTask {
 	}
 
 	public void prepareForRetry() {
-		this.transferException = null;
+//		this.transferInterruption = null;
 		setStatus(TaskStatus.QUEUED_FOR_RETRY);
 	}
 
@@ -72,24 +76,26 @@ public abstract class AbstractTransferTask {
 		}
 		setStatus(TaskStatus.STARTED);
 		try {
-			TreeableGalleryItem newItem = doInBackgroundImpl();
+			TreeableGalleryItem newItem = doInBackgroundImpl(transferInterruption);
 			setStatus(TaskStatus.DONE);
 			return newItem;
-		} catch (TransferException te) {
+		} catch (TransferInterruption te) {
 			setStatus(TaskStatus.INTERRUPTED);
-			this.transferException = te;
+			this.transferInterruption = te;
 			return null;
 		} catch (Exception ex) {
 			Logger.getLogger(AbstractTransferTask.class.getName()).log(Level.SEVERE, null, ex);
-			this.transferException = new UnexpectedTransferException(ex);
+			transferError = ex;
 			setStatus(TaskStatus.ERRORED);
 			return null;
 		}
 	}
 	
-	protected abstract TreeableGalleryItem doInBackgroundImpl() throws TransferException, IOException;
+	protected abstract TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption, IOException;
 
 	protected abstract void cleanUp(TreeableGalleryItem newItem);
+
+	public abstract String getActionString();
 	
 	private void setStatus(TaskStatus status) {
 		this.status = status;
@@ -112,6 +118,8 @@ public abstract class AbstractTransferTask {
 			each.statusChanged(this);
 		}
 	}
+
+	public abstract TransferErrorDialog.RepairPanel getRepairPanel();
 	
 	public void addStatusListener(StatusListener listener) {
 		listeners.add(listener);
@@ -141,11 +149,20 @@ public abstract class AbstractTransferTask {
 		return (TaskStatus.ERRORED == status);
 	}
 	
-	public String getErrorMessage() {
-		return transferException.getLocalizedMessage();
+	public String getStatusTooltip() {
+		if (isInterrupted()) {
+			return transferInterruption.getLocalizedMessage();
+		} else if (isErrored()) {
+			return transferError.getLocalizedMessage();
+		} else {
+			return null;
+		}
 	}
 	
 	public String getErrorText() {
-		return transferException.getErrorText();
+		String errorText = "An unexpected error occurred. The description of the original error is below, followed by a list of actions the system was attempting to take when the error occurred.\n\n";
+		StringWriter stackTraceWriter = new StringWriter();
+		transferError.printStackTrace(new PrintWriter(stackTraceWriter));
+		return errorText + stackTraceWriter.toString();
 	}
 }

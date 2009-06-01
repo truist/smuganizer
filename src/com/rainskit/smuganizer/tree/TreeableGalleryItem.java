@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.tree;
 
-import com.rainskit.smuganizer.tree.transfer.TransferException;
+import com.rainskit.smuganizer.tree.transfer.TransferInterruption;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -30,9 +30,9 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public abstract void removeChild(TreeableGalleryItem child);
 	
 	public abstract boolean canMove(TreeableGalleryItem item, int childIndex);
-	public abstract void moveItem(TreeableGalleryItem item, int childIndex);
+	public abstract void moveItem(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption);
 	public abstract boolean canImport(TreeableGalleryItem newItem, int childIndex);
-	public abstract TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex) throws IOException, TransferException;
+	public abstract TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex, TransferInterruption previousInterruption) throws IOException, TransferInterruption;
 	
 	public final void transferStarted(boolean recipient) {
 		if (recipient) {

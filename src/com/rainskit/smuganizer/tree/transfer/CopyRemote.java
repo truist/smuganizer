@@ -1,18 +1,15 @@
 package com.rainskit.smuganizer.tree.transfer;
 
+import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 public class CopyRemote extends AbstractTransferTask {
-
 	public CopyRemote(TreeableGalleryItem srcItem, 
 						JTree destTree, 
 						TreePath destParentPath, 
@@ -20,8 +17,8 @@ public class CopyRemote extends AbstractTransferTask {
 		super(srcItem, destTree, destParentPath, destChildIndex);
 	}
 
-	protected TreeableGalleryItem doInBackgroundImpl() throws TransferException, IOException {
-		TreeableGalleryItem newItem = destParentItem.importItem(srcItem, destChildIndex);
+	protected TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption, IOException {
+		TreeableGalleryItem newItem = destParentItem.importItem(srcItem, destChildIndex, previousInterruption);
 		newItem.transferStarted(false);
 		newItem.transferEnded(false, true);
 		return newItem;
@@ -33,5 +30,15 @@ public class CopyRemote extends AbstractTransferTask {
 		DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(newItem);
 		destModel.insertNodeInto(newNode, destParentNode, destChildIndex);
 		destTree.makeVisible(destParentPath.pathByAddingChild(newNode));
+	}
+
+	@Override
+	public String getActionString() {
+		return "COPY";
+	}
+
+	@Override
+	public TransferErrorDialog.RepairPanel getRepairPanel() {
+		return transferInterruption.getRepairPanel();
 	}
 }

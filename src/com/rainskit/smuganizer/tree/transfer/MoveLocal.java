@@ -1,6 +1,9 @@
 package com.rainskit.smuganizer.tree.transfer;
 
+import com.rainskit.smuganizer.menu.gui.TransferErrorDialog.RepairPanel;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import java.io.IOException;
+import javax.swing.JComponent;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -19,8 +22,8 @@ public class MoveLocal extends AbstractTransferTask {
 		this.srcNode = srcNode;
 	}
 
-	protected TreeableGalleryItem doInBackgroundImpl() throws TransferException {
-		destParentItem.moveItem(srcItem, destChildIndex);
+	protected TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption {
+		destParentItem.moveItem(srcItem, destChildIndex, previousInterruption);
 		return srcItem;
 	}
 	
@@ -36,5 +39,15 @@ public class MoveLocal extends AbstractTransferTask {
 		destModel.removeNodeFromParent(srcNode);
 		destModel.insertNodeInto(srcNode, destParentNode, destChildIndex + destChildOffset);
 		destTree.makeVisible(destParentPath.pathByAddingChild(srcNode));
+	}
+
+	@Override
+	public String getActionString() {
+		return "MOVE";
+	}
+
+	@Override
+	public RepairPanel getRepairPanel() {
+		return null;
 	}
 }

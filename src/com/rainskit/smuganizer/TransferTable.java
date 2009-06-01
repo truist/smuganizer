@@ -13,10 +13,14 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 public class TransferTable extends JTable {
-	public TransferTable(TransferTableModel dataModel) {
+	public TransferTable(TransferTableModel dataModel, boolean multipleSelection) {
 		super(dataModel);
 		
-		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		if (multipleSelection) {
+			setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		} else {
+			setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		}
 		
 		for (int i = 0; i < dataModel.getColumnCount(); i++) {
 			columnModel.getColumn(i).setPreferredWidth(dataModel.getPreferredColumnWidth(i));
@@ -55,7 +59,7 @@ public class TransferTable extends JTable {
 			AbstractTransferTask task = getTaskForRow(row);
 			if (task.isInterrupted() || task.isErrored()) {
 				setForeground(Color.RED);
-				setToolTipText(task.getErrorMessage());
+				setToolTipText(task.getStatusTooltip());
 			} else if (task.isActive()) {
 				setForeground(Color.GREEN.darker());
 			}
