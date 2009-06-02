@@ -65,17 +65,15 @@ public class Gallery extends AbstractGalleryTreeable {
     private HttpClient loginHttpClient;
 	private HttpClient anonHttpClient;
 	
-	private GallerySettings settings;
     private static String baseURL;
     private String completeURL;
     public static int galleryVersion;
     private String lastAuthToken;
 
-    public Gallery(GallerySettings settings) throws IOException {
+    public Gallery() throws IOException {
 		super(null);
 		
-		this.settings = settings;
-		String settingsURL = settings.getURL().toExternalForm();
+		String settingsURL = GallerySettings.getURL().toExternalForm();
 		this.baseURL = settingsURL + (settingsURL.endsWith("/") ? "" : "/");
 		
 		loginHttpClient = new HttpClient();
@@ -173,8 +171,8 @@ public class Gallery extends AbstractGalleryTreeable {
 	
     private void login() throws IOException {
 		ArrayList<NameValuePair> arguments = newBaseArguments(COMMAND_LOGIN);
-		arguments.add(newArgument(ARG_USERNAME, settings.getUsername()));
-		arguments.add(newArgument(ARG_PASSWORD, String.valueOf(settings.getPassword())));
+		arguments.add(newArgument(ARG_USERNAME, GallerySettings.getUsername()));
+		arguments.add(newArgument(ARG_PASSWORD, String.valueOf(GallerySettings.getPassword())));
 		executePost(arguments, loginHttpClient);
     }
 

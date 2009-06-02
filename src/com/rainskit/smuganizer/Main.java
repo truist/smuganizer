@@ -158,11 +158,11 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 		return true;
 	}
 	
-	public boolean loadGalleryTree(GallerySettings gallerySettings) {
+	public boolean loadGalleryTree() {
 		Gallery gallery;
 		setStatus("Logging in to gallery...");
 		try {
-			gallery = new Gallery(gallerySettings);
+			gallery = new Gallery();
 		} catch (IOException ex) {
 			JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error contacting gallery", JOptionPane.ERROR_MESSAGE);
 			return false;

@@ -1,26 +1,18 @@
 package com.rainskit.smuganizer.menu.gui;
 
+import com.rainskit.smuganizer.ExifHandler;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.BorderLayout;
 import java.awt.Font;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import org.apache.sanselan.ImageReadException;
-import org.apache.sanselan.Sanselan;
-import org.apache.sanselan.common.IImageMetadata;
 import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
 import org.apache.sanselan.formats.tiff.TiffField;
 import org.apache.sanselan.formats.tiff.TiffImageMetadata;
@@ -32,7 +24,7 @@ public class ExifBox extends JDialog {
 		super(main, "EXIF Tags", true);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
-		JpegImageMetadata metadata = loadMetaData(image.getDataURL());
+		JpegImageMetadata metadata = ExifHandler.loadMetaData(image.getDataURL(), image.getFileName());
 		if (metadata == null) {
 			throw new IOException("Unable to load EXIF data from " + image.getDataURL().toExternalForm());
 		}
@@ -63,31 +55,6 @@ public class ExifBox extends JDialog {
 		setSize(500, 500);
 		setLocationRelativeTo(main);
 	}
-
-    private JpegImageMetadata loadMetaData(URL imagePath) {
-		InputStream inputStream = null;
-        try {
-			inputStream = imagePath.openStream();
-            IImageMetadata metadata = Sanselan.getMetadata(inputStream, imagePath.getFile());
-	        if (metadata instanceof JpegImageMetadata) {
-				return (JpegImageMetadata)metadata;
-			}
-        } catch (ImageReadException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (IOException ex) {
-					Logger.getLogger(ExifBox.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-		}
-		
-		return null;
-    }
 	
 	private String[][] convertToArray(ArrayList standardItems) {
 		String[][] table = new String[standardItems.size()][2];

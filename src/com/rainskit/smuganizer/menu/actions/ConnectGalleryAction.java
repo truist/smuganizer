@@ -16,14 +16,13 @@ public class ConnectGalleryAction extends AbstractAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		GallerySettings gallerySettings = new GallerySettings();
-		GalleryLoginDialog settingsDialog = new GalleryLoginDialog(main, gallerySettings);
+		GalleryLoginDialog settingsDialog = new GalleryLoginDialog(main);
 		
 		settingsDialog.setVisible(true);
 		if (!settingsDialog.wasClosedWithOK()) {
 			return;
 		}
-		main.loadGalleryTree(gallerySettings);
+		main.loadGalleryTree();
 	}
 
 }

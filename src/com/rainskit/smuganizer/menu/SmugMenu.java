@@ -10,12 +10,20 @@ import com.rainskit.smuganizer.menu.actions.SettingsSortAction;
 import com.rainskit.smuganizer.menu.actions.ConnectSmugMugAction;
 import com.rainskit.smuganizer.menu.actions.HelpAction;
 import com.rainskit.smuganizer.*;
+import com.rainskit.smuganizer.menu.actions.AlwaysIgnoreFileCaptionAction;
+import com.rainskit.smuganizer.menu.actions.AlwaysRemoveFileCaptionAction;
 import com.rainskit.smuganizer.tree.GalleryTree;
 import com.rainskit.smuganizer.tree.SmugTree;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -48,6 +56,19 @@ public class SmugMenu extends JMenuBar {
 	
 	private JMenu makeTableMenu(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
 		JMenu menu = new JMenu("Transfer");
+		
+		JMenu settingsMenu = new JMenu("Settings");
+		MaxOneGroup group = new MaxOneGroup();
+		JMenuItem alwaysRemove = new JCheckBoxMenuItem(new AlwaysRemoveFileCaptionAction());
+		group.add(alwaysRemove);
+		settingsMenu.add(alwaysRemove);
+		JMenuItem alwaysIgnore = new JCheckBoxMenuItem(new AlwaysIgnoreFileCaptionAction());
+		group.add(alwaysIgnore);
+		settingsMenu.add(alwaysIgnore);
+		
+		menu.add(settingsMenu);
+		menu.addSeparator();
+		
 		TableMenuManager manager = new TableMenuManager(main, transferTable, transferManager);
 		addActionsToMenu(manager.getActions(), menu);
 		return menu;
@@ -84,5 +105,37 @@ public class SmugMenu extends JMenuBar {
 		helpMenu.add(new HelpAction(main));
 		helpMenu.add(new AboutAction(main));
 		return helpMenu;
+	}
+	
+	
+	private class MaxOneGroup implements ItemListener {
+		private ArrayList<AbstractButton> buttons;
+		
+		public MaxOneGroup() {
+			this.buttons = new ArrayList<AbstractButton>();
+		}
+
+		private void add(AbstractButton button) {
+			button.addItemListener(this);
+			buttons.add(button);
+		}
+
+		public void itemStateChanged(ItemEvent ie) {
+			if (ItemEvent.SELECTED == ie.getStateChange()) {
+				Object item = ie.getItem();
+				for (AbstractButton each : buttons) {
+					if (each != item) {
+//						each.setSelected(false);
+						if (each.isSelected()) {
+							ButtonModel model = each.getModel();
+							model.setArmed(true);
+							model.setPressed(true);
+							model.setPressed(false);
+							model.setArmed(false);
+						}
+					}
+				}
+			}
+		}
 	}
 }

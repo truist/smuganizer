@@ -1,7 +1,9 @@
 package com.rainskit.smuganizer.smugmugapiwrapper;
 
+import com.rainskit.smuganizer.ExifHandler;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.UnexpectedCaptionInterruption;
 import com.rainskit.smuganizer.SmugMugSettings;
+import com.rainskit.smuganizer.TransferSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MoveException;
@@ -25,6 +27,7 @@ import java.util.logging.Logger;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.sanselan.ImageReadException;
+import org.apache.sanselan.ImageWriteException;
 import org.apache.sanselan.Sanselan;
 import org.apache.sanselan.common.IImageMetadata;
 import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
@@ -206,20 +209,20 @@ public class SmugAlbum extends TreeableGalleryItem {
 			caption = newItem.getCaption();
 			if (caption == null) {
 				try {
-					String fileName = newItem.getFileName();// .getDataURL().getFile();
-					JpegImageMetadata metadata = loadMetaData(new ByteArrayInputStream(imageData), fileName);
-					if (metadata != null) {
-						TiffField description = metadata.findEXIFValue(TiffConstants.EXIF_TAG_IMAGE_DESCRIPTION);
-						if (description != null) {
-							String descriptionString = description.getStringValue().trim();
-							if (descriptionString.length() > 0) {
-								throw new UnexpectedCaptionInterruption(imageData, fileName, descriptionString);
-							}
+					String fileName = newItem.getFileName();
+					String description = ExifHandler.getExifDescription(imageData, fileName);
+					if (description != null && description.length() > 0) {
+						if (TransferSettings.getRemoveExifDescriptions()) {
+							imageData = ExifHandler.removeExifDescription(imageData, fileName);
+						} else if (!TransferSettings.getIgnoreExifDescriptions()) {
+							throw new UnexpectedCaptionInterruption(imageData, fileName, description);
 						}
 					}
+				} catch (ImageWriteException ex) {
+					Logger.getLogger(SmugAlbum.class.getName()).log(Level.SEVERE, null, ex);
 				} catch (ImageReadException ex) {
 					Logger.getLogger(SmugAlbum.class.getName()).log(Level.SEVERE, null, ex);
-				} 
+				}
 			}
 		}
 		
@@ -249,20 +252,6 @@ public class SmugAlbum extends TreeableGalleryItem {
 
 		return newImage;
 	}
-	
-    public static JpegImageMetadata loadMetaData(InputStream inputStream, String fileName) {
-		try {
-			IImageMetadata metadata = Sanselan.getMetadata(inputStream, fileName);
-			if (metadata instanceof JpegImageMetadata) {
-				return (JpegImageMetadata) metadata;
-			}
-		} catch (ImageReadException ex) {
-			Logger.getLogger(SmugAlbum.class.getName()).log(Level.WARNING, "Unable to load metadata for " + fileName);
-		} catch (IOException ex) {
-			Logger.getLogger(SmugAlbum.class.getName()).log(Level.WARNING, "Unable to load metadata for " + fileName);
-		}
-		return null;
-    }
 	
 	private void reorderItem(SmugImage childImage, int childIndex) {
 		if (childImage.getParent() == this && images.contains(childImage) && childIndex > images.indexOf(childImage)) {

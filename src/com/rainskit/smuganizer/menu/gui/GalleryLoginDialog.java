@@ -10,16 +10,14 @@ import javax.swing.JOptionPane;
 
 public class GalleryLoginDialog extends javax.swing.JDialog {
 	private boolean closedWithOK;
-	private GallerySettings settings;
 
-    public GalleryLoginDialog(JFrame parent, GallerySettings settings) {
+    public GalleryLoginDialog(JFrame parent) {
         super(parent, true);
-		this.settings = settings;
 		
         initComponents();
 		getRootPane().setDefaultButton(okButton);
 		try {
-			String urlString = settings.getURL().toExternalForm();
+			String urlString = GallerySettings.getURL().toExternalForm();
 			if (urlString.endsWith(":")) {
 				urlString += "//";
 			}
@@ -27,9 +25,9 @@ public class GalleryLoginDialog extends javax.swing.JDialog {
 		} catch (MalformedURLException ex) {
 			urlField.setText("http://");
 		}
-		usernameField.setText(settings.getUsername());
-		passwordField.setText(String.valueOf(settings.getPassword()));
-		passwordCheck.setSelected(settings.isPasswordSaved());
+		usernameField.setText(GallerySettings.getUsername());
+		passwordField.setText(String.valueOf(GallerySettings.getPassword()));
+		passwordCheck.setSelected(GallerySettings.isPasswordSaved());
 		setLocationRelativeTo(parent);
 		
 		if (usernameField.getText().length() > 0) {
@@ -158,13 +156,13 @@ private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 	if (validateFields()) {
 		closedWithOK = true;
 			try {
-				settings.setURL(new URL(urlField.getText()));
+				GallerySettings.setURL(new URL(urlField.getText()));
 			} catch (MalformedURLException ex) {
 				JOptionPane.showMessageDialog(this, "Invalid URL", "Input error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-		settings.setUsername(usernameField.getText());
-		settings.setPassword(passwordField.getPassword(), passwordCheck.isSelected());
+		GallerySettings.setUsername(usernameField.getText());
+		GallerySettings.setPassword(passwordField.getPassword(), passwordCheck.isSelected());
 		setVisible(false);
 	} else {
 		JOptionPane.showMessageDialog(this, "Please fill in all fields with valid values", "Input error", JOptionPane.ERROR_MESSAGE);

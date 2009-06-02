@@ -16,32 +16,34 @@ public class GallerySettings {
 	
 	private static Preferences storage = Preferences.userNodeForPackage(Main.class);
 
-	private char[] sessionPassword;
+	private static char[] sessionPassword;
 	
-	public URL getURL() throws MalformedURLException {
+	private GallerySettings() {};
+	
+	public static URL getURL() throws MalformedURLException {
 		return new URL(storage.get(URL, "http://"));
 	}
 	
-	public void setURL(URL value) {
+	public static void setURL(URL value) {
 		storage.put(URL, value.toExternalForm());
 	}
 
-	public String getUsername() {
+	public static String getUsername() {
 		return storage.get(USERNAME, "");
 	}
 	
-	public void setUsername(String value) {
+	public static void setUsername(String value) {
 		storage.put(USERNAME, value);
 	}
 	
-	public char[] getPassword() {
+	public static char[] getPassword() {
 		if (sessionPassword == null) {
 			sessionPassword = storage.get(PASSWORD, NULL_PASSWORD).toCharArray();
 		}
 		return sessionPassword;
 	}
 	
-	public void setPassword(char[] value, boolean save) {
+	public static void setPassword(char[] value, boolean save) {
 		sessionPassword = value;
 		if (save) {
 			storage.put(PASSWORD, String.valueOf(value));
@@ -50,7 +52,7 @@ public class GallerySettings {
 		}
 	}
 
-	public boolean isPasswordSaved() {
+	public static boolean isPasswordSaved() {
 		return !NULL_PASSWORD.equals(storage.get(PASSWORD, NULL_PASSWORD));
 	}
 	
@@ -70,7 +72,7 @@ public class GallerySettings {
 		storage.putBoolean(CLEAN_CAPTIONS, selected);
 	}
 
-	public void addSettingListener(final SettingsListener listener) {
+	public static void addSettingListener(final SettingsListener listener) {
 		storage.addPreferenceChangeListener(new PreferenceChangeListener() {
 			public void preferenceChange(PreferenceChangeEvent evt) {
 				listener.settingChanged(evt.getKey());

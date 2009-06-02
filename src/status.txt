@@ -1,10 +1,8 @@
 
 do the drag-and-drop import
-	figure out import order - sorted (by what?) or not?
 	figure out what metadata (hidden, caption, etc.) to copy over
 
 import combo order:
-	image -> album
 	album -> category/subcategory
 	multi-select source
 	upload dialog

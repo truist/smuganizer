@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.smugmugapiwrapper.exceptions;
 
+import com.rainskit.smuganizer.ExifHandler;
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
-import com.rainskit.smuganizer.smugmugapiwrapper.SmugAlbum;
 import com.rainskit.smuganizer.tree.transfer.TransferInterruption;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -9,41 +9,22 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Enumeration;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.apache.sanselan.ImageReadException;
-import org.apache.sanselan.ImageWriteException;
-import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
-import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter;
-import org.apache.sanselan.formats.tiff.TiffField;
 import org.apache.sanselan.formats.tiff.constants.TiffConstants;
-import org.apache.sanselan.formats.tiff.constants.TiffFieldTypeConstants;
-import org.apache.sanselan.formats.tiff.write.TiffOutputDirectory;
-import org.apache.sanselan.formats.tiff.write.TiffOutputField;
-import org.apache.sanselan.formats.tiff.write.TiffOutputSet;
 
 public class UnexpectedCaptionInterruption extends TransferInterruption {
 	private byte[] imageData;
@@ -93,7 +74,7 @@ public class UnexpectedCaptionInterruption extends TransferInterruption {
 		return repairPanel;
 	}
 	
-	
+		
 	private enum RadioChoice { FILE_NONE, FILE_REMOVE, FILE_REPLACE, SMUG_BLANK, SMUG_SET }
 	
 	private class RepairPanel extends JPanel implements TransferErrorDialog.RepairPanel, ActionListener, DocumentListener {
@@ -237,46 +218,10 @@ public class UnexpectedCaptionInterruption extends TransferInterruption {
 		public void post() throws Exception {
 			String fileAction = fileGroup.getSelection().getActionCommand();
 			if (RadioChoice.FILE_REPLACE.toString().equals(fileAction)) {
-				replaceFileCaption(fileSetField.getText());
+				imageData = ExifHandler.replaceExifDescription(imageData, fileName, fileSetField.getText());
 			} else if (RadioChoice.FILE_REMOVE.toString().equals(fileAction)) {
-				removeFileCaption();
+				imageData = ExifHandler.removeExifDescription(imageData, fileName);
 			}
-		}
-		
-		private void replaceFileCaption(String newValue) throws Exception {
-			JpegImageMetadata metadata = SmugAlbum.loadMetaData(new ByteArrayInputStream(imageData), fileName);
-			TiffOutputSet outputSet = metadata.getExif().getOutputSet();
-			outputSet.removeField(TiffConstants.EXIF_TAG_IMAGE_DESCRIPTION);
-			TiffOutputField descField
-				= new TiffOutputField(TiffConstants.EXIF_TAG_IMAGE_DESCRIPTION, 
-										TiffFieldTypeConstants.FIELD_TYPE_ASCII, 
-										newValue.length(), 
-										newValue.getBytes());
-			TiffOutputDirectory exifDirectory = outputSet.getOrCreateExifDirectory();
-			exifDirectory.add(descField);
-			writeOutputSet(outputSet);
-		}
-		
-		private void removeFileCaption() throws Exception {
-			JpegImageMetadata metadata = SmugAlbum.loadMetaData(new ByteArrayInputStream(imageData), fileName);
-			TiffOutputSet outputSet = metadata.getExif().getOutputSet();
-			outputSet.removeField(TiffConstants.EXIF_TAG_IMAGE_DESCRIPTION);
-			writeOutputSet(outputSet);
-		}
-
-		private void writeOutputSet(TiffOutputSet outputSet) throws Exception {
-			ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-			OutputStream outputStream = new BufferedOutputStream(byteStream);
-			try {
-				new ExifRewriter().updateExifMetadataLossy(imageData, outputStream, outputSet);
-			} finally {
-				try {
-					outputStream.close();
-				} catch (IOException ex) {
-					Logger.getLogger(UnexpectedCaptionInterruption.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-			imageData = byteStream.toByteArray();
 		}
 		
 		public String getFixedCaption() {
