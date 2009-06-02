@@ -80,7 +80,7 @@ public class SmugImage extends TreeableGalleryItem {
 		if (caption != null) {
 			return caption;
 		} else {
-			return getName();
+			return getFileName();
 		}
 	}
 	
@@ -93,8 +93,12 @@ public class SmugImage extends TreeableGalleryItem {
 		}
 	}
 	
-	public String getName() {
+	public String getFileName() {
 		return apiImage.getFileName();
+	}
+	
+	public String getURLName() {
+		return getFileName();
 	}
 	
 	public int getPosition() {

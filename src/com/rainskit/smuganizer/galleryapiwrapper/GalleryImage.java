@@ -37,17 +37,20 @@ public class GalleryImage extends AbstractGalleryTreeable {
 	}
 	
 	public URL getDataURL() throws MalformedURLException {
-		return new URL(imageDetails.getProperty(Gallery.RESPONSE_BASEURL) + getName());
+		return new URL(imageDetails.getProperty(Gallery.RESPONSE_BASEURL) + getURLName());
 	}
 	
-	private String getUrlName() {
-		String name = getName();
-		name = name.replace(' ', '_');
-		int period = name.lastIndexOf('.');
+	public String getURLName() {
+		return imageDetails.getProperty(Gallery.RESPONSE_IMAGE_NAME_INDEXED + imageRefNum).replace(' ', '_');
+	}
+	
+	private String getLaunchURLName() {
+		String urlName = getURLName();
+		int period = urlName.lastIndexOf('.');
 		if (period > 0) {
-			name = name.substring(0, period);
+			urlName = urlName.substring(0, period);
 		}
-		return name;
+		return urlName;
 	}
 
 	public boolean isHidden() {
@@ -61,7 +64,7 @@ public class GalleryImage extends AbstractGalleryTreeable {
 	public String getCaption() {
 		String rawCaption = imageDetails.getProperty(Gallery.RESPONSE_IMAGE_CAPTION_INDEXED + imageRefNum);
 		if (GallerySettings.getCleanCaptions()) {
-			return generateCleanCaption(getName(), rawCaption);
+			return generateCleanCaption(getFileName(), rawCaption);
 		} else {
 			return rawCaption;
 		}
@@ -88,8 +91,12 @@ public class GalleryImage extends AbstractGalleryTreeable {
 		}
 	}
 	
-	public String getName() {
-		return imageDetails.getProperty(Gallery.RESPONSE_IMAGE_NAME_INDEXED + imageRefNum);
+	public String getFileName() {
+		if (Gallery.galleryVersion > 1) {
+			return imageDetails.getProperty(Gallery.RESPONSE_IMAGE_TITLE_INDEXED + imageRefNum);
+		} else {
+			return imageDetails.getProperty(Gallery.RESPONSE_IMAGE_NAME_INDEXED + imageRefNum);
+		}
 	}
 	
 	public boolean canBeLaunched() {
@@ -97,7 +104,7 @@ public class GalleryImage extends AbstractGalleryTreeable {
 	}
 
 	public void launch() throws IOException, URISyntaxException {
-		Desktop.getDesktop().browse(Gallery.generateUrlFor(((GalleryAlbum)parent).getName(), getUrlName()));
+		Desktop.getDesktop().browse(Gallery.generateUrlFor(((GalleryAlbum)parent).getURLName(), getLaunchURLName()));
 	}
 
 	public ItemType getType() {

@@ -101,11 +101,15 @@ public class SmugAlbum extends TreeableGalleryItem {
 	}
 
 	public String getLabel() {
-		return getName();
+		return getFileName();
 	}
 
-	public String getName() {
+	public String getFileName() {
 		return (reName != null) ? reName : apiAlbum.getTitle();
+	}
+	
+	public String getURLName() {
+		return getFileName();
 	}
 	
 	public String getCaption() {
@@ -202,7 +206,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 			caption = newItem.getCaption();
 			if (caption == null) {
 				try {
-					String fileName = newItem.getDataURL().getFile();
+					String fileName = newItem.getFileName();// .getDataURL().getFile();
 					JpegImageMetadata metadata = loadMetaData(new ByteArrayInputStream(imageData), fileName);
 					if (metadata != null) {
 						TiffField description = metadata.findEXIFValue(TiffConstants.EXIF_TAG_IMAGE_DESCRIPTION);
@@ -224,7 +228,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 		com.kallasoft.smugmug.api.json.v1_2_0.images.UploadHTTPPut.UploadHTTPPutResponse uploadResponse
 			= uploadMethod.execute(SmugMug.API_UPLOAD_URL, SmugMug.sessionID, 
 									apiAlbum.getID(), null, 
-									newItem.getName(), new ByteArrayInputStream(imageData),
+									newItem.getFileName(), new ByteArrayInputStream(imageData),
 									caption, null, 
 									null, null, null);
 		if (uploadResponse.isError()) {

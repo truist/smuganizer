@@ -170,7 +170,11 @@ public class SmugMug extends TreeableGalleryItem {
 	}
 
 	@Override
-	public String getName() {
+	public String getFileName() {
+		return getURLName();
+	}
+	
+	public String getURLName() {
 		return getBaseURL();
 	}
 

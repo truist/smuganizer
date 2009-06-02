@@ -68,7 +68,7 @@ public class Gallery extends AbstractGalleryTreeable {
 	private GallerySettings settings;
     private static String baseURL;
     private String completeURL;
-    private static int galleryVersion;
+    public static int galleryVersion;
     private String lastAuthToken;
 
     public Gallery(GallerySettings settings) throws IOException {
@@ -222,7 +222,7 @@ public class Gallery extends AbstractGalleryTreeable {
 
 		ArrayList<NameValuePair> arguments = newBaseArguments(COMMAND_FETCH_ALBUM_IMAGES);
 		arguments.add(newArgument(ARG_ALBUMS_TOO, ARGVAL_NO));
-        arguments.add(newArgument(ARG_SET_ALBUMNAME, album.getName()));
+        arguments.add(newArgument(ARG_SET_ALBUMNAME, album.getFileName()));
 		
 		Properties response = executePost(arguments, loginHttpClient);
 		int numImages = Integer.parseInt(response.getProperty(RESPONSE_IMAGE_COUNT));
@@ -237,7 +237,7 @@ public class Gallery extends AbstractGalleryTreeable {
         GetMethod get = new GetMethod();
 		get.setFollowRedirects(false);
 		try {
-			String url = generateUrlFor(album.getName(), null).toString();
+			String url = generateUrlFor(album.getURLName(), null).toString();
 			get.setURI(new org.apache.commons.httpclient.URI(url));
 			try {
 				return (HttpStatus.SC_MOVED_TEMPORARILY == anonHttpClient.executeMethod(get));
@@ -314,7 +314,11 @@ public class Gallery extends AbstractGalleryTreeable {
 	}
 
 	@Override
-	public String getName() {
+	public String getFileName() {
+		return getURLName();
+	}
+	
+	public String getURLName() {
 		return getBaseURL();
 	}
 

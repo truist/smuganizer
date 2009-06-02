@@ -1,7 +1,4 @@
 
-fix problem with "Image Description" EXIF header
-	finish implementing "apply to all"
-
 do the drag-and-drop import
 	figure out import order - sorted (by what?) or not?
 	figure out what metadata (hidden, caption, etc.) to copy over

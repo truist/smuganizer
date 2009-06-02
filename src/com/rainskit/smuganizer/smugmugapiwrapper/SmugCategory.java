@@ -59,11 +59,15 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 
 	public String getLabel() {
-		return getName();
+		return getFileName();
 	}
 
-	public String getName() {
+	public String getFileName() {
 		return (reName != null) ? reName : apiCategory.getName();
+	}
+	
+	public String getURLName() {
+		return getFileName();
 	}
 
 	public String getCaption() {

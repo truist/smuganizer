@@ -69,7 +69,9 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 		return (getParent() != null ? getParent().getFullPathLabel() : "") + PATH_SEP + getLabel();
 	}
 	/** The file name, for images */
-	public abstract String getName();
+	public abstract String getFileName();
+	/** Name to use when generating URLs that point to this file */
+	public abstract String getURLName();
 	/** The caption to show online; should be 'null' unless the caption is different than the filename */
 	public abstract String getCaption();
 	

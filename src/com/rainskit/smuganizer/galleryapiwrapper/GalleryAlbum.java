@@ -44,7 +44,11 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 		subAlbums.add(newChild);
 	}
 
-	public String getName() {
+	public String getFileName() {
+		return getURLName();
+	}
+	
+	public String getURLName() {
 		return urlName;
 	}
 	
@@ -80,7 +84,7 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 	}
 
 	public void launch() throws IOException, URISyntaxException {
-		Desktop.getDesktop().browse(Gallery.generateUrlFor(getName(), null));
+		Desktop.getDesktop().browse(Gallery.generateUrlFor(getURLName(), null));
 	}
 
 	public ItemType getType() {
