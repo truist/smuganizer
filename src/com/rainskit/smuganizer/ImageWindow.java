@@ -185,34 +185,42 @@ public class ImageWindow extends JFrame {
 						if (cachedImage != null) {
 							notifyImageLoaded(cachedImage, nextCall.image, nextCall.ID);
 						} else {
-							String url = nextCall.image.getPreviewURL().toExternalForm();
-							GetMethod getMethod = new GetMethod(url);
-							getMethod.setRequestHeader("User-Agent", APIConstants.USER_AGENT);
-							try {
-								int responseCode = APIConstants.HTTP_CLIENT.executeMethod(getMethod);
-								if (responseCode != HttpStatus.SC_OK) {
-									throw new IOException("Received unexpected response code (" + responseCode + ") from server when trying to retrieve URL: " + url);
-								}
-								byte[] imageData = getMethod.getResponseBody();
-								final ImageIcon imageIcon = new ImageIcon(imageData);
-								synchronized(cachedImageData) {
-									cachedImageData.put(nextCall.image.getPreviewURL().toString(), new SoftReference<ImageIcon>(imageIcon));
-								}
-								notifyImageLoaded(imageIcon, nextCall.image, nextCall.ID);
-							} finally {
-								getMethod.releaseConnection();
-							}
-						}
-					} catch (FileNotFoundException fnfe) {
-						if (nextCall.image.getParent() != null) {	//check to see if image was deleted out from under us
-							Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, fnfe);
+							loadImage(nextCall);
 						}
 					} catch (IOException ex) {
-						Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
+						if (nextCall.image.getParent() != null) {	//check to see if image was deleted out from under us
+							Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
+							try {
+								//keep trying, in case the image is just being processed on the server
+								displayImage(nextCall.image);
+							} catch (IOException ex1) {
+								Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex1);
+							}
+						}
 					}
 				}
 			} catch (InterruptedException ex) {
 				Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+
+		private void loadImage(final AddImageCall nextCall) throws IOException {
+			String url = nextCall.image.getPreviewURL().toExternalForm();
+			GetMethod getMethod = new GetMethod(url);
+			getMethod.setRequestHeader("User-Agent", APIConstants.USER_AGENT);
+			try {
+				int responseCode = APIConstants.HTTP_CLIENT.executeMethod(getMethod);
+				if (responseCode != HttpStatus.SC_OK) {
+					throw new IOException("Received unexpected response code (" + responseCode + ") from server when trying to retrieve URL: " + url);
+				}
+				byte[] imageData = IOUtils.toByteArray(getMethod.getResponseBodyAsStream());
+				final ImageIcon imageIcon = new ImageIcon(imageData);
+				synchronized (cachedImageData) {
+					cachedImageData.put(nextCall.image.getPreviewURL().toString(), new SoftReference<ImageIcon>(imageIcon));
+				}
+				notifyImageLoaded(imageIcon, nextCall.image, nextCall.ID);
+			} finally {
+				getMethod.releaseConnection();
 			}
 		}
 
