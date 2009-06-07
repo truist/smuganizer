@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer;
 
+import com.kallasoft.smugmug.api.APIConstants;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -28,6 +29,8 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOUtils;
 
 public class ImageWindow extends JFrame {
@@ -182,14 +185,23 @@ public class ImageWindow extends JFrame {
 						if (cachedImage != null) {
 							notifyImageLoaded(cachedImage, nextCall.image, nextCall.ID);
 						} else {
-							InputStream urlStream = nextCall.image.getPreviewURL().openStream();
-							byte[] imageData = IOUtils.toByteArray(urlStream);
-							final ImageIcon imageIcon = new ImageIcon(imageData);
-							synchronized(cachedImageData) {
-								cachedImageData.put(nextCall.image.getPreviewURL().toString(), new SoftReference<ImageIcon>(imageIcon));
+							String url = nextCall.image.getPreviewURL().toExternalForm();
+							GetMethod getMethod = new GetMethod(url);
+							getMethod.setRequestHeader("User-Agent", APIConstants.USER_AGENT);
+							try {
+								int responseCode = APIConstants.HTTP_CLIENT.executeMethod(getMethod);
+								if (responseCode != HttpStatus.SC_OK) {
+									throw new IOException("Received unexpected response code (" + responseCode + ") from server when trying to retrieve URL: " + url);
+								}
+								byte[] imageData = getMethod.getResponseBody();
+								final ImageIcon imageIcon = new ImageIcon(imageData);
+								synchronized(cachedImageData) {
+									cachedImageData.put(nextCall.image.getPreviewURL().toString(), new SoftReference<ImageIcon>(imageIcon));
+								}
+								notifyImageLoaded(imageIcon, nextCall.image, nextCall.ID);
+							} finally {
+								getMethod.releaseConnection();
 							}
-							urlStream.close();
-							notifyImageLoaded(imageIcon, nextCall.image, nextCall.ID);
 						}
 					} catch (FileNotFoundException fnfe) {
 						if (nextCall.image.getParent() != null) {	//check to see if image was deleted out from under us
