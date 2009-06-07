@@ -28,11 +28,6 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.sanselan.ImageReadException;
 import org.apache.sanselan.ImageWriteException;
-import org.apache.sanselan.Sanselan;
-import org.apache.sanselan.common.IImageMetadata;
-import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
-import org.apache.sanselan.formats.tiff.TiffField;
-import org.apache.sanselan.formats.tiff.constants.TiffConstants;
 
 public class SmugAlbum extends TreeableGalleryItem {
 	private static final int NO_IMAGES_FOUND_ERROR = 15;
@@ -178,13 +173,12 @@ public class SmugAlbum extends TreeableGalleryItem {
 			if (response.isError()) {
 				throw new MoveException(this, response.getError());
 			}
-		}
+			((SmugAlbum)childImage.getParent()).removeChild(childImage);
+			images.add(childImage);
+			childImage.setParent(this);
+		} 
 		
 		reorderItem(childImage, childIndex);
-		
-		((SmugAlbum)childImage.getParent()).removeChild(childImage);
-		images.add(childIndex, childImage);
-		childImage.setParent(this);
 	}
 
 	public boolean canImport(TreeableGalleryItem newItem, int childIndex) {
@@ -247,20 +241,40 @@ public class SmugAlbum extends TreeableGalleryItem {
 		}
 		
 		SmugImage newImage = new SmugImage(this, getInfoResponse.getImage());
+		images.add(newImage);
+		
 		reorderItem(newImage, childIndex);
-		images.add(childIndex, newImage);
+		if (newItem.isProtected()) {
+			newImage.setHidden(true);
+		}
 
 		return newImage;
 	}
 	
 	private void reorderItem(SmugImage childImage, int childIndex) {
-		if (childImage.getParent() == this && images.contains(childImage) && childIndex > images.indexOf(childImage)) {
-			childIndex--;
+		reorderItemInSmugMug(childImage, childIndex);
+		
+		boolean movingTowardEnd = (images.indexOf(childImage) < childIndex);
+		images.remove(childImage);
+		images.add(childIndex - (movingTowardEnd ? 1 : 0), childImage);
+		
+		//ok, at this point, if we just moved an image to position '0', smugmug
+		//actually moved it to position '1', and there's no way around it.  so 
+		//to fix smugmug, we take the image that we think is in position '1'
+		//(but that smugmug actually has in position '0') and move it to
+		//position '1' in smugmug, which sets everything right
+		if (childIndex == 0) {
+			reorderItemInSmugMug(images.get(1), 1);
 		}
+	}
+	
+	private void reorderItemInSmugMug(SmugImage childImage, int childIndex) {
+		boolean movingTowardEnd = (images.indexOf(childImage) < childIndex);
 		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangePosition changePosition 
 			= new com.kallasoft.smugmug.api.json.v1_2_0.images.ChangePosition();
 		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangePosition.ChangePositionResponse response
-			= changePosition.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, childImage.getImageID(), childIndex + 1);
+			= changePosition.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, 
+										childImage.getImageID(), childIndex + (movingTowardEnd ? 0 : 1));
 		if (response.isError()) {
 			throw new ReorderException(this, response.getError());
 		}
