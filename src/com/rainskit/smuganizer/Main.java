@@ -49,7 +49,7 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, FileNotFoundException, IOException{
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		Toolkit.getDefaultToolkit().getSystemEventQueue().push(new WaitCursorEventQueue(170));
+//		Toolkit.getDefaultToolkit().getSystemEventQueue().push(new WaitCursorEventQueue(170));
 		new Main();
     }
 
