@@ -2,14 +2,13 @@ package com.rainskit.smuganizer.tree.transfer;
 
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import java.awt.Component;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
@@ -93,7 +92,7 @@ public abstract class AbstractTransferTask {
 	
 	protected abstract TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption, IOException;
 
-	protected abstract void cleanUp(TreeableGalleryItem newItem);
+	protected abstract List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem);
 
 	public abstract String getActionString();
 	
@@ -147,6 +146,10 @@ public abstract class AbstractTransferTask {
 	
 	public boolean isErrored() {
 		return (TaskStatus.ERRORED == status);
+	}
+
+	public boolean isDone() {
+		return (TaskStatus.DONE == status);
 	}
 	
 	public String getStatusTooltip() {

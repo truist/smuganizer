@@ -27,7 +27,7 @@ public class AsynchronousTransferManager implements StatusListener {
 					AbstractTransferTask nextTask = null;
 					while ((nextTask = taskDeque.takeFirst()) != null) {
 						TreeableGalleryItem newItem = nextTask.doInBackground();
-						if (newItem != null) {
+						if (nextTask.isDone()) {
 							cleanUp(nextTask, newItem);
 							removeVisibleRow(nextTask);
 						} else {
@@ -83,7 +83,12 @@ public class AsynchronousTransferManager implements StatusListener {
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
 				public void run() {
-					task.cleanUp(newItem);
+					List<AbstractTransferTask> followUpTasks = task.cleanUp(newItem);
+					if (followUpTasks != null) {
+						for (AbstractTransferTask each : followUpTasks) {
+							submit(each);
+						}
+					}
 				}
 			});
 		} catch (InvocationTargetException ex) {

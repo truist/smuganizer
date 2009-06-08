@@ -62,7 +62,7 @@ public class TreeableRenderer extends DefaultTreeCellRenderer {
 	private void setCellColor(Component rendererComponent, TreeableGalleryItem currentItem) {
 		if (currentItem.isSending() || currentItem.isReceiving()) {
 			if (currentItem.isSending()) {
-				rendererComponent.setForeground(Color.RED);
+				rendererComponent.setForeground(Color.ORANGE);
 				rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.ITALIC));
 			} else if (currentItem.isReceiving()) {
 				rendererComponent.setForeground(Color.ORANGE);

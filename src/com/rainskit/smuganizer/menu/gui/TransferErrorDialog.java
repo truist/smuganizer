@@ -62,6 +62,7 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 			repairPanels = new HashMap<AbstractTransferTask, RepairPanel>();
 			repairCards = new CardLayout();
 			cardPanel = new JPanel(repairCards);
+			cardPanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
 			cardPanel.add(new JPanel(), BLANK_CARD);
 			for (AbstractTransferTask each : initialItems) {
 				RepairPanel eachPanel = each.getRepairPanel();

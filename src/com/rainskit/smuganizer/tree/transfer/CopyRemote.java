@@ -3,6 +3,8 @@ package com.rainskit.smuganizer.tree.transfer;
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -24,12 +26,19 @@ public class CopyRemote extends AbstractTransferTask {
 		return newItem;
 	}
 	
-	protected void cleanUp(TreeableGalleryItem newItem) {
+	protected List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem) {
 		DefaultTreeModel destModel = (DefaultTreeModel)destTree.getModel();
 		DefaultMutableTreeNode destParentNode = (DefaultMutableTreeNode)destParentPath.getLastPathComponent();
 		DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(newItem);
 		destModel.insertNodeInto(newNode, destParentNode, destChildIndex);
 		destTree.makeVisible(destParentPath.pathByAddingChild(newNode));
+		
+		ArrayList<AbstractTransferTask> followUpTasks = new ArrayList<AbstractTransferTask>();
+//		followUpTasks.add(new MoveLocal(newNode, destTree, destParentPath, destChildIndex));
+//		if (srcItem.isProtected()) {
+//			followUpTasks.add(new ProtectItem());
+//		}
+		return followUpTasks;
 	}
 
 	@Override

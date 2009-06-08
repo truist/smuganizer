@@ -2,10 +2,8 @@ package com.rainskit.smuganizer.tree.transfer;
 
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog.RepairPanel;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import java.io.IOException;
-import javax.swing.JComponent;
+import java.util.List;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -24,10 +22,10 @@ public class MoveLocal extends AbstractTransferTask {
 
 	protected TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption {
 		destParentItem.moveItem(srcItem, destChildIndex, previousInterruption);
-		return srcItem;
+		return null;
 	}
 	
-	protected void cleanUp(TreeableGalleryItem newItem) {
+	protected List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem) {
 		//check to see if we are just changing an image's location within it's parent,
 		//and fix up the index var to work correctly with the tree model
 		DefaultMutableTreeNode destParentNode = (DefaultMutableTreeNode)destParentPath.getLastPathComponent();
@@ -39,6 +37,7 @@ public class MoveLocal extends AbstractTransferTask {
 		destModel.removeNodeFromParent(srcNode);
 		destModel.insertNodeInto(srcNode, destParentNode, destChildIndex + destChildOffset);
 		destTree.makeVisible(destParentPath.pathByAddingChild(srcNode));
+		return null;
 	}
 
 	@Override
