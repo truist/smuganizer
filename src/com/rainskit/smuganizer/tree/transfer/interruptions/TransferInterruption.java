@@ -1,4 +1,4 @@
-package com.rainskit.smuganizer.tree.transfer;
+package com.rainskit.smuganizer.tree.transfer.interruptions;
 
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
 

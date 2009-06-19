@@ -2,11 +2,12 @@ package com.rainskit.smuganizer.menu.gui;
 
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.TransferTable;
-import com.rainskit.smuganizer.tree.transfer.AbstractTransferTask;
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.TransferTableModel;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -34,9 +35,8 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 	private List<AbstractTransferTask> initialItems;
 	private TransferTable transferTable;
 	
-	private HashMap<AbstractTransferTask, RepairPanel> repairPanels;
-	
 	private boolean showRepairPanel;
+	private HashMap<AbstractTransferTask, RepairPanel> repairPanels;
 	private JTextArea errorText;
 	private CardLayout repairCards;
 	private JPanel cardPanel;
@@ -65,9 +65,9 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 			cardPanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
 			cardPanel.add(new JPanel(), BLANK_CARD);
 			for (AbstractTransferTask each : initialItems) {
-				RepairPanel eachPanel = each.getRepairPanel();
+				RepairPanel eachPanel = each.getInterruption().getRepairPanel();
 				repairPanels.put(each, eachPanel);
-				cardPanel.add(eachPanel.getPanel(), eachPanel.getUniqueKey());
+				cardPanel.add(eachPanel, eachPanel.getUniqueKey());
 			}
 			tablePanel.add(cardPanel, BorderLayout.SOUTH);
 		} else {
@@ -115,7 +115,7 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 		Box buttonPanel = Box.createVerticalBox();
 		buttonPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		
-		JButton retryButton = new JButton("Retry transfers");
+		JButton retryButton = new JButton("Retry");
 		retryButton.setActionCommand(ButtonActions.RETRY.toString());
 		retryButton.addActionListener(this);
 		buttonPanel.add(retryButton);
@@ -126,11 +126,13 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 		buttonPanel.add(Box.createVerticalStrut(5));
 		buttonPanel.add(cancelButton);
 		
-		JButton applyAllButton = new JButton("Apply to all");
-		applyAllButton.setActionCommand(ButtonActions.APPLY_ALL.toString());
-		applyAllButton.addActionListener(this);
-		buttonPanel.add(Box.createVerticalGlue());
-		buttonPanel.add(applyAllButton);
+		if (showRepairPanel) {
+			JButton applyAllButton = new JButton("Apply to all");
+			applyAllButton.setActionCommand(ButtonActions.APPLY_ALL.toString());
+			applyAllButton.addActionListener(this);
+			buttonPanel.add(Box.createVerticalGlue());
+			buttonPanel.add(applyAllButton);
+		}
 		
 		return buttonPanel;
 	}
@@ -165,15 +167,17 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 			boolean encounteredError = false;
 			if (ButtonActions.RETRY.toString().equals(ae.getActionCommand())) {
 				closedWithRetry = true;
-				for (RepairPanel each : repairPanels.values()) {
-					try {
-						each.post();
-					} catch (Exception e) {
-						encounteredError = true;
-						Logger.getLogger(TransferErrorDialog.class.getName()).log(Level.SEVERE, "Unable to apply changes to repair panel", e);
-						JOptionPane.showMessageDialog(TransferErrorDialog.this, 
-							"Error: unable to apply changes to " + each.getDescription() + ": " + e.getLocalizedMessage(), 
-							"Error applying changes", JOptionPane.ERROR_MESSAGE);
+				if (showRepairPanel) {
+					for (RepairPanel each : repairPanels.values()) {
+						try {
+							each.post();
+						} catch (Exception e) {
+							encounteredError = true;
+							Logger.getLogger(TransferErrorDialog.class.getName()).log(Level.SEVERE, "Unable to apply changes to repair panel", e);
+							JOptionPane.showMessageDialog(TransferErrorDialog.this, 
+								"Error: unable to apply changes to " + each.getDescription() + ": " + e.getLocalizedMessage(), 
+								"Error applying changes", JOptionPane.ERROR_MESSAGE);
+						}
 					}
 				}
 			} else {
@@ -187,11 +191,13 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 	}
 	
 	
-	public static interface RepairPanel {
-		public JComponent getPanel();
-		public String getDescription();
-		public String getUniqueKey();
-		public void loadSettingsFrom(RepairPanel otherPanel) throws Exception;
-		public void post() throws Exception;
+	public static abstract class RepairPanel extends JPanel {
+		public RepairPanel(LayoutManager layoutManager) {
+			super(layoutManager);
+		}
+		public abstract String getDescription();
+		public abstract String getUniqueKey();
+		public abstract void loadSettingsFrom(RepairPanel otherPanel) throws Exception;
+		public abstract void post() throws Exception;
 	}
 }

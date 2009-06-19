@@ -2,7 +2,7 @@ package com.rainskit.smuganizer.menu.actions.tableactions;
 
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.TransferTable;
-import com.rainskit.smuganizer.tree.transfer.AbstractTransferTask;
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import java.awt.event.KeyEvent;
 import java.util.List;

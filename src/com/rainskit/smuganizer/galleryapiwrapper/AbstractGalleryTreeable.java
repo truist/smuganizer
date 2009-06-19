@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.galleryapiwrapper;
 
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import com.rainskit.smuganizer.tree.transfer.TransferInterruption;
+import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 
 public abstract class AbstractGalleryTreeable extends TreeableGalleryItem {
 	public AbstractGalleryTreeable(TreeableGalleryItem parent) {
@@ -36,11 +36,11 @@ public abstract class AbstractGalleryTreeable extends TreeableGalleryItem {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
-	public boolean canImport(TreeableGalleryItem newItem, int childIndex) {
+	public boolean canImport(TreeableGalleryItem newItem) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex, TransferInterruption previousInterruption) {
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	

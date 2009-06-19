@@ -37,7 +37,7 @@ public class TreeableRenderer extends DefaultTreeCellRenderer {
 				
 				String newValue = currentItem.getLabel() + currentItem.getMetaLabel();
 				Component superComponent = super.getTreeCellRendererComponent(tree, newValue, sel, expanded, leaf, row, hasFocus);
-				setCellColor(superComponent, currentItem);
+				setCellAttributes(superComponent, currentItem);
 				return superComponent;
 			} 
 		}
@@ -59,22 +59,19 @@ public class TreeableRenderer extends DefaultTreeCellRenderer {
 		return getIconForType();
 	}
 
-	private void setCellColor(Component rendererComponent, TreeableGalleryItem currentItem) {
+	private void setCellAttributes(Component rendererComponent, TreeableGalleryItem currentItem) {
 		if (currentItem.isSending() || currentItem.isReceiving()) {
-			if (currentItem.isSending()) {
-				rendererComponent.setForeground(Color.ORANGE);
-				rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.ITALIC));
-			} else if (currentItem.isReceiving()) {
-				rendererComponent.setForeground(Color.ORANGE);
-				rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.BOLD));
-			}
+			rendererComponent.setForeground(Color.ORANGE);
+			rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.BOLD));
 		} else {
 			if (currentItem.isProtected() || currentItem.isParentProtected()) {
-				rendererComponent.setForeground(Color.GRAY);
-			} else if (currentItem.hasBeenSent()) {
+				rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.ITALIC));
+			} else {
+				rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.PLAIN));
+			}
+			if (currentItem.hasBeenSent()) {
 				rendererComponent.setForeground(Color.BLUE);
 			}
-			rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.PLAIN));
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer;
 
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugAlbum;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.UnexpectedCaptionInterruption;
+import com.rainskit.smuganizer.tree.transfer.interruptions.UnexpectedCaptionInterruption;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

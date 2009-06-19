@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer;
 
-import com.rainskit.smuganizer.tree.transfer.AbstractTransferTask;
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.TransferTableModel;
 import java.awt.Color;
 import java.awt.Component;

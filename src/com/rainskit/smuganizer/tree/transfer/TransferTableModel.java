@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.tree.transfer;
 
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
@@ -35,6 +36,12 @@ public class TransferTableModel extends AbstractTableModel {
 		transferTasks.add(transferTask);
 		fireTableRowsInserted(transferTasks.size() - 1, transferTasks.size() - 1);
 	}
+
+	public void addTaskAfter(AbstractTransferTask each, AbstractTransferTask parentTask) {
+		int parentIndex = transferTasks.indexOf(parentTask);
+		transferTasks.add(parentIndex + 1, each);
+		fireTableRowsInserted(parentIndex, parentIndex);
+	}
 	
 	public void taskUpdated(AbstractTransferTask task) {
 		int row = transferTasks.indexOf(task);
@@ -67,9 +74,9 @@ public class TransferTableModel extends AbstractTableModel {
 			case ACTION_COLUMN:
 				return row.getActionString();
 			case SOURCE_COLUMN:
-				return row.srcItem.getFullPathLabel();
+				return row.getSourceLabel();
 			case DEST_COLUMN:
-				return row.destParentItem.getFullPathLabel();
+				return row.getDestLabel();
 			default:
 				throw new IllegalArgumentException("Invalid column: " + columnIndex);
 		}

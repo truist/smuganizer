@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.tree.transfer;
 
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class AsynchronousTransferManager implements StatusListener {
 					AbstractTransferTask nextTask = null;
 					while ((nextTask = taskDeque.takeFirst()) != null) {
 						TreeableGalleryItem newItem = nextTask.doInBackground();
-						if (nextTask.isDone()) {
+						if (nextTask.isDone()) {	//it could have been 'interrupted'
 							cleanUp(nextTask, newItem);
 							removeVisibleRow(nextTask);
 						} else {
@@ -48,10 +49,23 @@ public class AsynchronousTransferManager implements StatusListener {
 		taskDeque.addLast(task);
 	}
 	
+	private void submitCleanUpTasks(List<AbstractTransferTask> tasks, AbstractTransferTask parentTask) {
+		for (AbstractTransferTask each : tasks) {
+			each.addStatusListener(this);
+			visibleTable.addTaskAfter(each, parentTask);
+			parentTask = each;
+		}
+		addTasksToFrontOfQueue(tasks);
+	}
+	
 	public void retry(List<AbstractTransferTask> tasks) {
 		for (AbstractTransferTask each : tasks) {
 			each.prepareForRetry();
 		}
+		addTasksToFrontOfQueue(tasks);
+	}
+	
+	private void addTasksToFrontOfQueue(List<AbstractTransferTask> tasks) {
 		//it gets tricky to insert all the new items at the front of the queue,
 		//while also ensuring that they are added in the correct order.  to solve this,
 		//I empty the queue first, then just add the new items onto the "end" of the 
@@ -85,9 +99,7 @@ public class AsynchronousTransferManager implements StatusListener {
 				public void run() {
 					List<AbstractTransferTask> followUpTasks = task.cleanUp(newItem);
 					if (followUpTasks != null) {
-						for (AbstractTransferTask each : followUpTasks) {
-							submit(each);
-						}
+						submitCleanUpTasks(followUpTasks, task);
 					}
 				}
 			});

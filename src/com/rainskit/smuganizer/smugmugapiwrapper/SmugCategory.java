@@ -6,7 +6,7 @@ import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MoveException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import com.rainskit.smuganizer.tree.transfer.TransferInterruption;
+import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -148,11 +148,11 @@ public class SmugCategory extends TreeableGalleryItem {
 //		}
 	}
 	
-	public boolean canImport(TreeableGalleryItem newItem, int childIndex) {
+	public boolean canImport(TreeableGalleryItem newItem) {
 		return false;
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex, TransferInterruption previousInterruption) {
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	

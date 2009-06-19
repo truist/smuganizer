@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.smugmugapiwrapper;
 
 import com.rainskit.smuganizer.ExifHandler;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.UnexpectedCaptionInterruption;
+import com.rainskit.smuganizer.tree.transfer.interruptions.UnexpectedCaptionInterruption;
 import com.rainskit.smuganizer.SmugMugSettings;
 import com.rainskit.smuganizer.TransferSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
@@ -10,7 +10,7 @@ import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MoveException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.ReorderException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.PasswordException;
-import com.rainskit.smuganizer.tree.transfer.TransferInterruption;
+import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;
 import java.io.ByteArrayInputStream;
@@ -181,11 +181,11 @@ public class SmugAlbum extends TreeableGalleryItem {
 		reorderItem(childImage, childIndex);
 	}
 
-	public boolean canImport(TreeableGalleryItem newItem, int childIndex) {
+	public boolean canImport(TreeableGalleryItem newItem) {
 		return (ItemType.IMAGE == newItem.getType());
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex, TransferInterruption previousInterruption) throws IOException, TransferInterruption {
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) throws IOException, TransferInterruption {
 		byte[] imageData = null;
 		String caption = null;
 		if (previousInterruption != null && previousInterruption instanceof UnexpectedCaptionInterruption) {
@@ -243,11 +243,6 @@ public class SmugAlbum extends TreeableGalleryItem {
 		SmugImage newImage = new SmugImage(this, getInfoResponse.getImage());
 		images.add(newImage);
 		
-		reorderItem(newImage, childIndex);
-		if (newItem.isProtected()) {
-			newImage.setHidden(true);
-		}
-
 		return newImage;
 	}
 	
@@ -263,7 +258,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 		//to fix smugmug, we take the image that we think is in position '1'
 		//(but that smugmug actually has in position '0') and move it to
 		//position '1' in smugmug, which sets everything right
-		if (childIndex == 0) {
+		if (childIndex == 0 && images.size() > 1) {
 			reorderItemInSmugMug(images.get(1), 1);
 		}
 	}

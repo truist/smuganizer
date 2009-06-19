@@ -1,8 +1,9 @@
-package com.rainskit.smuganizer.smugmugapiwrapper.exceptions;
+package com.rainskit.smuganizer.tree.transfer.interruptions;
 
 import com.rainskit.smuganizer.ExifHandler;
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
-import com.rainskit.smuganizer.tree.transfer.TransferInterruption;
+import com.rainskit.smuganizer.menu.gui.TransferErrorDialog.RepairPanel;
+import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -30,7 +31,7 @@ public class UnexpectedCaptionInterruption extends TransferInterruption {
 	private byte[] imageData;
 	private String fileName;
 	private String hiddenCaption;
-	private RepairPanel repairPanel;
+	private CaptionRepairPanel repairPanel;
 	
 	public UnexpectedCaptionInterruption(byte[] imageData, String fileName, String hiddenCaption) {
 		super("Image has a 'hidden' caption in the EXIF headers");
@@ -67,9 +68,9 @@ public class UnexpectedCaptionInterruption extends TransferInterruption {
 	}
 
 	@Override
-	public TransferErrorDialog.RepairPanel getRepairPanel() {
+	public RepairPanel getRepairPanel() {
 		if (repairPanel == null) {
-			repairPanel = new RepairPanel();
+			repairPanel = new CaptionRepairPanel();
 		}
 		return repairPanel;
 	}
@@ -77,14 +78,14 @@ public class UnexpectedCaptionInterruption extends TransferInterruption {
 		
 	private enum RadioChoice { FILE_NONE, FILE_REMOVE, FILE_REPLACE, SMUG_BLANK, SMUG_SET }
 	
-	private class RepairPanel extends JPanel implements TransferErrorDialog.RepairPanel, ActionListener, DocumentListener {
+	private class CaptionRepairPanel extends RepairPanel implements ActionListener, DocumentListener {
 		private ButtonGroup fileGroup;
 		private ButtonGroup smugGroup;
 		private JTextField fileSetField;
 		private JTextField smugSetField;
 		private JLabel resultLabel;
 		
-		public RepairPanel() {
+		public CaptionRepairPanel() {
 			super(new BorderLayout());
 
 			String header = getErrorText() + "\n\nPlease select how you would like to handle this:";
@@ -194,8 +195,8 @@ public class UnexpectedCaptionInterruption extends TransferInterruption {
 			}
 		}
 
-		public void loadSettingsFrom(TransferErrorDialog.RepairPanel otherPanel) throws Exception {
-			RepairPanel otherCaptionPanel = (RepairPanel)otherPanel;
+		public void loadSettingsFrom(RepairPanel otherPanel) throws Exception {
+			CaptionRepairPanel otherCaptionPanel = (CaptionRepairPanel)otherPanel;
 			setSelectedItemFrom(otherCaptionPanel.fileGroup, fileGroup);
 			fileSetField.setText(otherCaptionPanel.fileSetField.getText());
 			setSelectedItemFrom(otherCaptionPanel.smugGroup, smugGroup);

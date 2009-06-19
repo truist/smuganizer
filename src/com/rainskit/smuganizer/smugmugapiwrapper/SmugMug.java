@@ -8,7 +8,7 @@ import com.kallasoft.smugmug.api.json.v1_2_0.login.WithPassword;
 import com.kallasoft.smugmug.api.json.v1_2_0.users.GetTree;
 import com.rainskit.smuganizer.SmugMugSettings;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import com.rainskit.smuganizer.tree.transfer.TransferInterruption;
+import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -97,11 +97,11 @@ public class SmugMug extends TreeableGalleryItem {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	
-	public boolean canImport(TreeableGalleryItem newItem, int childIndex) {
+	public boolean canImport(TreeableGalleryItem newItem) {
 		return false;
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex, TransferInterruption previousInterruption) {
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	

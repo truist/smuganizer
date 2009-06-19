@@ -1,5 +1,7 @@
-package com.rainskit.smuganizer.tree.transfer;
+package com.rainskit.smuganizer.tree.transfer.tasks;
 
+import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
+import com.rainskit.smuganizer.tree.transfer.*;
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.io.IOException;
@@ -57,7 +59,9 @@ public abstract class AbstractTransferTask {
 		this.srcItem = srcItem;
 		this.destTree = destTree;
 		this.destParentPath = destParentPath;
-		this.destParentItem = (TreeableGalleryItem)((DefaultMutableTreeNode)destParentPath.getLastPathComponent()).getUserObject();
+		if (destParentPath != null) {
+			this.destParentItem = (TreeableGalleryItem)((DefaultMutableTreeNode)destParentPath.getLastPathComponent()).getUserObject();
+		}
 		this.destChildIndex = destChildIndex;
 		
 		this.listeners = new ArrayList<StatusListener>();
@@ -65,7 +69,6 @@ public abstract class AbstractTransferTask {
 	}
 
 	public void prepareForRetry() {
-//		this.transferInterruption = null;
 		setStatus(TaskStatus.QUEUED_FOR_RETRY);
 	}
 
@@ -92,24 +95,25 @@ public abstract class AbstractTransferTask {
 	
 	protected abstract TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption, IOException;
 
-	protected abstract List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem);
+	public abstract List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem);
 
 	public abstract String getActionString();
 	
 	private void setStatus(TaskStatus status) {
 		this.status = status;
+		TreeableGalleryItem recipientItem = (destParentItem != null ? destParentItem : srcItem);
 		switch (status) {
 			case QUEUED:
 				srcItem.transferStarted(false);
-				destParentItem.transferStarted(true);
+				recipientItem.transferStarted(true);
 				break;
 			case CANCELED:
 				srcItem.transferEnded(false, false);
-				destParentItem.transferEnded(true, false);
+				recipientItem.transferEnded(true, false);
 				break;
 			case DONE:
 				srcItem.transferEnded(false, true);
-				destParentItem.transferEnded(true, true);
+				recipientItem.transferEnded(true, true);
 				break;
 		}
 		
@@ -118,8 +122,6 @@ public abstract class AbstractTransferTask {
 		}
 	}
 
-	public abstract TransferErrorDialog.RepairPanel getRepairPanel();
-	
 	public void addStatusListener(StatusListener listener) {
 		listeners.add(listener);
 	}
@@ -130,6 +132,18 @@ public abstract class AbstractTransferTask {
 	
 	public String getStatus() {
 		return status.toString();
+	}
+
+	public String getSourceLabel() {
+		return srcItem.getFullPathLabel();
+	}
+	
+	public String getDestLabel() {
+		if (destParentItem != null) {
+			return destParentItem.getFullPathLabel();
+		} else {
+			return "";
+		}
 	}
 
 	public void cancel() {
@@ -150,6 +164,10 @@ public abstract class AbstractTransferTask {
 
 	public boolean isDone() {
 		return (TaskStatus.DONE == status);
+	}
+	
+	public TransferInterruption getInterruption() {
+		return transferInterruption;
 	}
 	
 	public String getStatusTooltip() {

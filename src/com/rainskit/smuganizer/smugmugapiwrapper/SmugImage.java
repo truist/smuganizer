@@ -5,7 +5,7 @@ import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.HideException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import com.rainskit.smuganizer.tree.transfer.TransferInterruption;
+import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -13,8 +13,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SmugImage extends TreeableGalleryItem {
+	private static final int HIDE_RETRY_DELAY = 1000;
+	private static final int HIDE_RETRY_LIMIT = 60000;
+	
 	private boolean loaded;
 	private com.kallasoft.smugmug.api.json.entity.Image apiImage;
 	private String reLabel;
@@ -158,11 +163,11 @@ public class SmugImage extends TreeableGalleryItem {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
-	public boolean canImport(TreeableGalleryItem newItem, int childIndex) {
+	public boolean canImport(TreeableGalleryItem newItem) {
 		return false;
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, int childIndex, TransferInterruption previousInterruption) {
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	
@@ -194,15 +199,29 @@ public class SmugImage extends TreeableGalleryItem {
 
 	@Override
 	public void setHidden(boolean hidden) {
-		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings changeSettings = new com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings();
-		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings.ChangeSettingsResponse response 
-			= changeSettings.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, apiImage.getID(), null, null, hidden);
-		if (response.isError()) {
-			throw new HideException(this, response.getError());
+		//if we just uploaded an image into SmugMug, the 'hide' will fail until
+		//SmugMug finishes processing the image.  So we retry the action, repeatedly
+		//in the hope that it succeeds (within a time limit).
+		long startTime = System.currentTimeMillis();
+		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings.ChangeSettingsResponse response = null;
+		while ((System.currentTimeMillis() - startTime) < HIDE_RETRY_LIMIT) {
+			com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings changeSettings = new com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings();
+			response = changeSettings.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, apiImage.getID(), null, null, hidden);
+			if (response.isError()) {
+				try {
+					Thread.sleep(HIDE_RETRY_DELAY);
+				} catch (InterruptedException ex) {
+					Logger.getLogger(SmugImage.class.getName()).log(Level.SEVERE, null, ex);
+					throw new HideException(this, response.getError());
+				}
+			} else {
+				this.hidden = Boolean.valueOf(hidden);
+				return;
+			}
 		}
-		this.hidden = Boolean.valueOf(hidden);
+		throw new HideException(this, response.getError());
 	}
-
+	
 	@Override
 	public boolean hasPassword() {
 		return false;

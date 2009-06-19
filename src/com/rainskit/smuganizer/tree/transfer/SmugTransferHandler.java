@@ -1,5 +1,8 @@
 package com.rainskit.smuganizer.tree.transfer;
 
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
+import com.rainskit.smuganizer.tree.transfer.tasks.MoveLocal;
+import com.rainskit.smuganizer.tree.transfer.tasks.CopyRemote;
 import com.rainskit.smuganizer.tree.*;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
 import java.awt.datatransfer.Transferable;
@@ -51,7 +54,7 @@ public class SmugTransferHandler extends TransferHandler {
 		if (flavorClass.getTreeModel() == destTree.getModel()) {
 			return destParentItem.canMove(srcItem, location.getChildIndex());
 		} else {
-			return destParentItem.canImport(srcItem, location.getChildIndex());
+			return destParentItem.canImport(srcItem);
 		}
 	}
 	
