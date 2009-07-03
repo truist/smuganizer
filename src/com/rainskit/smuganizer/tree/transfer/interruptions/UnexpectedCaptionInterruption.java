@@ -5,6 +5,7 @@ import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog.RepairPanel;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -75,6 +76,16 @@ public class UnexpectedCaptionInterruption extends TransferInterruption {
 		return repairPanel;
 	}
 	
+	static JTextArea makeMultiLineLabel(String text, Color background) {
+		JTextArea label = new JTextArea(text);
+		label.setFont(new JLabel().getFont());
+		label.setEditable(false);
+		label.setLineWrap(true);
+		label.setWrapStyleWord(true);
+		label.setBackground(background);
+		return label;
+	}
+
 		
 	private enum RadioChoice { FILE_NONE, FILE_REMOVE, FILE_REPLACE, SMUG_BLANK, SMUG_SET }
 	
@@ -89,7 +100,7 @@ public class UnexpectedCaptionInterruption extends TransferInterruption {
 			super(new BorderLayout());
 
 			String header = getErrorText() + "\n\nPlease select how you would like to handle this:";
-			JTextArea headerArea = makeMultiLineLabel(header);
+			JTextArea headerArea = makeMultiLineLabel(header, getBackground());
 			
 			add(headerArea, BorderLayout.NORTH);
 
@@ -153,16 +164,6 @@ public class UnexpectedCaptionInterruption extends TransferInterruption {
 			return newRadio;
 		}
 		
-		private JTextArea makeMultiLineLabel(String text) {
-			JTextArea label = new JTextArea(text);
-			label.setFont(new JLabel().getFont());
-			label.setEditable(false);
-			label.setLineWrap(true);
-			label.setWrapStyleWord(true);
-			label.setBackground(getBackground());
-			return label;
-		}
-
 		private void updateResultLabel() {
 			String smugAction = smugGroup.getSelection().getActionCommand();
 			String fileAction = fileGroup.getSelection().getActionCommand();

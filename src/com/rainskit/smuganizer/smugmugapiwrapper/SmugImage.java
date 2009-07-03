@@ -39,7 +39,11 @@ public class SmugImage extends TreeableGalleryItem {
 		loadImageDetails();
 		return null;
 	}
-
+	
+	public List<? extends TreeableGalleryItem> getChildren() {
+		return null;
+	}
+	
 	private void loadImageDetails() {
 		com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo getInfo
 			= new com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo();
@@ -96,6 +100,10 @@ public class SmugImage extends TreeableGalleryItem {
 		} else {
 			return null;
 		}
+	}
+	
+	public String getDescription() {
+		return null;
 	}
 	
 	public String getFileName() {

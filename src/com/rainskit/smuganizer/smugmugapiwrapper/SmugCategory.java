@@ -6,6 +6,7 @@ import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MoveException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.transfer.interruptions.PasswordRequiredInterruption;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -58,6 +59,10 @@ public class SmugCategory extends TreeableGalleryItem {
 		return children;
 	}
 
+	public List<? extends TreeableGalleryItem> getChildren() {
+		return loadChildren();
+	}
+	
 	public String getLabel() {
 		return getFileName();
 	}
@@ -71,6 +76,10 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 
 	public String getCaption() {
+		return null;
+	}
+	
+	public String getDescription() {
 		return null;
 	}
 	
@@ -149,11 +158,36 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 	
 	public boolean canImport(TreeableGalleryItem newItem) {
-		return false;
+		return (ItemType.ALBUM == newItem.getType());
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) throws IOException, TransferInterruption {
+		if (newItem.isProtected() && previousInterruption == null) {
+			throw new PasswordRequiredInterruption(newItem);
+		} else {
+			String password = newItem.isProtected() ? ((PasswordRequiredInterruption)previousInterruption).getPassword() : null;
+			com.kallasoft.smugmug.api.json.v1_2_0.albums.Create create
+				= new com.kallasoft.smugmug.api.json.v1_2_0.albums.Create();
+			com.kallasoft.smugmug.api.json.v1_2_0.albums.Create.CreateResponse createResponse
+				= create.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID,
+									newItem.getCaption(),  newItem.getDescription(), null,
+									getCategoryID(), getSubCategoryID(), 
+									null, null, null, null, null, null, null, null, 
+									null, null, null, 
+									password, null, 
+									null, null, null, null, null, null, null, null, 
+									null, null, null, null, null, null, null, null, 
+									null, null, null, null, null, null, null, null, 
+									null, null, null);
+			if (createResponse.isError()) {
+				throw new MoveException(this, createResponse.getError());
+			}
+			
+			SmugAlbum newAlbum = new SmugAlbum(this, createResponse.getAlbumID(), createResponse.getAlbumKey());
+			albums.add(newAlbum);
+			
+			return newAlbum;
+		}
 	}
 	
 	protected Integer getCategoryID() {

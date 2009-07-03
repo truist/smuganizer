@@ -33,10 +33,20 @@ public class CopyRemote extends AbstractTransferTask {
 		destTree.makeVisible(destParentPath.pathByAddingChild(newNode));
 		
 		ArrayList<AbstractTransferTask> followUpTasks = new ArrayList<AbstractTransferTask>();
-		followUpTasks.add(new MoveLocal(newNode, destTree, destParentPath, destChildIndex));
-		if (srcItem.isProtected()) {
+		if (destParentItem.canMove(newItem, destChildIndex)) {
+			followUpTasks.add(new MoveLocal(newNode, destTree, destParentPath, destChildIndex));
+		}
+		if (srcItem.isProtected() && !newItem.isProtected()) {
 			followUpTasks.add(new ProtectItem(newItem, destTree, newNode));
 		}
+		List<? extends TreeableGalleryItem> children = srcItem.getChildren();
+		if (children != null) {
+			int childIndex = 0;
+			for (TreeableGalleryItem childItem : children) {
+				followUpTasks.add(new CopyRemote(childItem, destTree, new TreePath(newNode.getPath()), childIndex++));
+			}
+		}
+		
 		return followUpTasks;
 	}
 

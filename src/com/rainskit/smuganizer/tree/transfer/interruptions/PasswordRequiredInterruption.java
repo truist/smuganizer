@@ -4,6 +4,8 @@ import com.rainskit.smuganizer.menu.gui.TransferErrorDialog.RepairPanel;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -43,13 +45,20 @@ public class PasswordRequiredInterruption extends TransferInterruption {
 		JTextField passwordField;
 		
 		public PasswordRepairPanel() {
-			super(new GridBagLayout());
+			super(new BorderLayout());
+			
+			JComponent multiLineLabel = UnexpectedCaptionInterruption.makeMultiLineLabel(getErrorText(), getBackground());
+			add(multiLineLabel, BorderLayout.NORTH);
 			
 			JPanel inputPanel = new JPanel(new BorderLayout());
+			inputPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 			inputPanel.add(new JLabel("Please enter a password:"), BorderLayout.NORTH);
-			inputPanel.add(passwordField = new JTextField());
+			inputPanel.add(passwordField = new JTextField(20), BorderLayout.CENTER);
 			
-			this.add(inputPanel);
+			JPanel centeringPanel = new JPanel(new GridBagLayout());
+			centeringPanel.add(inputPanel);
+			
+			add(centeringPanel, BorderLayout.CENTER);
 		}
 		
 		@Override

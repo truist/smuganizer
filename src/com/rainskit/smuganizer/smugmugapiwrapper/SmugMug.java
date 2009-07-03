@@ -48,7 +48,6 @@ public class SmugMug extends TreeableGalleryItem {
 	}
 
 	public List<? extends TreeableGalleryItem> loadChildren() {
-		
 		if (categories == null) {
 			categories = new ArrayList<SmugCategory>();
 			
@@ -68,6 +67,10 @@ public class SmugMug extends TreeableGalleryItem {
 		}
 		return categories;
 	}
+	
+	public List<? extends TreeableGalleryItem> getChildren() {
+		return categories;
+	}
 
 	public ItemType getType() {
 		return ItemType.ROOT;
@@ -78,6 +81,10 @@ public class SmugMug extends TreeableGalleryItem {
 	}
 
 	public String getCaption() {
+		return null;
+	}
+	
+	public String getDescription() {
 		return null;
 	}
 	

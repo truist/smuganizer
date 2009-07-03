@@ -69,6 +69,8 @@ public class Gallery extends AbstractGalleryTreeable {
     private String completeURL;
     public static int galleryVersion;
     private String lastAuthToken;
+	
+	private List<GalleryAlbum> rootAlbums;
 
     public Gallery() throws IOException {
 		super(null);
@@ -86,6 +88,8 @@ public class Gallery extends AbstractGalleryTreeable {
 		
 		this.galleryVersion = determineGalleryVersion(baseURL);
 		login();
+		
+        this.rootAlbums = new ArrayList<GalleryAlbum>();
     }
 	
 	private int determineGalleryVersion(String baseURL) throws IOException {
@@ -179,8 +183,6 @@ public class Gallery extends AbstractGalleryTreeable {
     public List<? extends TreeableGalleryItem> loadChildren() throws IOException {
 		Properties response = executePost(newBaseArguments(COMMAND_FETCH_ALBUMS_PRUNE), loginHttpClient);
 		
-        List<GalleryAlbum> rootAlbums = new ArrayList<GalleryAlbum>();
-		
 		Map<String, GalleryAlbum> nameAlbumMap = new HashMap<String, GalleryAlbum>();
 		Map<GalleryAlbum, String> albumParentMap = new HashMap<GalleryAlbum, String>();
 
@@ -214,6 +216,10 @@ public class Gallery extends AbstractGalleryTreeable {
 		
         return rootAlbums;
     }
+	
+	public List<? extends TreeableGalleryItem> getChildren() {
+		return rootAlbums;
+	}
 	
     ArrayList<GalleryImage> loadImagesFor(GalleryAlbum album) throws IOException {
         ArrayList<GalleryImage> images = new ArrayList<GalleryImage>();
@@ -257,6 +263,10 @@ public class Gallery extends AbstractGalleryTreeable {
 	}
 
 	public String getCaption() {
+		return null;
+	}
+	
+	public String getDescription() {
 		return null;
 	}
 

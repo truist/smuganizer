@@ -1,10 +1,5 @@
 
-do the drag-and-drop import
-	figure out what metadata (hidden, caption, etc.) to copy over
-
 import combo order:
-	album -> category/subcategory
-	multi-select source
 	upload dialog
 	error messages
 	album:album -> category
@@ -17,7 +12,7 @@ import combo order:
 	album -> album
 	all the "upload dialog" combos
 
-import album descriptions
+progress indicator for active task
 
 implement a "new album" menu for SmugMug
 
@@ -33,6 +28,7 @@ implement password hint support for password protect dialog
 
 need an application icon
 
+keyword support
 
 -----
 

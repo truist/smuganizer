@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.List;
 
 public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryItem> {
+
 	public enum ItemType { ROOT, CATEGORY, ALBUM, IMAGE }
 	
 	public static final String PATH_SEP = "/";
@@ -22,6 +23,7 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	}
 
 	public abstract List<? extends TreeableGalleryItem> loadChildren() throws IOException;
+	public abstract List<? extends TreeableGalleryItem> getChildren();
 	
 	public abstract ItemType getType();
 	public TreeableGalleryItem getParent() {
@@ -74,6 +76,8 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public abstract String getURLName();
 	/** The caption to show online; should be 'null' unless the caption is different than the filename */
 	public abstract String getCaption();
+	/** If the item has a description (larger block of text), return it here */
+	public abstract String getDescription();
 	
 	public abstract boolean canBeDeleted();
 	public abstract void delete();

@@ -27,6 +27,10 @@ public class GalleryImage extends AbstractGalleryTreeable {
 		return null;
 	}
 
+	public List<? extends TreeableGalleryItem> getChildren() {
+		return null;
+	}
+	
 	public URL getPreviewURL() throws MalformedURLException {
 		String previewFileName = imageDetails.getProperty(Gallery.RESPONSE_IMAGE_RESIZED_NAME_INDEXED + imageRefNum);
 		if (previewFileName == null) {
@@ -68,6 +72,10 @@ public class GalleryImage extends AbstractGalleryTreeable {
 		} else {
 			return rawCaption;
 		}
+	}
+	
+	public String getDescription() {
+		return null;
 	}
 
 	static String generateCleanCaption(String rawName, String rawCaption) {

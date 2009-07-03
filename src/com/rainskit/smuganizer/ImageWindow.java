@@ -37,6 +37,7 @@ public class ImageWindow extends JFrame {
 	private static final String IMAGE_CARD = "image.card";
 	private static final String PROGRESS_CARD = "progress.card";
 	private static final String NO_IMAGE_TITLE = "No image";
+	private static int RETRY_DELAY = 2000;
 	
 	private ImageLoader imageLoader;
 	private static int lastCallID;
@@ -177,7 +178,7 @@ public class ImageWindow extends JFrame {
 		public void run() {
 			try {
 				while (true) {
-					final AddImageCall nextCall = imageQueue.takeFirst();
+					AddImageCall nextCall = imageQueue.takeFirst();
 					try {
 						//check if someone jumped ahead of us and already cached it, 
 						//which is possible because of the pre-emptive queueing
@@ -188,19 +189,34 @@ public class ImageWindow extends JFrame {
 							loadImage(nextCall);
 						}
 					} catch (IOException ex) {
-						if (nextCall.image.getParent() != null) {	//check to see if image was deleted out from under us
-							Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
-							try {
-								//keep trying, in case the image is just being processed on the server
-								displayImage(nextCall.image);
-							} catch (IOException ex1) {
-								Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex1);
-							}
-						}
+						retryIfNeeded(nextCall, ex);
 					}
 				}
 			} catch (InterruptedException ex) {
 				Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+		
+		private void retryIfNeeded(final AddImageCall nextCall, IOException ex) {
+			//sometimes, if the image was just uploaded, SmugMug will error out when we ask for it.
+			//other times, the image was just deleted before we got a chance to display it.
+			//so we check to see if it still has its parent, as a way to see if it was deleted.
+			//if so, we try again - unless the user has already clicked on another image.
+			//and we put a small delay in before we try agian, to avoid hammering the server.
+			if (nextCall.image.getParent() != null) {
+				Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, "Image failed to load for display", ex);
+				if (imageQueue.isEmpty()) {
+					new Thread(new Runnable() {
+						public void run() {
+							try {
+								Thread.sleep(RETRY_DELAY);
+								imageQueue.putLast(nextCall);
+							} catch (InterruptedException ex1) {
+								Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex1);
+							}
+						}
+					}).start();
+				}
 			}
 		}
 

@@ -53,7 +53,11 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 	}
 	
 	public String getCaption() {
-		return null;
+		return title;
+	}
+	
+	public String getDescription() {
+		return description;
 	}
 
 	private List<GalleryImage> getImages() throws IOException {
@@ -69,14 +73,19 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 			albumProtected = Boolean.valueOf(gallery.isAlbumProtected(GalleryAlbum.this));
 		}
 		
-		ArrayList<TreeableGalleryItem> children = new ArrayList<TreeableGalleryItem>();
-		children.addAll(subAlbums);
-		children.addAll(getImages());
-		return children;
+		getImages();
+		return getChildren();
 	}
 
+	public List<? extends TreeableGalleryItem> getChildren() {
+		ArrayList<TreeableGalleryItem> children = new ArrayList<TreeableGalleryItem>();
+		children.addAll(subAlbums);
+		children.addAll(images);
+		return children;
+	}
+	
 	public String getLabel() {
-		return title;
+		return getCaption();
 	}
 
 	public boolean canBeLaunched() {

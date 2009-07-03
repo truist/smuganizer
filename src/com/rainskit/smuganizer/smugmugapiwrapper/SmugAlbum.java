@@ -41,36 +41,32 @@ public class SmugAlbum extends TreeableGalleryItem {
 	public SmugAlbum(SmugCategory parent, com.kallasoft.smugmug.api.json.entity.Album apiAlbum) {
 		super(parent);
 		this.apiAlbum = apiAlbum;
+		images = new ArrayList<SmugImage>();
+	}
+
+	public SmugAlbum(SmugCategory parent, Integer albumID, String albumKey) {
+		this(parent, reloadDetails(albumID, albumKey, parent.getFullPathLabel()));
+		childrenLoaded = true;
 	}
 
 	public void setParent(SmugCategory newParent) {
 		this.parent = newParent;
-		reloadDetails();
+		apiAlbum = reloadDetails(apiAlbum.getID(), apiAlbum.getAlbumKey(), parent.getFullPathLabel());
 	}
 
-	private void reloadDetails() {
+	private static com.kallasoft.smugmug.api.json.entity.Album reloadDetails(Integer albumID, String albumKey, String parentPathLabel) {
 		com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo getInfo
 			= new com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo();
 		com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo.GetInfoResponse response
-			= getInfo.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, apiAlbum.getID(), apiAlbum.getAlbumKey());
+			= getInfo.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, albumID, albumKey);
 		if (response.isError()) {
-			throw new SmugException("Error loading album details for album with ID \"" + apiAlbum.getID() + "\" in category \"" + parent.getFullPathLabel() + "\"", response.getError());
+			throw new SmugException("Error loading album details for album with ID \"" + albumID + "\" in category \"" + parentPathLabel + "\"", response.getError());
 		}
-		apiAlbum = response.getAlbum();
+		return response.getAlbum();
 	}
 
 	public List<? extends TreeableGalleryItem> loadChildren() {
-		com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo albumGet = new com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo();
-		com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo.GetInfoResponse albumResponse
-			= albumGet.execute(SmugMug.API_URL, 
-								SmugMug.API_KEY, 
-								SmugMug.sessionID, 
-								apiAlbum.getID(), 
-								apiAlbum.getAlbumKey());
-		if (albumResponse.isError()) {
-			throw new SmugException("Failed to load album details for \"" + getFullPathLabel() + "\"", albumResponse.getError());
-		}
-		apiAlbum = albumResponse.getAlbum();
+		apiAlbum = reloadDetails(apiAlbum.getID(), apiAlbum.getAlbumKey(), parent.getFullPathLabel());
 		
 		com.kallasoft.smugmug.api.json.v1_2_0.images.Get imageGet = new com.kallasoft.smugmug.api.json.v1_2_0.images.Get();
 		com.kallasoft.smugmug.api.json.v1_2_0.images.Get.GetResponse imageResponse 
@@ -83,11 +79,15 @@ public class SmugAlbum extends TreeableGalleryItem {
 		if (imageResponse.isError() && imageResponse.getError().getCode().intValue() != NO_IMAGES_FOUND_ERROR) {
 			throw new SmugException("Failed to get images from album \"" + getFullPathLabel() + "\"", imageResponse.getError());
 		}
-		images = new ArrayList<SmugImage>();
+		
 		for (com.kallasoft.smugmug.api.json.entity.Image each : imageResponse.getImageList()) {
 			images.add(new SmugImage(this, each));
 		}
 		childrenLoaded = true;
+		return images;
+	}
+	
+	public List<? extends TreeableGalleryItem> getChildren() {
 		return images;
 	}
 	
@@ -112,6 +112,10 @@ public class SmugAlbum extends TreeableGalleryItem {
 	
 	public String getCaption() {
 		return null;
+	}
+	
+	public String getDescription() {
+		return apiAlbum.getDescription();
 	}
 
 	public boolean canBeRelabeled() {
