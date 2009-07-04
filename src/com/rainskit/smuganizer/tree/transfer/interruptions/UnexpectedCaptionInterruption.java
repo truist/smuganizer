@@ -75,16 +75,6 @@ public class UnexpectedCaptionInterruption extends TransferInterruption {
 		}
 		return repairPanel;
 	}
-	
-	static JTextArea makeMultiLineLabel(String text, Color background) {
-		JTextArea label = new JTextArea(text);
-		label.setFont(new JLabel().getFont());
-		label.setEditable(false);
-		label.setLineWrap(true);
-		label.setWrapStyleWord(true);
-		label.setBackground(background);
-		return label;
-	}
 
 		
 	private enum RadioChoice { FILE_NONE, FILE_REMOVE, FILE_REPLACE, SMUG_BLANK, SMUG_SET }
@@ -100,9 +90,7 @@ public class UnexpectedCaptionInterruption extends TransferInterruption {
 			super(new BorderLayout());
 
 			String header = getErrorText() + "\n\nPlease select how you would like to handle this:";
-			JTextArea headerArea = makeMultiLineLabel(header, getBackground());
-			
-			add(headerArea, BorderLayout.NORTH);
+			add(makeMultiLineLabel(header, getBackground()), BorderLayout.NORTH);
 
 			fileGroup = new ButtonGroup();
 			JPanel fileOptionsPanel = new JPanel(new GridLayout(3, 1));

@@ -47,8 +47,7 @@ public class PasswordRequiredInterruption extends TransferInterruption {
 		public PasswordRepairPanel() {
 			super(new BorderLayout());
 			
-			JComponent multiLineLabel = UnexpectedCaptionInterruption.makeMultiLineLabel(getErrorText(), getBackground());
-			add(multiLineLabel, BorderLayout.NORTH);
+			add(makeMultiLineLabel(getErrorText(), getBackground()), BorderLayout.NORTH);
 			
 			JPanel inputPanel = new JPanel(new BorderLayout());
 			inputPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));

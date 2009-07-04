@@ -4,6 +4,7 @@ import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.TransferTableModel;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;

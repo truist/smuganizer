@@ -7,6 +7,7 @@ import com.rainskit.smuganizer.tree.transfer.TransferTableModel;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,7 +53,15 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 		this.showRepairPanel = showRepairPanel;
 		
 		JPanel tablePanel = new JPanel(new BorderLayout());
-		tablePanel.add(new JScrollPane(transferTable), BorderLayout.CENTER);
+		JScrollPane tableScroller = new JScrollPane(transferTable){
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension prefSize = super.getPreferredSize();
+				prefSize.height = Math.min(prefSize.height, 150);
+				return prefSize;
+			}
+		};
+		tablePanel.add(tableScroller, BorderLayout.NORTH);
 		
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(tablePanel, BorderLayout.CENTER);
@@ -103,10 +112,12 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 		transferTable.getSelectionModel().setSelectionInterval(0, 0);
 		
 		pack();
-		setSize(700, 450);
+		if (getWidth() < 700) {
+			setSize(700, getSize().height);
+		}
 		setLocationRelativeTo(main);
 	}
-
+	
 	public boolean shouldRetryTasks() {
 		return closedWithRetry;
 	}

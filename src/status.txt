@@ -1,16 +1,15 @@
 
 import combo order:
-	upload dialog
-	error messages
-	album:album -> category
 	album:album -> smugmug
-	album:mixed -> category
-	album:mixed -> smugmug
 	album:album:album -> smugmug
-	album:mixed:mixed -> smugmug
-	image -> image
-	album -> album
-	all the "upload dialog" combos
+
+when creating a new category under smugmug, check to see if it already exists (in the tree, or just as one of the standard categories)
+
+sort imported albums appropriately
+
+hitting enter or double-clicking should open errors/interruptions
+
+"show in tree" menu for transfer items
 
 progress indicator for active task
 
@@ -44,3 +43,15 @@ category move isn't implemented, both in SmugCategory and in SmugMug
 allow copying from one smugmug gallery to another
 
 need a 'refresh' function for when changes are made via the website or other tools
+
+not very useful import combinations:
+	upload dialog (giving user all options)
+		all the "upload dialog" combos
+	image -> image
+	album -> album
+	error messages explaining invalid combos
+
+really hard import combinations:
+	album:mixed -> category
+	album:mixed -> smugmug
+	album:mixed:mixed -> smugmug

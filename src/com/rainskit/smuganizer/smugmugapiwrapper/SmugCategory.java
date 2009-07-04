@@ -4,6 +4,7 @@ import com.kallasoft.smugmug.api.util.APIUtils;
 import com.rainskit.smuganizer.SmugMugSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MixedAlbumException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MoveException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.transfer.interruptions.PasswordRequiredInterruption;
@@ -130,64 +131,113 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 
 	public void moveItem(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) {
-//		if (CATEGORY.equals(childItem.getType())) {
-//			throw new UnsupportedOperationException("Not supported yet.");
-//		} else {	//must be album, then
-			Integer category = getCategoryID();
-			Integer subCategory = getSubCategoryID();
-			SmugAlbum album = (SmugAlbum)childItem;
-			com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings changeSettings
-				= new com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings();
-			String[] arguments = new String[changeSettings.ARGUMENTS.length];
-			arguments[0] = SmugMug.API_KEY;
-			arguments[1] = SmugMug.sessionID;
-			arguments[2] = APIUtils.toString(album.getAlbumID());
-			arguments[6] = APIUtils.toString(category);
-			//it became necessary to work around this stupid API
-			arguments[7] = (subCategory == null ? "null" : APIUtils.toString(subCategory));
-//			arguments[17] = APIUtils.toString(Integer.valueOf(childIndex - subCategories.size() + 1));
-			com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings.ChangeSettingsResponse response
-				= changeSettings.execute(SmugMug.API_URL, arguments);
-			if (response.isError()) {
-				throw new MoveException(album, response.getError());
-			}
-			((SmugCategory)album.getParent()).removeAlbum(album);
-			albums.add(albums.size(), album);
-			album.setParent(this);
-//		}
+		Integer category = getCategoryID();
+		Integer subCategory = getSubCategoryID();
+		SmugAlbum album = (SmugAlbum)childItem;
+		com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings changeSettings
+			= new com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings();
+		String[] arguments = new String[changeSettings.ARGUMENTS.length];
+		arguments[0] = SmugMug.API_KEY;
+		arguments[1] = SmugMug.sessionID;
+		arguments[2] = APIUtils.toString(album.getAlbumID());
+		arguments[6] = APIUtils.toString(category);
+		//it became necessary to work around this stupid API
+		arguments[7] = (subCategory == null ? "null" : APIUtils.toString(subCategory));
+//		arguments[17] = APIUtils.toString(Integer.valueOf(childIndex - subCategories.size() + 1));
+		com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings.ChangeSettingsResponse response
+			= changeSettings.execute(SmugMug.API_URL, arguments);
+		if (response.isError()) {
+			throw new MoveException(album, response.getError());
+		}
+		((SmugCategory)album.getParent()).removeAlbum(album);
+		albums.add(albums.size(), album);
+		album.setParent(this);
 	}
 	
 	public boolean canImport(TreeableGalleryItem newItem) {
-		return (ItemType.ALBUM == newItem.getType());
+		return (ItemType.ALBUM == newItem.getType() && getSubAlbumDepth(newItem) <= acceptableSubAlbumImportDepth());
+	}
+	
+	protected int acceptableSubAlbumImportDepth() {
+		return 1;
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) throws IOException, TransferInterruption {
-		if (newItem.isProtected() && previousInterruption == null) {
-			throw new PasswordRequiredInterruption(newItem);
-		} else {
-			String password = newItem.isProtected() ? ((PasswordRequiredInterruption)previousInterruption).getPassword() : null;
-			com.kallasoft.smugmug.api.json.v1_2_0.albums.Create create
-				= new com.kallasoft.smugmug.api.json.v1_2_0.albums.Create();
-			com.kallasoft.smugmug.api.json.v1_2_0.albums.Create.CreateResponse createResponse
-				= create.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID,
-									newItem.getCaption(),  newItem.getDescription(), null,
-									getCategoryID(), getSubCategoryID(), 
-									null, null, null, null, null, null, null, null, 
-									null, null, null, 
-									password, null, 
-									null, null, null, null, null, null, null, null, 
-									null, null, null, null, null, null, null, null, 
-									null, null, null, null, null, null, null, null, 
-									null, null, null);
-			if (createResponse.isError()) {
-				throw new MoveException(this, createResponse.getError());
+	private int getSubAlbumDepth(TreeableGalleryItem newItem) {
+		int subDepth = 0;
+		boolean hasChildAlbums = false;
+		List<? extends TreeableGalleryItem> children = newItem.getChildren();
+		if (children != null) {
+			for (TreeableGalleryItem eachChild : children) {
+				if (eachChild.getType() == ItemType.ALBUM) {
+					hasChildAlbums = true;
+					subDepth = Math.max(subDepth, getSubAlbumDepth(eachChild));
+				}
 			}
-			
-			SmugAlbum newAlbum = new SmugAlbum(this, createResponse.getAlbumID(), createResponse.getAlbumKey());
-			albums.add(newAlbum);
-			
-			return newAlbum;
 		}
+		return (hasChildAlbums ? 1 : 0) + subDepth;
+	}
+
+	public TreeableGalleryItem importItem(TreeableGalleryItem sourceItem, TransferInterruption previousInterruption) throws IOException, TransferInterruption {
+		int subAlbumDepth = getSubAlbumDepth(sourceItem);
+		if (0 == subAlbumDepth) {
+			return importAlbumAsAlbum(sourceItem);
+		} else if (1 == subAlbumDepth) {	//this new album has child albums under it
+			if (albumHasImageChildren(sourceItem)) {	//but it also has images under it
+				throw new MixedAlbumException(sourceItem);
+			} else {
+				return importAlbumAsSubCategory(sourceItem);
+			}
+		} else {
+			throw new IllegalStateException("This shoudln't ever happen");
+		}
+	}
+	
+	private boolean albumHasImageChildren(TreeableGalleryItem album) {
+		List<? extends TreeableGalleryItem> children = album.getChildren();
+		if (children != null) {
+			for (TreeableGalleryItem eachChild : children) {
+				if (ItemType.IMAGE == eachChild.getType()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private TreeableGalleryItem importAlbumAsAlbum(TreeableGalleryItem sourceAlbum) throws MoveException {
+		com.kallasoft.smugmug.api.json.v1_2_0.albums.Create createAlbum 
+			= new com.kallasoft.smugmug.api.json.v1_2_0.albums.Create();
+		com.kallasoft.smugmug.api.json.v1_2_0.albums.Create.CreateResponse createAlbumResponse 
+			= createAlbum.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, 
+									sourceAlbum.getCaption(), sourceAlbum.getDescription(), null, 
+									getCategoryID(), getSubCategoryID(), 
+									null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		if (createAlbumResponse.isError()) {
+			throw new MoveException(this, createAlbumResponse.getError());
+		}
+		SmugAlbum newAlbum = new SmugAlbum(this, createAlbumResponse.getAlbumID(), createAlbumResponse.getAlbumKey());
+		albums.add(newAlbum);
+
+		return newAlbum;
+	}
+
+	private TreeableGalleryItem importAlbumAsSubCategory(TreeableGalleryItem sourceAlbum) throws MoveException {
+		for (TreeableGalleryItem each : getSubCategories()) {
+			if (each.getFileName().equals(sourceAlbum.getCaption())) {
+				return each;
+			}
+		}
+		com.kallasoft.smugmug.api.json.v1_2_0.subcategories.Create createSubCategory 
+			= new com.kallasoft.smugmug.api.json.v1_2_0.subcategories.Create();
+		com.kallasoft.smugmug.api.json.v1_2_0.subcategories.Create.CreateResponse createSubCategoryResponse 
+			= createSubCategory.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, 
+			sourceAlbum.getCaption(), getCategoryID());
+		if (createSubCategoryResponse.isError()) {
+			throw new MoveException(this, createSubCategoryResponse.getError());
+		}
+		SmugSubCategory newSubCategory = new SmugSubCategory(this, createSubCategoryResponse.getSubCategoryID());
+		subCategories.add(newSubCategory);
+		return newSubCategory;
 	}
 	
 	protected Integer getCategoryID() {

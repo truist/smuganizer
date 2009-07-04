@@ -19,19 +19,30 @@ public class CopyRemote extends AbstractTransferTask {
 	}
 
 	protected TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption, IOException {
-		TreeableGalleryItem newItem = destParentItem.importItem(srcItem, previousInterruption);
-		newItem.transferStarted(false);
-		newItem.transferEnded(false, true);
-		return newItem;
+		if (destParentItem.canImport(srcItem)) {
+			TreeableGalleryItem newItem = destParentItem.importItem(srcItem, previousInterruption);
+			newItem.transferStarted(false);
+			newItem.transferEnded(false, true);
+			return newItem;
+		} else {
+			throw new IllegalStateException("Error: it is not possible to import \"" 
+				+ srcItem.getFullPathLabel() 
+				+ "\" into \"" 
+				+ destParentItem.getFullPathLabel()
+				+ "\"");
+		}
 	}
 	
 	public List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem) {
 		DefaultTreeModel destModel = (DefaultTreeModel)destTree.getModel();
 		DefaultMutableTreeNode destParentNode = (DefaultMutableTreeNode)destParentPath.getLastPathComponent();
-		DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(newItem);
-		destModel.insertNodeInto(newNode, destParentNode, destChildIndex);
+		DefaultMutableTreeNode newNode = checkIfItemIsAlreadyInSubTree(newItem, destParentNode);
+		if (newNode == null) {
+			newNode = new DefaultMutableTreeNode(newItem);
+			destModel.insertNodeInto(newNode, destParentNode, Math.max(destChildIndex, destParentNode.getChildCount()));
+		}
 		destTree.makeVisible(destParentPath.pathByAddingChild(newNode));
-		
+
 		ArrayList<AbstractTransferTask> followUpTasks = new ArrayList<AbstractTransferTask>();
 		if (destParentItem.canMove(newItem, destChildIndex)) {
 			followUpTasks.add(new MoveLocal(newNode, destTree, destParentPath, destChildIndex));
@@ -39,6 +50,7 @@ public class CopyRemote extends AbstractTransferTask {
 		if (srcItem.isProtected() && !newItem.isProtected()) {
 			followUpTasks.add(new ProtectItem(newItem, destTree, newNode));
 		}
+		
 		List<? extends TreeableGalleryItem> children = srcItem.getChildren();
 		if (children != null) {
 			int childIndex = 0;
@@ -48,6 +60,16 @@ public class CopyRemote extends AbstractTransferTask {
 		}
 		
 		return followUpTasks;
+	}
+
+	private DefaultMutableTreeNode checkIfItemIsAlreadyInSubTree(TreeableGalleryItem newItem, DefaultMutableTreeNode destParentNode) {
+		for (int i = 0; i < destParentNode.getChildCount(); i++) {
+			DefaultMutableTreeNode each = (DefaultMutableTreeNode)destParentNode.getChildAt(i);
+			if (each.getUserObject() == newItem) {
+				return each;
+			}
+		}
+		return null;
 	}
 
 	@Override
