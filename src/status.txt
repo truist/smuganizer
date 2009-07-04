@@ -1,29 +1,21 @@
 
-import combo order:
-	album:album -> smugmug
-	album:album:album -> smugmug
+basic functionality:
+	implement password hint support for password protect dialog
 
-when creating a new category under smugmug, check to see if it already exists (in the tree, or just as one of the standard categories)
+tree refactoring improvements:
+	implement a "new album" menu for SmugMug
+	implement a "new category" and "new subcategory" menu for SmugMug
+	implement category drag-and-drop within the smugmug tree
+		categories (and subcategories) can be moved around, but there is no easy way to
+		update the api???? objects when doing so - I'll have to update the whole tree
+	implement a "promote to category" menu for subcategories
 
-sort imported albums appropriately
-
-hitting enter or double-clicking should open errors/interruptions
-
-"show in tree" menu for transfer items
-
-progress indicator for active task
-
-implement a "new album" menu for SmugMug
-
-create settings for gallery sort order (default/date vs. name)
-
-create help instructions about converting "hidden" albums to actually being "protected" (permissions)
-
-implement a "new category" and "new subcategory" menu for SmugMug
-
-implement category drag-and-drop within the smugmug tree
-
-implement password hint support for password protect dialog
+ease of use improvements:
+	sort imported albums appropriately
+	hitting enter or double-clicking should open errors/interruptions
+	"show in tree" menu for transfer items
+	progress indicator for active task
+	create settings for gallery sort order (default/date vs. name)
 
 need an application icon
 
@@ -34,11 +26,7 @@ keyword support
 add an "import from filesystem" option
 	implement "move" transfer type for uploading
 
-category move isn't implemented, both in SmugCategory and in SmugMug
-	categories (and subcategories) can be moved around, but there is no easy way to
-	update the api???? objects when doing so - I'll have to update the whole tree
-
-"copy" isn't implemented
+"copy" isn't implemented within the SmugMug tree
 
 allow copying from one smugmug gallery to another
 
