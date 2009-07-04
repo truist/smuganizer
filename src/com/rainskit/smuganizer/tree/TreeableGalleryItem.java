@@ -36,6 +36,33 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public abstract boolean canImport(TreeableGalleryItem newItem);
 	public abstract TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) throws IOException, TransferInterruption;
 	
+	public final int getSubAlbumDepth() {
+		int subDepth = 0;
+		boolean hasChildAlbums = false;
+		List<? extends TreeableGalleryItem> children = getChildren();
+		if (children != null) {
+			for (TreeableGalleryItem eachChild : children) {
+				if (eachChild.getType() == ItemType.ALBUM) {
+					hasChildAlbums = true;
+					subDepth = Math.max(subDepth, eachChild.getSubAlbumDepth());
+				}
+			}
+		}
+		return (hasChildAlbums ? 1 : 0) + subDepth;
+	}
+
+	public final boolean hasImageChildren() {
+		List<? extends TreeableGalleryItem> children = getChildren();
+		if (children != null) {
+			for (TreeableGalleryItem eachChild : children) {
+				if (ItemType.IMAGE == eachChild.getType()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	public final void transferStarted(boolean recipient) {
 		if (recipient) {
 			++receiving;

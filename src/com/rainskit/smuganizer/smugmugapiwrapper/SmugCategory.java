@@ -6,8 +6,8 @@ import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MixedAlbumException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MoveException;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import com.rainskit.smuganizer.tree.transfer.interruptions.PasswordRequiredInterruption;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -17,8 +17,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 
 public class SmugCategory extends TreeableGalleryItem {
 	private static final int NON_CATEGORY = 0;
@@ -33,6 +31,27 @@ public class SmugCategory extends TreeableGalleryItem {
 		this.apiCategory = apiCategory;
 	}
 
+	public SmugCategory(SmugMug parent, Integer categoryID) {
+		this(parent, reloadDetails(categoryID, parent.getFullPathLabel()));
+		loadChildren();
+	}
+	
+	private static com.kallasoft.smugmug.api.json.entity.Category reloadDetails(Integer categoryID, String parentPathLabel) {
+		com.kallasoft.smugmug.api.json.v1_2_0.categories.Get get
+			= new com.kallasoft.smugmug.api.json.v1_2_0.categories.Get();
+		com.kallasoft.smugmug.api.json.v1_2_0.categories.Get.GetResponse response
+			= get.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID);
+		if (response.isError()) {
+			throw new SmugException("Error loading sub-category details in category \"" + parentPathLabel + "\"", response.getError());
+		}
+		for (com.kallasoft.smugmug.api.json.entity.Category each : response.getCategoryList()) {
+			if (categoryID.equals(each.getID())) {
+				return each;
+			}
+		}
+		throw new RuntimeException("Error loading category details for category \"" + categoryID + "\"");
+	}
+	
 	public List<SmugSubCategory> getSubCategories() {
 		if (subCategories == null) {
 			subCategories = new ArrayList<SmugSubCategory>();
@@ -155,34 +174,19 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 	
 	public boolean canImport(TreeableGalleryItem newItem) {
-		return (ItemType.ALBUM == newItem.getType() && getSubAlbumDepth(newItem) <= acceptableSubAlbumImportDepth());
+		return (ItemType.ALBUM == newItem.getType() && newItem.getSubAlbumDepth() <= acceptableSubAlbumImportDepth());
 	}
 	
 	protected int acceptableSubAlbumImportDepth() {
 		return 1;
 	}
 
-	private int getSubAlbumDepth(TreeableGalleryItem newItem) {
-		int subDepth = 0;
-		boolean hasChildAlbums = false;
-		List<? extends TreeableGalleryItem> children = newItem.getChildren();
-		if (children != null) {
-			for (TreeableGalleryItem eachChild : children) {
-				if (eachChild.getType() == ItemType.ALBUM) {
-					hasChildAlbums = true;
-					subDepth = Math.max(subDepth, getSubAlbumDepth(eachChild));
-				}
-			}
-		}
-		return (hasChildAlbums ? 1 : 0) + subDepth;
-	}
-
 	public TreeableGalleryItem importItem(TreeableGalleryItem sourceItem, TransferInterruption previousInterruption) throws IOException, TransferInterruption {
-		int subAlbumDepth = getSubAlbumDepth(sourceItem);
+		int subAlbumDepth = sourceItem.getSubAlbumDepth();
 		if (0 == subAlbumDepth) {
 			return importAlbumAsAlbum(sourceItem);
 		} else if (1 == subAlbumDepth) {	//this new album has child albums under it
-			if (albumHasImageChildren(sourceItem)) {	//but it also has images under it
+			if (sourceItem.hasImageChildren()) {	//but it also has images under it
 				throw new MixedAlbumException(sourceItem);
 			} else {
 				return importAlbumAsSubCategory(sourceItem);
@@ -192,18 +196,6 @@ public class SmugCategory extends TreeableGalleryItem {
 		}
 	}
 	
-	private boolean albumHasImageChildren(TreeableGalleryItem album) {
-		List<? extends TreeableGalleryItem> children = album.getChildren();
-		if (children != null) {
-			for (TreeableGalleryItem eachChild : children) {
-				if (ItemType.IMAGE == eachChild.getType()) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 	private TreeableGalleryItem importAlbumAsAlbum(TreeableGalleryItem sourceAlbum) throws MoveException {
 		com.kallasoft.smugmug.api.json.v1_2_0.albums.Create createAlbum 
 			= new com.kallasoft.smugmug.api.json.v1_2_0.albums.Create();

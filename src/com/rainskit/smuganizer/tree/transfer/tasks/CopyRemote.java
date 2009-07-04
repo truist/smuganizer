@@ -39,7 +39,7 @@ public class CopyRemote extends AbstractTransferTask {
 		DefaultMutableTreeNode newNode = checkIfItemIsAlreadyInSubTree(newItem, destParentNode);
 		if (newNode == null) {
 			newNode = new DefaultMutableTreeNode(newItem);
-			destModel.insertNodeInto(newNode, destParentNode, Math.max(destChildIndex, destParentNode.getChildCount()));
+			destModel.insertNodeInto(newNode, destParentNode, Math.min(destChildIndex, destParentNode.getChildCount()));
 		}
 		destTree.makeVisible(destParentPath.pathByAddingChild(newNode));
 

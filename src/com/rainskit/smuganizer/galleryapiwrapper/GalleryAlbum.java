@@ -9,6 +9,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang.StringEscapeUtils;
 
 public class GalleryAlbum extends AbstractGalleryTreeable {
@@ -60,7 +62,7 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 		return description;
 	}
 
-	private List<GalleryImage> getImages() throws IOException {
+	private synchronized List<GalleryImage> getImages() throws IOException {
 		if (!loaded) {
 			loaded = true;
 			this.images = gallery.loadImagesFor(this);

@@ -7,6 +7,8 @@ import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
 import com.kallasoft.smugmug.api.json.v1_2_0.login.WithPassword;
 import com.kallasoft.smugmug.api.json.v1_2_0.users.GetTree;
 import com.rainskit.smuganizer.SmugMugSettings;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MixedAlbumException;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MoveException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import java.awt.Desktop;
@@ -105,11 +107,39 @@ public class SmugMug extends TreeableGalleryItem {
 	}
 	
 	public boolean canImport(TreeableGalleryItem newItem) {
-		return false;
+		return (ItemType.ALBUM == newItem.getType() && newItem.getSubAlbumDepth() > 0 && newItem.getSubAlbumDepth() < 3);
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public TreeableGalleryItem importItem(TreeableGalleryItem sourceItem, TransferInterruption previousInterruption) {
+		switch (sourceItem.getSubAlbumDepth()) {
+			case 1:
+			case 2:
+				return importAlbumAsCategory(sourceItem);
+			default:
+				throw new IllegalStateException("This shoudln't ever happen");
+		}
+	}
+	
+	private TreeableGalleryItem importAlbumAsCategory(TreeableGalleryItem sourceAlbum) throws MoveException {
+		for (TreeableGalleryItem each : categories) {
+			if (each.getFileName().equals(sourceAlbum.getCaption())) {
+				return each;
+			}
+		}
+		if (sourceAlbum.hasImageChildren()) {
+			throw new MixedAlbumException(sourceAlbum);
+		} else {
+			com.kallasoft.smugmug.api.json.v1_2_0.categories.Create createCategory 
+				= new com.kallasoft.smugmug.api.json.v1_2_0.categories.Create();
+			com.kallasoft.smugmug.api.json.v1_2_0.categories.Create.CreateResponse createCategoryResponse 
+				= createCategory.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, sourceAlbum.getCaption());
+			if (createCategoryResponse.isError()) {
+				throw new MoveException(this, createCategoryResponse.getError());
+			}
+			SmugCategory newCategory = new SmugCategory(this, createCategoryResponse.getCategoryID());
+			categories.add(newCategory);
+			return newCategory;
+		}
 	}
 	
 	public boolean canBeLaunched() {
