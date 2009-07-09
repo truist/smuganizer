@@ -1,6 +1,5 @@
 
 ease of use improvements:
-	progress indicator for active task
 	"show in tree" menu for transfer items
 	sort imported albums appropriately
 	create settings for gallery sort order (default/date vs. name)
@@ -15,7 +14,11 @@ tree refactoring improvements:
 
 need an application icon
 
+fix the logging
+
 keyword support
+
+package for release
 
 -----
 

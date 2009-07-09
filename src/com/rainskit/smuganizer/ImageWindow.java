@@ -13,7 +13,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -204,7 +203,7 @@ public class ImageWindow extends JFrame {
 			//if so, we try again - unless the user has already clicked on another image.
 			//and we put a small delay in before we try agian, to avoid hammering the server.
 			if (nextCall.image.getParent() != null) {
-				Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, "Image failed to load for display", ex);
+//				Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, "Image failed to load for display", ex);
 				if (imageQueue.isEmpty()) {
 					new Thread(new Runnable() {
 						public void run() {

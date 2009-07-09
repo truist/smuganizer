@@ -7,7 +7,7 @@ import javax.swing.table.AbstractTableModel;
 
 public class TransferTableModel extends AbstractTableModel {
 	public static final int PROGRESS_COLUMN = 0;
-	private static final String PROGRESS_COLUMN_NAME = "Progress";
+	public static final String PROGRESS_COLUMN_NAME = "Progress";
 	private static final int PROGRESS_COLUMN_WIDTH = 100;
 	public static final int ACTION_COLUMN = 1;
 	private static final String ACTION_COLUMN_NAME = "Action";

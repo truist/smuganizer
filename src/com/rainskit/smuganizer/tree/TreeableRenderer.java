@@ -1,6 +1,5 @@
 package com.rainskit.smuganizer.tree;
 
-import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -37,7 +36,7 @@ public class TreeableRenderer extends DefaultTreeCellRenderer {
 				
 				String newValue = currentItem.getLabel() + currentItem.getMetaLabel();
 				Component superComponent = super.getTreeCellRendererComponent(tree, newValue, sel, expanded, leaf, row, hasFocus);
-				setCellAttributes(superComponent, currentItem);
+				setCellAttributes(superComponent, currentItem, sel);
 				return superComponent;
 			} 
 		}
@@ -59,17 +58,19 @@ public class TreeableRenderer extends DefaultTreeCellRenderer {
 		return getIconForType();
 	}
 
-	private void setCellAttributes(Component rendererComponent, TreeableGalleryItem currentItem) {
+	private void setCellAttributes(Component rendererComponent, TreeableGalleryItem currentItem, boolean isSelected) {
 		if (currentItem.isSending() || currentItem.isReceiving()) {
-			rendererComponent.setForeground(Color.ORANGE);
 			rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.BOLD));
+			if (!isSelected) {
+				rendererComponent.setForeground(Color.ORANGE);
+			}
 		} else {
 			if (currentItem.isProtected() || currentItem.isParentProtected()) {
 				rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.ITALIC));
 			} else {
 				rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.PLAIN));
 			}
-			if (currentItem.hasBeenSent()) {
+			if (currentItem.hasBeenSent() && !isSelected) {
 				rendererComponent.setForeground(Color.BLUE);
 			}
 		}

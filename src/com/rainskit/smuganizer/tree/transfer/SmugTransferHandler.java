@@ -151,6 +151,7 @@ public class SmugTransferHandler extends TransferHandler {
 			this.srcNode = srcNode;
 			this.destModel = destModel;
 			this.destParentNode = destParentNode;
+			statusChanged(null);
 		}
 		
 		public void statusChanged(AbstractTransferTask task) {
