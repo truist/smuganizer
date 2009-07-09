@@ -1,6 +1,5 @@
 
 ease of use improvements:
-	hitting enter or double-clicking should open errors/interruptions
 	progress indicator for active task
 	"show in tree" menu for transfer items
 	sort imported albums appropriately

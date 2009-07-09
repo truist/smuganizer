@@ -25,6 +25,9 @@ public class TableMenuManager implements ListSelectionListener {
 	private ArrayList<TableableAction> actions;
 	private JPopupMenu popupMenu;
 	
+	private ProvideInputAction inputAction;
+	private ShowErrorAction errorAction;
+	
 	public TableMenuManager(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
 		this.transferTable = transferTable;
 		
@@ -40,7 +43,7 @@ public class TableMenuManager implements ListSelectionListener {
 		}
 		
 		transferTable.getSelectionModel().addListSelectionListener(this);
-		transferTable.addMouseListener(new RightClickListener());
+		transferTable.addMouseListener(new ClickListener());
 	}
 	
 	public List<? extends AbstractAction> getActions() {
@@ -49,12 +52,11 @@ public class TableMenuManager implements ListSelectionListener {
 	
 	private ArrayList<TableableAction> createActions(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
 		ArrayList<TableableAction> newActions = new ArrayList<TableableAction>();
+		newActions.add(new RetryTaskAction(main, transferTable, transferManager));
 		newActions.add(new CancelTaskAction(main, transferTable, transferManager));
 		newActions.add(null);
-		newActions.add(new ProvideInputAction(main, transferTable, transferManager));
-		newActions.add(null);
-		newActions.add(new RetryTaskAction(main, transferTable, transferManager));
-		newActions.add(new ShowErrorAction(main, transferTable, transferManager));
+		newActions.add(errorAction = new ShowErrorAction(main, transferTable, transferManager));
+		newActions.add(inputAction = new ProvideInputAction(main, transferTable, transferManager));
 		return newActions;
 	}
 
@@ -68,7 +70,7 @@ public class TableMenuManager implements ListSelectionListener {
 	}
 	
 	
-	private class RightClickListener extends MouseAdapter {
+	private class ClickListener extends MouseAdapter {
 		@Override public void mousePressed(MouseEvent e) { handleEvent(e); }
 		@Override public void mouseReleased(MouseEvent e) { handleEvent(e); }
 		private void handleEvent(MouseEvent e) {
@@ -84,6 +86,17 @@ public class TableMenuManager implements ListSelectionListener {
 						transferTable.getSelectionModel().setSelectionInterval(row, row);
 					}
 					popupMenu.show(transferTable, e.getX(), e.getY());
+				}
+			}
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			if (e.getClickCount() == 2) {
+				if (inputAction.isEnabled() && !errorAction.isEnabled()) {
+					inputAction.actionPerformed(null);
+				} else if (errorAction.isEnabled() && !inputAction.isEnabled()) {
+					errorAction.actionPerformed(null);
 				}
 			}
 		}

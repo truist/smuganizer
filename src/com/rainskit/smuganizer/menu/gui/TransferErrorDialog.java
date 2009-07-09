@@ -78,14 +78,14 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 				repairPanels.put(each, eachPanel);
 				cardPanel.add(eachPanel, eachPanel.getUniqueKey());
 			}
-			tablePanel.add(cardPanel, BorderLayout.SOUTH);
+			tablePanel.add(cardPanel, BorderLayout.CENTER);
 		} else {
 			errorText = new JTextArea(10, 0);
 			errorText.setEditable(false);
 			errorText.setLineWrap(true);
 			errorText.setWrapStyleWord(true);
 			errorText.setFont(errorText.getFont().deriveFont(errorText.getFont().getSize() * 0.9f));
-			tablePanel.add(new JScrollPane(errorText, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.SOUTH);
+			tablePanel.add(new JScrollPane(errorText, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER);
 		}
 		
 		transferTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -116,7 +116,7 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 			setSize(700, getSize().height);
 		}
 		if (getHeight() < 500) {
-			setSize(500, getSize().width);
+			setSize(getSize().width, 500);
 		}
 		setLocationRelativeTo(main);
 	}
