@@ -24,7 +24,8 @@ public class ProtectItem extends AbstractTransferTask {
 			srcItem.setHidden(true);
 		} else if (srcItem.canChangePassword(true)) {
 			if (previousInterruption != null && previousInterruption instanceof PasswordRequiredInterruption) {
-				srcItem.setPassword(((PasswordRequiredInterruption)previousInterruption).getPassword(), null);
+				PasswordRequiredInterruption passwordInterruption = (PasswordRequiredInterruption)previousInterruption;
+				srcItem.setPassword(passwordInterruption.getPassword(), passwordInterruption.getHint());
 			} else {
 				throw new PasswordRequiredInterruption(srcItem);
 			}

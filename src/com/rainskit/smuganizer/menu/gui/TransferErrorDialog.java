@@ -115,6 +115,9 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 		if (getWidth() < 700) {
 			setSize(700, getSize().height);
 		}
+		if (getHeight() < 500) {
+			setSize(500, getSize().width);
+		}
 		setLocationRelativeTo(main);
 	}
 	

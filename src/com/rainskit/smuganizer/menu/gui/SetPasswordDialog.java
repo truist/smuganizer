@@ -13,6 +13,18 @@ public class SetPasswordDialog extends javax.swing.JDialog {
 		passwordField.requestFocusInWindow();
     }
 
+	public boolean closedWithOk() {
+		return closedWithOK;
+	}
+
+	public String getHint() {
+		return passwordHintField.getText();
+	}
+
+	public String getPassword() {
+		return passwordField.getText();
+	}
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

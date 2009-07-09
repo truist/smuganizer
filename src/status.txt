@@ -1,6 +1,10 @@
 
-basic functionality:
-	implement password hint support for password protect dialog
+ease of use improvements:
+	hitting enter or double-clicking should open errors/interruptions
+	progress indicator for active task
+	"show in tree" menu for transfer items
+	sort imported albums appropriately
+	create settings for gallery sort order (default/date vs. name)
 
 tree refactoring improvements:
 	implement a "new album" menu for SmugMug
@@ -9,13 +13,6 @@ tree refactoring improvements:
 		categories (and subcategories) can be moved around, but there is no easy way to
 		update the api???? objects when doing so - I'll have to update the whole tree
 	implement a "promote to category" menu for subcategories
-
-ease of use improvements:
-	sort imported albums appropriately
-	hitting enter or double-clicking should open errors/interruptions
-	"show in tree" menu for transfer items
-	progress indicator for active task
-	create settings for gallery sort order (default/date vs. name)
 
 need an application icon
 

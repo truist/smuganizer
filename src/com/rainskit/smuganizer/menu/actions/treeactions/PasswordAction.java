@@ -2,6 +2,7 @@ package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.menu.*;
 import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.menu.gui.SetPasswordDialog;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.PasswordException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.util.ArrayList;
@@ -23,17 +24,21 @@ public class PasswordAction extends TreeableAction {
 
 	@Override
 	protected void performAction() {
-		ArrayList<TreeableGalleryItem> currentItems = menuManager.getCurrentItems();
 		try {
-			String password = null;;
+			String password = null;
+			String hint = null;
 			if (getValue(NAME).equals(ADD)) {
-				password = JOptionPane.showInputDialog(main, "Please enter a password", "Enter password", JOptionPane.QUESTION_MESSAGE);
-				if (password == null) {
+				SetPasswordDialog passwordDialog = new SetPasswordDialog(main);
+				passwordDialog.setVisible(true);
+				if (passwordDialog.closedWithOk()) {
+					password = passwordDialog.getPassword();
+					hint = passwordDialog.getHint();
+				} else {
 					return;
 				}
 			} 
-			for (TreeableGalleryItem each : currentItems) {
-				each.setPassword(password,null);
+			for (TreeableGalleryItem each : menuManager.getCurrentItems()) {
+				each.setPassword(password, hint);
 			}
 			
 			DefaultTreeModel model = (DefaultTreeModel)menuManager.getTree().getModel();
