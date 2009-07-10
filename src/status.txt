@@ -1,6 +1,5 @@
 
 ease of use improvements:
-	add "pause transfers" menu
 	sort imported albums appropriately
 	create settings for gallery sort order (default/date vs. name)
 

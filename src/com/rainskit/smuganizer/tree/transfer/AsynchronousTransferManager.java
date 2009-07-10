@@ -13,6 +13,8 @@ import javax.swing.SwingUtilities;
 public class AsynchronousTransferManager implements StatusListener {
 	private LinkedBlockingDeque<AbstractTransferTask> taskDeque;
 	private TransferTableModel visibleTable;
+	private Thread transferThread;
+	private volatile boolean paused;
 	
 	public AsynchronousTransferManager(TransferTableModel visibleTable) {
 		this.taskDeque = new LinkedBlockingDeque<AbstractTransferTask>();
@@ -20,13 +22,17 @@ public class AsynchronousTransferManager implements StatusListener {
 		
 		startTransferThread();
 	}
-	
 	private void startTransferThread() {
-		Thread transferThread = new Thread(new Runnable(){
+		transferThread = new Thread(new Runnable(){
 			public void run() {
 				try {
 					AbstractTransferTask nextTask = null;
 					while ((nextTask = taskDeque.takeFirst()) != null) {
+						if (paused) {
+							synchronized (transferThread) {
+								transferThread.wait();
+							}
+						}
 						TreeableGalleryItem newItem = nextTask.doInBackground();
 						if (nextTask.isDone()) {	//it could have been 'interrupted'
 							cleanUp(nextTask, newItem);
@@ -41,6 +47,17 @@ public class AsynchronousTransferManager implements StatusListener {
 			}
 		});
 		transferThread.start();
+	}
+
+	public void pause() {
+		paused = true;
+	}
+	
+	public void resume() {
+		paused = false;
+		synchronized (transferThread) {
+			transferThread.notify();
+		}
 	}
 
 	public void submit(AbstractTransferTask task) {

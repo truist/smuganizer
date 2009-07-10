@@ -12,6 +12,7 @@ import com.rainskit.smuganizer.menu.actions.HelpAction;
 import com.rainskit.smuganizer.*;
 import com.rainskit.smuganizer.menu.actions.AlwaysIgnoreFileCaptionAction;
 import com.rainskit.smuganizer.menu.actions.AlwaysRemoveFileCaptionAction;
+import com.rainskit.smuganizer.menu.actions.PauseTransfersAction;
 import com.rainskit.smuganizer.tree.GalleryTree;
 import com.rainskit.smuganizer.tree.SmugTree;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
@@ -67,6 +68,8 @@ public class SmugMenu extends JMenuBar {
 		settingsMenu.add(alwaysIgnore);
 		
 		menu.add(settingsMenu);
+		menu.addSeparator();
+		menu.add(new JCheckBoxMenuItem(new PauseTransfersAction(transferManager)));
 		menu.addSeparator();
 		
 		TableMenuManager manager = new TableMenuManager(main, transferTable, transferManager);
