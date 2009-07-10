@@ -11,11 +11,12 @@ import javax.swing.tree.TreePath;
 public class MoveLocal extends AbstractTransferTask {
 	private DefaultMutableTreeNode srcNode;
 
-	public MoveLocal(DefaultMutableTreeNode srcNode, 
+	public MoveLocal(JTree srcTree,
+					DefaultMutableTreeNode srcNode, 
 					JTree destTree, 
 					TreePath destParentPath, 
 					int destChildIndex) {
-		super((TreeableGalleryItem)srcNode.getUserObject(), destTree, destParentPath, destChildIndex);
+		super(srcTree, (TreeableGalleryItem)srcNode.getUserObject(), destTree, destParentPath, destChildIndex);
 		
 		this.srcNode = srcNode;
 	}

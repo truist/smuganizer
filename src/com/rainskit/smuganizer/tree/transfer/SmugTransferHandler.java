@@ -85,14 +85,15 @@ public class SmugTransferHandler extends TransferHandler {
 				destChildIndex = destParentNode.getChildCount();
 			}
 			SmugTransferable.FlavorClass transferData = retrieveData(transferSupport.getTransferable());
+			
 			TreePath[] treePaths = transferData.getTreePaths();
 			for (TreePath srcPath : treePaths) {
 				DefaultMutableTreeNode srcNode = (DefaultMutableTreeNode)srcPath.getLastPathComponent();
 				AbstractTransferTask task = null;
 				if (transferData.getTreeModel() == destTree.getModel()) {
-					task = new MoveLocal(srcNode, destTree, destParentPath, destChildIndex++);
+					task = new MoveLocal(transferData.getSourceTree(), srcNode, destTree, destParentPath, destChildIndex++);
 				} else {
-					task = new CopyRemote((TreeableGalleryItem)srcNode.getUserObject(), destTree, destParentPath, destChildIndex++);
+					task = new CopyRemote(transferData.getSourceTree(), (TreeableGalleryItem)srcNode.getUserObject(), destTree, destParentPath, destChildIndex++);
 				}
 				task.addStatusListener(new TreeUpdatingStatusListener(transferData.getTreeModel(), srcNode, (DefaultTreeModel)destTree.getModel(), destParentNode));
 				asyncTransferManager.submit(task);
@@ -103,10 +104,6 @@ public class SmugTransferHandler extends TransferHandler {
 		}
 	}
 	
-	private boolean pathsAreFromSameTree(TreePath left, TreePath right) {
-		return left.getPathComponent(0).equals(right.getPathComponent(0));
-	}
-
 	private SmugTransferable.FlavorClass retrieveData(Transferable transferable) {
 		try {
 			return (SmugTransferable.FlavorClass)transferable.getTransferData(SmugTransferable.transferFlavor);
@@ -132,7 +129,7 @@ public class SmugTransferHandler extends TransferHandler {
 		JTree srcTree = (JTree)source;
 		TreePath[] selectionPaths = srcTree.getSelectionPaths();
 		if (selectionPaths.length > 0) {
-			return new SmugTransferable((DefaultTreeModel)srcTree.getModel(), selectionPaths);
+			return new SmugTransferable(srcTree, (DefaultTreeModel)srcTree.getModel(), selectionPaths);
 		} else {
 			return null;
 		}

@@ -13,8 +13,8 @@ import javax.swing.tree.DefaultTreeModel;
 public class ProtectItem extends AbstractTransferTask {
 	private DefaultMutableTreeNode node;
 	
-	public ProtectItem(TreeableGalleryItem item, JTree tree, DefaultMutableTreeNode node) {
-		super(item, tree, null, -1);
+	public ProtectItem(JTree srcTree, TreeableGalleryItem item, JTree destTree, DefaultMutableTreeNode node) {
+		super(srcTree, item, destTree, null, -1);
 		this.node = node;
 	}
 

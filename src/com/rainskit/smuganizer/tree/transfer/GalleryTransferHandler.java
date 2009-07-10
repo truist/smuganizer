@@ -18,7 +18,7 @@ public class GalleryTransferHandler extends TransferHandler {
 		JTree srcTree = (JTree)source;
 		TreePath[] selectionPaths = srcTree.getSelectionPaths();
 		if (selectionPaths.length > 0) {
-			return new SmugTransferable((DefaultTreeModel)srcTree.getModel(), selectionPaths);
+			return new SmugTransferable(srcTree, (DefaultTreeModel)srcTree.getModel(), selectionPaths);
 		} else {
 			return null;
 		}

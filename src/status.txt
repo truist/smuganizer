@@ -1,6 +1,6 @@
 
 ease of use improvements:
-	"show in tree" menu for transfer items
+	add "pause transfers" menu
 	sort imported albums appropriately
 	create settings for gallery sort order (default/date vs. name)
 

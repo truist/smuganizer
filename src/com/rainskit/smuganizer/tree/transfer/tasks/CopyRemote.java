@@ -11,11 +11,12 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 public class CopyRemote extends AbstractTransferTask {
-	public CopyRemote(TreeableGalleryItem srcItem, 
+	public CopyRemote(JTree srcTree,
+						TreeableGalleryItem srcItem, 
 						JTree destTree, 
 						TreePath destParentPath, 
 						int destChildIndex) {
-		super(srcItem, destTree, destParentPath, destChildIndex);
+		super(srcTree, srcItem, destTree, destParentPath, destChildIndex);
 	}
 
 	protected TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption, IOException {
@@ -45,17 +46,17 @@ public class CopyRemote extends AbstractTransferTask {
 
 		ArrayList<AbstractTransferTask> followUpTasks = new ArrayList<AbstractTransferTask>();
 		if (destParentItem.canMove(newItem, destChildIndex)) {
-			followUpTasks.add(new MoveLocal(newNode, destTree, destParentPath, destChildIndex));
+			followUpTasks.add(new MoveLocal(destTree, newNode, destTree, destParentPath, destChildIndex));
 		}
 		if (srcItem.isProtected() && !newItem.isProtected()) {
-			followUpTasks.add(new ProtectItem(newItem, destTree, newNode));
+			followUpTasks.add(new ProtectItem(destTree, newItem, destTree, newNode));
 		}
 		
 		List<? extends TreeableGalleryItem> children = srcItem.getChildren();
 		if (children != null) {
 			int childIndex = 0;
 			for (TreeableGalleryItem childItem : children) {
-				followUpTasks.add(new CopyRemote(childItem, destTree, new TreePath(newNode.getPath()), childIndex++));
+				followUpTasks.add(new CopyRemote(srcTree, childItem, destTree, new TreePath(newNode.getPath()), childIndex++));
 			}
 		}
 		

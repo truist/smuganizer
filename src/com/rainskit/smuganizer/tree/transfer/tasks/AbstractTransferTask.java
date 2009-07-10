@@ -39,6 +39,7 @@ public abstract class AbstractTransferTask {
 		}
 	}
 	
+	protected JTree srcTree;
 	protected TreeableGalleryItem srcItem;
 	protected JTree destTree;
 	protected TreePath destParentPath;
@@ -51,11 +52,13 @@ public abstract class AbstractTransferTask {
 	private TaskStatus status;
 	private ArrayList<StatusListener> listeners;
 
-	public AbstractTransferTask(TreeableGalleryItem srcItem, 
+	public AbstractTransferTask(JTree srcTree,
+								TreeableGalleryItem srcItem, 
 								JTree destTree, 
 								TreePath destParentPath, 
 								int destChildIndex) {
 		super();
+		this.srcTree = srcTree;
 		this.srcItem = srcItem;
 		this.destTree = destTree;
 		this.destParentPath = destParentPath;
@@ -185,5 +188,21 @@ public abstract class AbstractTransferTask {
 		StringWriter stackTraceWriter = new StringWriter();
 		transferError.printStackTrace(new PrintWriter(stackTraceWriter));
 		return errorText + stackTraceWriter.toString();
+	}
+	
+	public JTree getSourceTree() {
+		return srcTree;
+	}
+	
+	public TreeableGalleryItem getSourceItem() {
+		return srcItem;
+	}
+	
+	public JTree getDestTree() {
+		return destTree;
+	}
+	
+	public TreeableGalleryItem getDestParentItem() {
+		return destParentItem;
 	}
 }
