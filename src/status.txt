@@ -28,6 +28,9 @@ add an "import from filesystem" option
 
 allow copying from one smugmug gallery to another
 
+allow importing / moving in gallery, not just in smugmug
+	and on the filesystem, once that is implemented
+
 need a 'refresh' function for when changes are made via the website or other tools
 
 not very useful import combinations:
