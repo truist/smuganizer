@@ -1,5 +1,7 @@
 package com.rainskit.smuganizer;
 
+import com.rainskit.smuganizer.menu.TableMenuManager;
+import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.TransferTableModel;
 import java.awt.BorderLayout;
@@ -28,7 +30,8 @@ import javax.swing.table.TableColumn;
 public class TransferTable extends JTable {
 	private static final int PROGRESS_PAINT_FREQUENCY = 25;
 	
-	public TransferTable(TransferTableModel dataModel, boolean multipleSelection) {
+	public TransferTable(Main main, AsynchronousTransferManager transferManager,
+						TransferTableModel dataModel, boolean multipleSelection) {
 		super(dataModel);
 		
 		if (multipleSelection) {
@@ -55,6 +58,10 @@ public class TransferTable extends JTable {
 		}
 		
 		startProgressPainter(TransferTableModel.PROGRESS_COLUMN);
+		
+		if (transferManager != null) {
+			new TableMenuManager(main, this, transferManager);
+		}
 	}
 	
 	public List<AbstractTransferTask> getSelectedItems() {

@@ -4,6 +4,8 @@ import com.rainskit.smuganizer.tree.SmugTree;
 import com.rainskit.smuganizer.tree.GalleryTree;
 import com.rainskit.smuganizer.menu.SmugMenu;
 import com.rainskit.smuganizer.galleryapiwrapper.Gallery;
+import com.rainskit.smuganizer.menu.gui.GalleryLoginDialog;
+import com.rainskit.smuganizer.menu.gui.SmugMugLoginDialog;
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugMug;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
@@ -12,41 +14,72 @@ import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
 import com.rainskit.smuganizer.tree.transfer.TransferTableModel;
 import com.rainskit.smuganizer.waitcursoreventqueue.WaitCursorEventQueue;
 import java.awt.BorderLayout;
-import java.awt.Color;
+import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagLayout;
 import java.awt.Toolkit;
-import java.awt.event.MouseAdapter;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
-public class Main extends JFrame implements TreeSelectionListener, StatusCallback {
+public class Main extends JFrame implements TreeSelectionListener, StatusCallback, MouseListener, WindowListener {
 	private JLabel statusLabel;
 	private String baseStatus;
+
+	private enum Side {LEFT, RIGHT}
+	
+	private enum GalleryType { 
+		GALLERY, SMUGMUG, COMPUTER;
+
+		@Override
+		public String toString() {
+			switch (this) {
+				case GALLERY:
+					return "Gallery";
+				case SMUGMUG:
+					return "SmugMug";
+				case COMPUTER:
+					return "Local Computer";
+				default:
+					throw new IllegalArgumentException("Impossible type: " + this.name());
+			}
+		}
+	}
+	
+	private JPanel leftPanel;
+	private JPanel rightPanel;
+	private AsynchronousTransferManager transferManager;
 	
 	private SmugTree smugTree;
 	private GalleryTree galleryTree;
 	
 	private ImageWindow floatingImageWindow;
-
+	
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, FileNotFoundException, IOException{
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		Toolkit.getDefaultToolkit().getSystemEventQueue().push(new WaitCursorEventQueue(170));
@@ -55,23 +88,20 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 
 	private Main() throws FileNotFoundException, IOException {
 		super("Smuganizer");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		addWindowListener(this);
 		
 		TransferTableModel transferTableModel = new TransferTableModel();
-		AsynchronousTransferManager transferManager = new AsynchronousTransferManager(transferTableModel);
-		smugTree = new SmugTree(this, transferManager);
-		smugTree.addTreeSelectionListener(this);
-		smugTree.addMouseListener(new DoubleClickListener());
-		JPanel rightPanel = new JPanel(new BorderLayout());
-		rightPanel.add(new JScrollPane(smugTree), BorderLayout.CENTER);
-		rightPanel.add(newHeaderLabel("SmugMug"), BorderLayout.NORTH);
+		transferManager = new AsynchronousTransferManager(transferTableModel);
 		
-		galleryTree = new GalleryTree(this);
-		galleryTree.addTreeSelectionListener(this);
-		galleryTree.addMouseListener(new DoubleClickListener());
-		JPanel leftPanel = new JPanel(new BorderLayout());
-		leftPanel.add(new JScrollPane(galleryTree), BorderLayout.CENTER);
-		leftPanel.add(newHeaderLabel("Gallery"), BorderLayout.NORTH);
+		leftPanel = new JPanel(new BorderLayout());
+		leftPanel.add(newHeaderLabel(Side.LEFT), BorderLayout.NORTH);
+		rightPanel = new JPanel(new BorderLayout());
+		rightPanel.add(newHeaderLabel(Side.RIGHT), BorderLayout.NORTH);
+		
+		
+		leftPanel.add(new JScrollPane(createDefaultTree()));
+		rightPanel.add(new JScrollPane(createDefaultTree()));
 		
 		JSplitPane lrSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, 
 												true, 
@@ -79,7 +109,7 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 												rightPanel);
 		lrSplitPane.setResizeWeight(0.5);
 		
-		TransferTable transferTable = new TransferTable(transferTableModel, true);
+		TransferTable transferTable = new TransferTable(this, transferManager, transferTableModel, true);
 		JSplitPane tbSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 												true,
 												lrSplitPane,
@@ -107,18 +137,111 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 		setVisible(true);
 	}
 
-	private JLabel newHeaderLabel(String text) {
-		JLabel label = new JLabel(text);
-		Font font = label.getFont();
-		label.setFont(font.deriveFont(Font.BOLD, font.getSize() + (font.getSize() / 2)));
-		label.setForeground(Color.GREEN.darker());
-		label.setHorizontalAlignment(JLabel.CENTER);
-		label.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
-		return label;
+	private JPanel newHeaderLabel(Side side) {
+		JPanel headerPanel = new JPanel(new GridBagLayout());
+		JPanel componentPanel = new JPanel(new FlowLayout());
+		headerPanel.add(componentPanel);
+		
+		JLabel connectLabel = new JLabel("Connect to: ");
+		componentPanel.add(connectLabel);
+		
+		JComboBox connectBox = new JComboBox(GalleryType.values());
+		connectBox.setFont(connectBox.getFont().deriveFont(Font.BOLD));
+		connectBox.setSelectedIndex(-1);
+		componentPanel.add(connectBox);
+		
+		connectBox.addActionListener(new ConnectionChoiceListener(side));
+		
+		return headerPanel;
 	}
 
+	private void connectTo(GalleryType galleryType, Side side) {
+		if (GalleryType.SMUGMUG.equals(galleryType)) {
+			SmugMugLoginDialog settingsDialog = new SmugMugLoginDialog(this);
+			settingsDialog.setVisible(true);
+			if (settingsDialog.wasClosedWithOK()) {
+				setStatus("Logging in...");
+				try {
+					loadSmugTree(new SmugMug(), side);
+				} catch (SmugException se) {
+					Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, se);
+					JOptionPane.showMessageDialog(this, se.getLocalizedMessage(), "Error connecting to SmugMug", JOptionPane.ERROR_MESSAGE);
+					clearStatus();
+				}
+			}
+		} else if (GalleryType.GALLERY.equals(galleryType)) {
+			GalleryLoginDialog settingsDialog = new GalleryLoginDialog(this);
+			settingsDialog.setVisible(true);
+			if (settingsDialog.wasClosedWithOK()) {
+				setStatus("Logging in...");
+				try {
+					loadGalleryTree(new Gallery(), side);
+				} catch (IOException ex) {
+					JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error contacting gallery", JOptionPane.ERROR_MESSAGE);
+					clearStatus();
+				}
+			}
+		} else if (GalleryType.COMPUTER.equals(galleryType)) {
+			throw new IllegalArgumentException("Not implemented yet");
+		} else {
+			throw new IllegalArgumentException("Impossible type: " + galleryType.name());
+		}
+	}
+	
+	private JTree createDefaultTree() {
+		String[] instructions = new String[] {"Please choose a gallery from the dropdown above"};
+		JTree tree = new JTree(instructions);
+		tree.setShowsRootHandles(false);
+		tree.setCellRenderer(new TreeCellRenderer() {
+			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+				return new JLabel(value.toString());
+			}
+		});
+		return tree;
+	}
+
+	private void loadSmugTree(SmugMug smugMug, Side side) {
+		smugTree = new SmugTree(this, transferManager);
+		initializeTree(smugTree, side);
+		try {
+			smugTree.loadTree(smugMug);
+		} catch (IOException ex) {
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+			JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error loading data", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+	private void loadGalleryTree(Gallery gallery, Side side) {
+		galleryTree = new GalleryTree(this);
+		initializeTree(galleryTree, side);
+		try {
+			galleryTree.loadTree(gallery);
+		} catch (IOException ex) {
+			JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error loading albums", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+	private void initializeTree(JTree tree, Side side) {
+		tree.addTreeSelectionListener(this);
+		tree.addMouseListener(this);
+		
+		JPanel panel;
+		if (Side.LEFT.equals(side)) {
+			panel = leftPanel;
+		} else {
+			panel = rightPanel;
+		}
+		for (Component each : panel.getComponents()) {
+			if (each instanceof JScrollPane) {
+				panel.remove(each);
+			}
+		}
+		panel.add(new JScrollPane(tree), BorderLayout.CENTER);
+	}
+	
 	public void showImageWindow() {
 		floatingImageWindow.setVisible(true);
+		floatingImageWindow.toFront();
 	}
 	
 	public void valueChanged(TreeSelectionEvent tse) {
@@ -135,47 +258,6 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 		} catch (IOException ex) {
 			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
 		}
-	}
-			
-	public boolean loadSmugTree() {
-		setStatus("Logging in to SmugMug...");
-		SmugMug smugMug;
-		try {
-			smugMug = new SmugMug();
-		} catch (SmugException se) {
-			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, se);
-			JOptionPane.showMessageDialog(this, se.getLocalizedMessage(), "Error connecting to SmugMug", JOptionPane.ERROR_MESSAGE);
-			return false;
-		} finally {
-			clearStatus();
-		}
-		try {
-			smugTree.loadTree(smugMug);
-		} catch (IOException ex) {
-			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-			JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error loading data", JOptionPane.ERROR_MESSAGE);
-		}
-		return true;
-	}
-	
-	public boolean loadGalleryTree() {
-		Gallery gallery;
-		setStatus("Logging in to gallery...");
-		try {
-			gallery = new Gallery();
-		} catch (IOException ex) {
-			JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error contacting gallery", JOptionPane.ERROR_MESSAGE);
-			return false;
-		} finally {
-			clearStatus();
-		}
-		try {
-			galleryTree.loadTree(gallery);
-		} catch (IOException ex) {
-			JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error loading albums", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-		return true;
 	}
 	
 	public void setStatus(String status) {
@@ -197,26 +279,57 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 	}
 	
 	
-	private class DoubleClickListener extends MouseAdapter {
-		@Override
-		public void mouseClicked(MouseEvent me) {
-			if (me.getClickCount() == 2) {
-				JTree tree = (JTree)me.getSource();
-				TreePath clickPath = tree.getPathForLocation(me.getX(), me.getY());
-				if (clickPath != null) {
-					TreeableGalleryItem clickItem = (TreeableGalleryItem)((DefaultMutableTreeNode)clickPath.getLastPathComponent()).getUserObject();
-					if (clickItem != null && ItemType.IMAGE == clickItem.getType()) {
-						TreePath selectedPath = tree.getSelectionPath();
-						if (selectedPath != null) {
-							DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)selectedPath.getLastPathComponent();
-							TreeableGalleryItem selectedItem = (TreeableGalleryItem)selectedNode.getUserObject();
-							if (ItemType.IMAGE == selectedItem.getType()) {
-								showImageWindow();
-							}
+	private class ConnectionChoiceListener implements ActionListener {
+		private Side side;
+		
+		private ConnectionChoiceListener(Side side) {
+			this.side = side;
+		}
+		
+		public void actionPerformed(ActionEvent ae) {
+			connectTo((GalleryType)((JComboBox)ae.getSource()).getSelectedItem(), side);
+		}
+	}
+
+	public void mouseClicked(MouseEvent me) {
+		if (me.getClickCount() == 2) {
+			JTree tree = (JTree)me.getSource();
+			TreePath clickPath = tree.getPathForLocation(me.getX(), me.getY());
+			if (clickPath != null) {
+				TreeableGalleryItem clickItem = (TreeableGalleryItem)((DefaultMutableTreeNode)clickPath.getLastPathComponent()).getUserObject();
+				if (clickItem != null && ItemType.IMAGE == clickItem.getType()) {
+					TreePath selectedPath = tree.getSelectionPath();
+					if (selectedPath != null) {
+						DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)selectedPath.getLastPathComponent();
+						TreeableGalleryItem selectedItem = (TreeableGalleryItem)selectedNode.getUserObject();
+						if (ItemType.IMAGE == selectedItem.getType()) {
+							showImageWindow();
 						}
 					}
 				}
 			}
 		}
 	}
+	public void mousePressed(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+
+	public void windowClosing(WindowEvent e) {
+		if (floatingImageWindow.isVisible()) {
+			floatingImageWindow.setVisible(false);
+		} else {
+			dispose();
+		}
+	}
+
+	public void windowClosed(WindowEvent e) {
+		System.exit(0);
+	}
+	
+	public void windowOpened(WindowEvent e) {}
+	public void windowIconified(WindowEvent e) {}
+	public void windowDeiconified(WindowEvent e) {}
+	public void windowActivated(WindowEvent e) {}
+	public void windowDeactivated(WindowEvent e) {}
 }

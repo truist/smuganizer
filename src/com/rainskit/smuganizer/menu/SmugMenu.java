@@ -5,9 +5,7 @@ import com.rainskit.smuganizer.menu.actions.SettingsSortCategoryAction;
 import com.rainskit.smuganizer.menu.actions.AboutAction;
 import com.rainskit.smuganizer.menu.actions.CleanCaptionsAction;
 import com.rainskit.smuganizer.menu.actions.CheckForProtectedAlbumsAction;
-import com.rainskit.smuganizer.menu.actions.ConnectGalleryAction;
 import com.rainskit.smuganizer.menu.actions.SettingsSortAction;
-import com.rainskit.smuganizer.menu.actions.ConnectSmugMugAction;
 import com.rainskit.smuganizer.menu.actions.HelpAction;
 import com.rainskit.smuganizer.*;
 import com.rainskit.smuganizer.menu.actions.AlwaysIgnoreFileCaptionAction;
@@ -35,60 +33,26 @@ public class SmugMenu extends JMenuBar {
 	public SmugMenu(Main main, SmugTree smugTree, GalleryTree galleryTree, TransferTable transferTable, AsynchronousTransferManager transferManager) {
 		super();
 		
-		add(makeTreeMenu(main, galleryTree, "Gallery", new ConnectGalleryAction(main), createGallerySettingsMenu()));
-		add(makeTreeMenu(main, smugTree, "SmugMug", new ConnectSmugMugAction(main), createSmugMugSettingsMenu()));
-		
-		add(makeTableMenu(main, transferTable, transferManager));
+		JMenu menu = new JMenu("Settings");
+		menu.add(createGallerySettingsMenu());
+		menu.add(createSmugMugSettingsMenu());
+		menu.add(createTransferSettingsMenu());
+		menu.addSeparator();
+		menu.add(new JCheckBoxMenuItem(new PauseTransfersAction(transferManager)));
+		add(menu);
 		
 		add(createHelpMenu(main));
 	}
-
-	private JMenu makeTreeMenu(Main main, JTree tree, String title, Action connectAction, JMenu settings) {
-		JMenu menu = new JMenu(title);
-		menu.add(connectAction);
-		if (settings != null) {
-			menu.add(settings);
-		}
-		menu.addSeparator();
-		TreeMenuManager manager = new TreeMenuManager(main, tree);
-		addActionsToMenu(manager.getActions(), menu);
-		return menu;
+	
+	private JMenu createGallerySettingsMenu() {
+		JMenu settingsMenu = new JMenu("Gallery");
+		settingsMenu.add(new JCheckBoxMenuItem(new CheckForProtectedAlbumsAction()));
+		settingsMenu.add(new JCheckBoxMenuItem(new CleanCaptionsAction()));
+		return settingsMenu;
 	}
 	
-	private JMenu makeTableMenu(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
-		JMenu menu = new JMenu("Transfer");
-		
-		JMenu settingsMenu = new JMenu("Settings");
-		MaxOneGroup group = new MaxOneGroup();
-		JMenuItem alwaysRemove = new JCheckBoxMenuItem(new AlwaysRemoveFileCaptionAction());
-		group.add(alwaysRemove);
-		settingsMenu.add(alwaysRemove);
-		JMenuItem alwaysIgnore = new JCheckBoxMenuItem(new AlwaysIgnoreFileCaptionAction());
-		group.add(alwaysIgnore);
-		settingsMenu.add(alwaysIgnore);
-		
-		menu.add(settingsMenu);
-		menu.addSeparator();
-		menu.add(new JCheckBoxMenuItem(new PauseTransfersAction(transferManager)));
-		menu.addSeparator();
-		
-		TableMenuManager manager = new TableMenuManager(main, transferTable, transferManager);
-		addActionsToMenu(manager.getActions(), menu);
-		return menu;
-	}
-	
-	private void addActionsToMenu(List<? extends AbstractAction> actions, JMenu menu) {
-		for (AbstractAction each : actions) {
-			if (each != null) {
-				menu.add(new JMenuItem(each));
-			} else {
-				menu.addSeparator();
-			}
-		}
-	}
-
 	private JMenu createSmugMugSettingsMenu() {
-		JMenu settingsMenu = new JMenu("Settings");
+		JMenu settingsMenu = new JMenu("SmugMug");
 		SettingsSortCategoryAction sortAlbumsAction = new SettingsSortCategoryAction();
 		SettingsSortAction sortAction = new SettingsSortAction(sortAlbumsAction);
 		settingsMenu.add(new JCheckBoxMenuItem(sortAction));
@@ -96,13 +60,18 @@ public class SmugMenu extends JMenuBar {
 		return settingsMenu;
 	}
 	
-	private JMenu createGallerySettingsMenu() {
-		JMenu settingsMenu = new JMenu("Settings");
-		settingsMenu.add(new JCheckBoxMenuItem(new CheckForProtectedAlbumsAction()));
-		settingsMenu.add(new JCheckBoxMenuItem(new CleanCaptionsAction()));
+	private JMenu createTransferSettingsMenu() {
+		JMenu settingsMenu = new JMenu("Transfer");
+		MaxOneGroup group = new MaxOneGroup();
+		JMenuItem alwaysRemove = new JCheckBoxMenuItem(new AlwaysRemoveFileCaptionAction());
+		group.add(alwaysRemove);
+		settingsMenu.add(alwaysRemove);
+		JMenuItem alwaysIgnore = new JCheckBoxMenuItem(new AlwaysIgnoreFileCaptionAction());
+		group.add(alwaysIgnore);
+		settingsMenu.add(alwaysIgnore);
 		return settingsMenu;
 	}
-	
+
 	private JMenu createHelpMenu(Main main) {
 		JMenu helpMenu = new JMenu("Help");
 		helpMenu.add(new HelpAction(main));

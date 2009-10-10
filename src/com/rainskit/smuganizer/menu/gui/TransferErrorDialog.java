@@ -49,7 +49,7 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
 		this.initialItems = initialItems;
-		this.transferTable = new TransferTable(new TransferTableModel(initialItems), false);
+		this.transferTable = new TransferTable(main, null, new TransferTableModel(initialItems), false);
 		this.showRepairPanel = showRepairPanel;
 		
 		JPanel tablePanel = new JPanel(new BorderLayout());

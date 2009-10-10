@@ -8,7 +8,7 @@ import javax.swing.JMenuItem;
 public class CleanCaptionsAction extends AbstractAction {
 
 	public CleanCaptionsAction() {
-		super("Fix \"&amp;\" and remove captions that match filename when importing into SmugMug");
+		super("Fix \"&amp;\" and remove captions that match filename when copying files");
 		setSelected(GallerySettings.getCleanCaptions());
 	}
 

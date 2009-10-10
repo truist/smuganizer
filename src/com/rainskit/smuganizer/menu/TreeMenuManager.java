@@ -26,7 +26,6 @@ import javax.swing.tree.TreePath;
 public class TreeMenuManager implements TreeSelectionListener {
 	private JTree tree;
 	private ArrayList<TreeableAction> actions;
-	private JPopupMenu popupMenu;
 	private ArrayList<TreeableGalleryItem> currentItems;
 
 	public TreeMenuManager(Main main, JTree tree) {
@@ -35,21 +34,8 @@ public class TreeMenuManager implements TreeSelectionListener {
 		currentItems = new ArrayList<TreeableGalleryItem>();
 		actions = createActions(main, tree);
 		
-		popupMenu = new JPopupMenu();
-		for (TreeableAction each : actions) {
-			if (each != null) {
-				popupMenu.add(new JMenuItem(each));
-			} else {
-				popupMenu.addSeparator();
-			}
-		}
-		
 		tree.addTreeSelectionListener(this);
 		tree.addMouseListener(new RightClickListener());
-	}
-	
-	public List<? extends AbstractAction> getActions() {
-		return actions;
 	}
 	
 	private ArrayList<TreeableAction> createActions(Main main, JTree tree) {
@@ -64,6 +50,27 @@ public class TreeMenuManager implements TreeSelectionListener {
 		newActions.add(new HideAction(this, main));
 		newActions.add(new PasswordAction(this, main));
 		return newActions;
+	}
+
+	private void showPopup(JTree tree, int x, int y) {
+		boolean lastAddedWasSeparator = false;
+		JPopupMenu popupMenu = new JPopupMenu();
+		for (TreeableAction each : actions) {
+			if (each != null) {
+				if (each.isEnabled()) {
+					popupMenu.add(new JMenuItem(each));
+					lastAddedWasSeparator = false;
+				}
+			} else if (!lastAddedWasSeparator) {
+				popupMenu.addSeparator();
+				lastAddedWasSeparator = true;
+			}
+		}
+		if (lastAddedWasSeparator) {
+			popupMenu.remove(popupMenu.getComponentCount() - 1);
+		}
+		
+		popupMenu.show(tree, x, y);
 	}
 
 	public void valueChanged(TreeSelectionEvent e) {
@@ -127,7 +134,7 @@ public class TreeMenuManager implements TreeSelectionListener {
 					if (!clickedOnSelection) {
 						tree.setSelectionPath(path);
 					}
-					popupMenu.show(tree, e.getX(), e.getY());
+					showPopup(tree, e.getX(), e.getY());
 				}
 			}
 		}

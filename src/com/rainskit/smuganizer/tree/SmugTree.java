@@ -4,6 +4,7 @@ import com.rainskit.smuganizer.tree.transfer.SmugTransferHandler;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import com.kallasoft.smugmug.api.APIConstants;
 import com.rainskit.smuganizer.*;
+import com.rainskit.smuganizer.menu.TreeMenuManager;
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugMug;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +37,8 @@ public class SmugTree extends JTree implements SettingsListener {
 		setTransferHandler(new SmugTransferHandler(asyncTransferManager));
 		setDragEnabled(true);
 		setDropMode(DropMode.INSERT);
+		
+		new TreeMenuManager(main, this);
 	}
 
 	public void settingChanged(String settingName) {

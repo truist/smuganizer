@@ -9,7 +9,6 @@ import java.awt.Dimension;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagLayout;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -69,15 +68,14 @@ public class ImageWindow extends JFrame {
 		displayPanel.add(new JScrollPane(imagePanel), IMAGE_CARD);
 		displayPanel.add(progressPanel, PROGRESS_CARD);
 		
-		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		setDefaultCloseOperation(HIDE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(displayPanel);
 		pack();
 		setSize(500, 500);
+		
 		setLocationRelativeTo(parent);
-		Point parentLocation = parent.getLocation();
-		Point currentLocation = this.getLocation();
-		setLocation(currentLocation.x, Math.max(currentLocation.y, parentLocation.y + 100));
+		setFocusableWindowState(false);
 	}
 	
 	public void displayImage(TreeableGalleryItem image) throws IOException {
