@@ -11,18 +11,18 @@ public class SmugSubCategory extends SmugCategory {
 		super(parent, apiCategory);
 	}
 	
-	public SmugSubCategory(SmugCategory parent, Integer categoryID) {
+	public SmugSubCategory(SmugCategory parent, Integer categoryID) throws SmugException {
 		this(parent, reloadDetails(categoryID, parent.getCategoryID(), parent.getFullPathLabel()));
 		loadChildren();
 	}
 	
-	private static com.kallasoft.smugmug.api.json.entity.Category reloadDetails(Integer categoryID, Integer parentCategoryID, String parentPathLabel) {
+	private static com.kallasoft.smugmug.api.json.entity.Category reloadDetails(Integer categoryID, Integer parentCategoryID, String parentPathLabel) throws SmugException {
 		com.kallasoft.smugmug.api.json.v1_2_0.subcategories.Get get
 			= new com.kallasoft.smugmug.api.json.v1_2_0.subcategories.Get();
 		com.kallasoft.smugmug.api.json.v1_2_0.subcategories.Get.GetResponse response
 			= get.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, parentCategoryID);
 		if (response.isError()) {
-			throw new SmugException("Error loading sub-category details in category \"" + parentPathLabel + "\"", response.getError());
+			throw new SmugException("Error loading sub-category details in category \"" + parentPathLabel + "\"", SmugException.convertError(response.getError()));
 		}
 		for (com.kallasoft.smugmug.api.json.entity.Category each : response.getSubCategoryList()) {
 			if (categoryID.equals(each.getID())) {

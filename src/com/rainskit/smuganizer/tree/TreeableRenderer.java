@@ -1,8 +1,11 @@
 package com.rainskit.smuganizer.tree;
 
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
@@ -34,7 +37,13 @@ public class TreeableRenderer extends DefaultTreeCellRenderer {
 			if (userObject instanceof TreeableGalleryItem) {
 				currentItem = (TreeableGalleryItem)userObject;	//yeah, it's a hack
 				
-				String newValue = currentItem.getLabel() + currentItem.getMetaLabel();
+				String newValue;
+				try {
+					newValue = currentItem.getLabel() + currentItem.getMetaLabel();
+				} catch (SmugException ex) {
+					Logger.getLogger(TreeableRenderer.class.getName()).log(Level.SEVERE, null, ex);
+					newValue = "ERROR: " + ex.getMessage();
+				}
 				Component superComponent = super.getTreeCellRendererComponent(tree, newValue, sel, expanded, leaf, row, hasFocus);
 				setCellAttributes(superComponent, currentItem, sel);
 				return superComponent;

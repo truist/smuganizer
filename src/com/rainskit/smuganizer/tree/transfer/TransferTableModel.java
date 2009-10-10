@@ -1,8 +1,11 @@
 package com.rainskit.smuganizer.tree.transfer;
 
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.AbstractTableModel;
 
 public class TransferTableModel extends AbstractTableModel {
@@ -67,18 +70,23 @@ public class TransferTableModel extends AbstractTableModel {
 	}
 	
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		AbstractTransferTask row = transferTasks.get(rowIndex);
-		switch (columnIndex) {
-			case PROGRESS_COLUMN:
-				return row.getStatus().toString();
-			case ACTION_COLUMN:
-				return row.getActionString();
-			case SOURCE_COLUMN:
-				return row.getSourceLabel();
-			case DEST_COLUMN:
-				return row.getDestLabel();
-			default:
-				throw new IllegalArgumentException("Invalid column: " + columnIndex);
+		try {
+			AbstractTransferTask row = transferTasks.get(rowIndex);
+			switch (columnIndex) {
+				case PROGRESS_COLUMN:
+					return row.getStatus().toString();
+				case ACTION_COLUMN:
+					return row.getActionString();
+				case SOURCE_COLUMN:
+					return row.getSourceLabel();
+				case DEST_COLUMN:
+					return row.getDestLabel();
+				default:
+					throw new IllegalArgumentException("Invalid column: " + columnIndex);
+			}
+		} catch (SmugException ex) {
+			Logger.getLogger(TransferTableModel.class.getName()).log(Level.SEVERE, null, ex);
+			return "ERROR: " + ex.getMessage();
 		}
 	}
 

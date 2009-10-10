@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.tree.transfer.tasks;
 
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import com.rainskit.smuganizer.tree.transfer.*;
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
@@ -137,11 +138,11 @@ public abstract class AbstractTransferTask {
 		return status.toString();
 	}
 
-	public String getSourceLabel() {
+	public String getSourceLabel() throws SmugException {
 		return srcItem.getFullPathLabel();
 	}
 	
-	public String getDestLabel() {
+	public String getDestLabel() throws SmugException {
 		if (destParentItem != null) {
 			return destParentItem.getFullPathLabel();
 		} else {

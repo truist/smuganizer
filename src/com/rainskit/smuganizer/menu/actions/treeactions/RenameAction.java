@@ -3,6 +3,7 @@ package com.rainskit.smuganizer.menu.actions.treeactions;
 import com.rainskit.smuganizer.menu.*;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class RenameAction extends TreeableAction {
 		tree.getActionMap().put(ACTION_MAP_KEY, this);
 	}
 
-	protected void performAction() {
+	protected void performAction() throws SmugException {
 		ArrayList<TreeableGalleryItem> currentItems = menuManager.getCurrentItems();
 		String prompt;
 		String defaultAnswer;

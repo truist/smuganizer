@@ -1,6 +1,5 @@
 package com.rainskit.smuganizer.tree.transfer.tasks;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.ProtectException;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.transfer.interruptions.PasswordRequiredInterruption;
@@ -30,7 +29,7 @@ public class ProtectItem extends AbstractTransferTask {
 				throw new PasswordRequiredInterruption(srcItem);
 			}
 		} else {
-			throw new ProtectException(srcItem, null);
+			throw new IOException("Unable to protect this item (even though its source was protected) " + srcItem.getFullPathLabel(), null);
 		}
 		return null;
 	}

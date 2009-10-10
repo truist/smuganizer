@@ -2,8 +2,6 @@ package com.rainskit.smuganizer.smugmugapiwrapper;
 
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.HideException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import java.awt.Desktop;
@@ -30,12 +28,12 @@ public class SmugImage extends TreeableGalleryItem {
 		this.apiImage = apiImage;
 	}
 
-	public void setParent(SmugAlbum newParent) {
+	public void setParent(SmugAlbum newParent) throws SmugException {
 		this.parent = newParent;
 		loadImageDetails();
 	}
 	
-	public List<? extends TreeableGalleryItem> loadChildren() {
+	public List<? extends TreeableGalleryItem> loadChildren() throws SmugException {
 		loadImageDetails();
 		return null;
 	}
@@ -44,7 +42,7 @@ public class SmugImage extends TreeableGalleryItem {
 		return null;
 	}
 	
-	private void loadImageDetails() {
+	private void loadImageDetails() throws SmugException {
 		com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo getInfo
 			= new com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo();
 		com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo.GetInfoResponse response 
@@ -54,20 +52,20 @@ public class SmugImage extends TreeableGalleryItem {
 								apiImage.getID(), 
 								apiImage.getImageKey());
 		if (response.isError()) {
-			throw new SmugException("Error loading image details for image with ID \"" + apiImage.getID() + "\" in album \"" + parent.getFullPathLabel() + "\"", response.getError());
+			throw new SmugException("Error loading image details for image with ID \"" + apiImage.getID() + "\" in album \"" + parent.getFullPathLabel() + "\"", SmugException.convertError(response.getError()));
 		}
 		apiImage = response.getImage();
 		loaded = true;
 	}
 
-	public URL getPreviewURL() throws MalformedURLException {
+	public URL getPreviewURL() throws IOException {
 		if (!loaded) {
 			loadImageDetails();
 		}
 		return new URL(apiImage.getMediumURL());
 	}
 
-	public URL getDataURL() throws MalformedURLException {
+	public URL getDataURL() throws IOException {
 		if (!loaded) {
 			loadImageDetails();
 		}
@@ -78,7 +76,7 @@ public class SmugImage extends TreeableGalleryItem {
 		return apiImage.getID();
 	}
 
-	public String getLabel() {
+	public String getLabel() throws SmugException {
 		if (!loaded) {
 			loadImageDetails();
 		}
@@ -114,7 +112,7 @@ public class SmugImage extends TreeableGalleryItem {
 		return getFileName();
 	}
 	
-	public int getPosition() {
+	public int getPosition() throws SmugException {
 		if (!loaded) {
 			loadImageDetails();
 		}
@@ -125,7 +123,7 @@ public class SmugImage extends TreeableGalleryItem {
 		return true;
 	}
 
-	public void reLabel(String newName) throws RenameException {
+	public void reLabel(String newName) throws SmugException {
 		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings changeSettings = new com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings();
 		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings.ChangeSettingsResponse response 
 			= changeSettings.execute(SmugMug.API_URL, 
@@ -136,7 +134,7 @@ public class SmugImage extends TreeableGalleryItem {
 									null, 
 									null);
 		if (response.isError()) {
-			throw new RenameException(this, newName, response.getError());
+			throw new RenameException(this, newName, SmugException.convertError(response.getError()));
 		}
 		reLabel = newName;
 	}
@@ -153,11 +151,11 @@ public class SmugImage extends TreeableGalleryItem {
 		return true;
 	}
 
-	public void delete() throws DeleteException {
+	public void delete() throws SmugException {
 		com.kallasoft.smugmug.api.json.v1_2_0.images.Delete delete = new com.kallasoft.smugmug.api.json.v1_2_0.images.Delete();
 		com.kallasoft.smugmug.api.json.v1_2_0.images.Delete.DeleteResponse response = delete.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, apiImage.getID());
 		if (response.isError()) {
-			throw new DeleteException(this, response.getError());
+			throw new SmugException("Error deleting " + getFullPathLabel(), SmugException.convertError(response.getError()));
 		}
 		parent.removeChild(this);
 		parent = null;
@@ -206,7 +204,7 @@ public class SmugImage extends TreeableGalleryItem {
 	}
 
 	@Override
-	public void setHidden(boolean hidden) {
+	public void setHidden(boolean hidden) throws SmugException {
 		//if we just uploaded an image into SmugMug, the 'hide' will fail until
 		//SmugMug finishes processing the image.  So we retry the action, repeatedly
 		//in the hope that it succeeds (within a time limit).
@@ -220,14 +218,14 @@ public class SmugImage extends TreeableGalleryItem {
 					Thread.sleep(HIDE_RETRY_DELAY);
 				} catch (InterruptedException ex) {
 					Logger.getLogger(SmugImage.class.getName()).log(Level.SEVERE, null, ex);
-					throw new HideException(this, response.getError());
+					throw new SmugException("Error hiding " + getFullPathLabel(), SmugException.convertError(response.getError()));
 				}
 			} else {
 				this.hidden = Boolean.valueOf(hidden);
 				return;
 			}
 		}
-		throw new HideException(this, response.getError());
+		throw new SmugException("Error hiding " + getFullPathLabel(), SmugException.convertError(response.getError()));
 	}
 	
 	@Override

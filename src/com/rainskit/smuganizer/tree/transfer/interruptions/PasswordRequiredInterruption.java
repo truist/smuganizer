@@ -1,10 +1,13 @@
 package com.rainskit.smuganizer.tree.transfer.interruptions;
 
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog.RepairPanel;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -76,12 +79,22 @@ public class PasswordRequiredInterruption extends TransferInterruption {
 		
 		@Override
 		public String getDescription() {
-			return item.getFullPathLabel();
+			try {
+				return item.getFullPathLabel();
+			} catch (SmugException ex) {
+				Logger.getLogger(PasswordRequiredInterruption.class.getName()).log(Level.SEVERE, null, ex);
+				return "ERROR: " + ex.getMessage();
+			}
 		}
 
 		@Override
 		public String getUniqueKey() {
-			return item.getFullPathLabel();
+			try {
+				return item.getFullPathLabel();
+			} catch (SmugException ex) {
+				Logger.getLogger(PasswordRequiredInterruption.class.getName()).log(Level.SEVERE, null, ex);
+				return "ERROR: " + ex.getMessage();
+			}
 		}
 
 		@Override

@@ -3,10 +3,9 @@ package com.rainskit.smuganizer.menu.actions.treeactions;
 import com.rainskit.smuganizer.menu.*;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.menu.gui.SetPasswordDialog;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.PasswordException;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -47,7 +46,7 @@ public class PasswordAction extends TreeableAction {
 			}
 			setEnabled(true);
 			super.putValue(NAME, getValue(NAME).equals(ADD) ? REMOVE : ADD);
-		} catch (PasswordException ex) {
+		} catch (SmugException ex) {
 			Logger.getLogger(HideAction.class.getName()).log(Level.SEVERE, null, ex);
 			JOptionPane.showMessageDialog(main, "Error: password change failed.", "Error", JOptionPane.WARNING_MESSAGE);
 		}

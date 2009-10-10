@@ -2,11 +2,10 @@ package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.menu.*;
 import com.rainskit.smuganizer.Main;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -26,7 +25,7 @@ public class DeleteAction extends TreeableAction {
 		tree.getActionMap().put(ACTION_MAP_KEY, this);
 	}
 
-	protected void performAction() {
+	protected void performAction() throws SmugException {
 		ArrayList<TreeableGalleryItem> currentItems = menuManager.getCurrentItems();
 		String itemLabel = (currentItems.size() > 1 ? "these items" : "\"" + currentItems.get(0).getLabel() + "\"");
 		int answer = JOptionPane.showConfirmDialog(main, 
@@ -43,7 +42,7 @@ public class DeleteAction extends TreeableAction {
 					((DefaultTreeModel)menuManager.getTree().getModel()).removeNodeFromParent((MutableTreeNode)each.getLastPathComponent());
 				}
 				menuManager.getTree().setSelectionPath(selectionPaths[0].getParentPath());
-			} catch (DeleteException ex) {
+			} catch (SmugException ex) {
 				Logger.getLogger(DeleteAction.class.getName()).log(Level.SEVERE, null, ex);
 				JOptionPane.showMessageDialog(main, "Error: delete failed.  (Note: standard SmugMug categories cannot be deleted.)", "Error", JOptionPane.WARNING_MESSAGE);
 			}

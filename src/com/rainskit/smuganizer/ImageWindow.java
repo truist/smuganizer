@@ -1,6 +1,7 @@
 package com.rainskit.smuganizer;
 
 import com.kallasoft.smugmug.api.APIConstants;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -10,10 +11,15 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -158,7 +164,7 @@ public class ImageWindow extends JFrame {
 			}
 		}
 		
-		public ImageIcon getImage(TreeableGalleryItem image) throws MalformedURLException {
+		public ImageIcon getImage(TreeableGalleryItem image) throws IOException {
 			ImageIcon cachedImage = null;
 			synchronized(cachedImageData) {
 				SoftReference<ImageIcon> softRef = cachedImageData.get(image.getPreviewURL().toString());
@@ -218,29 +224,43 @@ public class ImageWindow extends JFrame {
 		}
 
 		private void loadImage(final AddImageCall nextCall) throws IOException {
-			String url = nextCall.image.getPreviewURL().toExternalForm();
-			GetMethod getMethod = new GetMethod(url);
-			getMethod.setRequestHeader("User-Agent", APIConstants.USER_AGENT);
-			try {
-				int responseCode = APIConstants.HTTP_CLIENT.executeMethod(getMethod);
-				if (responseCode != HttpStatus.SC_OK) {
-					throw new IOException("Received unexpected response code (" + responseCode + ") from server when trying to retrieve URL: " + url);
+			byte[] imageData;
+			URL imageURL = nextCall.image.getPreviewURL();
+			if("file".equals(imageURL.getProtocol())) {
+				try {
+					imageData = IOUtils.toByteArray(new FileInputStream(new File(imageURL.toURI())));
+				} catch (URISyntaxException ex) {
+					throw new IOException(ex.getMessage(), ex);
 				}
-				byte[] imageData = IOUtils.toByteArray(getMethod.getResponseBodyAsStream());
-				final ImageIcon imageIcon = new ImageIcon(imageData);
-				synchronized (cachedImageData) {
-					cachedImageData.put(nextCall.image.getPreviewURL().toString(), new SoftReference<ImageIcon>(imageIcon));
+			} else {
+				GetMethod getMethod = new GetMethod(imageURL.toExternalForm());
+				getMethod.setRequestHeader("User-Agent", APIConstants.USER_AGENT);
+				try {
+					int responseCode = APIConstants.HTTP_CLIENT.executeMethod(getMethod);
+					if (responseCode != HttpStatus.SC_OK) {
+						throw new IOException("Received unexpected response code (" + responseCode + ") from server when trying to retrieve URL: " + imageURL.toExternalForm());
+					}
+					imageData = IOUtils.toByteArray(getMethod.getResponseBodyAsStream());
+				} finally {
+					getMethod.releaseConnection();
 				}
-				notifyImageLoaded(imageIcon, nextCall.image, nextCall.ID);
-			} finally {
-				getMethod.releaseConnection();
 			}
+			final ImageIcon imageIcon = new ImageIcon(imageData);
+			synchronized (cachedImageData) {
+				cachedImageData.put(imageURL.toString(), new SoftReference<ImageIcon>(imageIcon));
+			}
+			notifyImageLoaded(imageIcon, nextCall.image, nextCall.ID);
 		}
 
 		private void notifyImageLoaded(final ImageIcon imageIcon, final TreeableGalleryItem image, final int ID) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					imageLoaded(imageIcon, image.getFullPathLabel(), ID);
+					try {
+						imageLoaded(imageIcon, image.getFullPathLabel(), ID);
+					} catch (SmugException ex) {
+						Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
+						imageLoaded(imageIcon, "ERROR: " + ex.getMessage(), ID);
+					}
 				}
 			});
 		}

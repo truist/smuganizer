@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer;
 
+import com.rainskit.smuganizer.filesystemapiwrapper.FileGallery;
 import com.rainskit.smuganizer.tree.SmugTree;
 import com.rainskit.smuganizer.tree.GalleryTree;
 import com.rainskit.smuganizer.menu.SmugMenu;
@@ -8,6 +9,7 @@ import com.rainskit.smuganizer.menu.gui.GalleryLoginDialog;
 import com.rainskit.smuganizer.menu.gui.SmugMugLoginDialog;
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugMug;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
+import com.rainskit.smuganizer.tree.FileGalleryTree;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
@@ -25,6 +27,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -32,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -48,9 +52,6 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 public class Main extends JFrame implements TreeSelectionListener, StatusCallback, MouseListener, WindowListener {
-	private JLabel statusLabel;
-	private String baseStatus;
-
 	private enum Side {LEFT, RIGHT}
 	
 	private enum GalleryType { 
@@ -71,15 +72,18 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 		}
 	}
 	
-	private JPanel leftPanel;
-	private JPanel rightPanel;
+	private SmugTree smugTree;
+	private GalleryTree galleryTree;
+	private FileGalleryTree fileGalleryTree;
 	
 	private AsynchronousTransferManager transferManager;
 	
-	private SmugTree smugTree;
-	private GalleryTree galleryTree;
-	
 	private ImageWindow floatingImageWindow;
+	
+	private JPanel leftPanel;
+	private JPanel rightPanel;
+	private JLabel statusLabel;
+	private String baseStatus;
 	
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, FileNotFoundException, IOException{
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -178,12 +182,20 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 				try {
 					loadGalleryTree(new Gallery(), side);
 				} catch (IOException ex) {
+					Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
 					JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error contacting gallery", JOptionPane.ERROR_MESSAGE);
 					clearStatus();
 				}
 			}
 		} else if (GalleryType.COMPUTER.equals(galleryType)) {
-			throw new IllegalArgumentException("Not implemented yet");
+			JFileChooser directoryChooser = new JFileChooser();
+			directoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			if (directoryChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+				File chosen = directoryChooser.getSelectedFile();
+				if (chosen.exists() && chosen.isDirectory()) {
+					loadFileGalleryTree(new FileGallery(chosen), side);
+				}
+			}
 		} else {
 			throw new IllegalArgumentException("Impossible type: " + galleryType.name());
 		}
@@ -218,6 +230,18 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 		try {
 			galleryTree.loadTree(gallery);
 		} catch (IOException ex) {
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+			JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error loading albums", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+	private void loadFileGalleryTree(FileGallery fileGallery, Side side) {
+		fileGalleryTree = new FileGalleryTree(this);
+		initializeTree(fileGalleryTree, side);
+		try {
+			fileGalleryTree.loadTree(fileGallery);
+		} catch (IOException ex) {
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
 			JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), "Error loading albums", JOptionPane.ERROR_MESSAGE);
 		}
 	}

@@ -1,11 +1,14 @@
 package com.rainskit.smuganizer.tree;
 
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryItem> {
 
@@ -32,7 +35,7 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public abstract void removeChild(TreeableGalleryItem child);
 	
 	public abstract boolean canMove(TreeableGalleryItem item, int childIndex);
-	public abstract void moveItem(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption);
+	public abstract void moveItem(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption) throws SmugException;
 	public abstract boolean canImport(TreeableGalleryItem newItem);
 	public abstract TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) throws IOException, TransferInterruption;
 	
@@ -90,11 +93,15 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	}
 	
 	/** The label to show in the Smuganizer tree */
-	public abstract String getLabel();
+	public abstract String getLabel() throws SmugException;
+	/** If the file is hidden or password-protected, return something here 
+	 * to indicate so.  The string you return here will be appended to the
+	 * Label, in the tree.
+	 */
 	public abstract String getMetaLabel();
 	public abstract boolean canBeRelabeled();
-	public abstract void reLabel(String answer);
-	public final String getFullPathLabel() {
+	public abstract void reLabel(String answer) throws SmugException;
+	public final String getFullPathLabel() throws SmugException {
 		return (getParent() != null ? getParent().getFullPathLabel() : "") + PATH_SEP + getLabel();
 	}
 	/** The file name, for images */
@@ -107,7 +114,7 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public abstract String getDescription();
 	
 	public abstract boolean canBeDeleted();
-	public abstract void delete();
+	public abstract void delete() throws SmugException;
 	
 	public final boolean isProtected() {
 		return isHidden() || hasPassword();
@@ -123,19 +130,24 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	
 	public abstract boolean isHidden();
 	public abstract boolean canChangeHiddenStatus(boolean newState);
-	public abstract void setHidden(boolean hidden);
+	public abstract void setHidden(boolean hidden) throws SmugException;
 	
 	public abstract boolean hasPassword();
 	public abstract boolean canChangePassword(boolean newState);
-	public abstract void setPassword(String password, String passwordHint);
+	public abstract void setPassword(String password, String passwordHint) throws SmugException;
 	
-	public abstract URL getDataURL() throws MalformedURLException;
-	public abstract URL getPreviewURL() throws MalformedURLException;
+	public abstract URL getDataURL() throws IOException;
+	public abstract URL getPreviewURL() throws IOException;
 	public abstract boolean canBeLaunched();
 	public abstract void launch() throws IOException, URISyntaxException;
 	
 	@Override
 	public final String toString() {
-		return getLabel() + getMetaLabel();
+		try {
+			return getLabel() + getMetaLabel();
+		} catch (SmugException ex) {
+			Logger.getLogger(TreeableGalleryItem.class.getName()).log(Level.SEVERE, null, ex);
+			return "ERROR: " + ex.getMessage();
+		}
 	}
 }

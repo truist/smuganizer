@@ -2,8 +2,12 @@ package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.menu.TreeMenuManager;
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 
 public abstract class TreeableAction extends AbstractAction {
 	protected Main main;
@@ -22,12 +26,15 @@ public abstract class TreeableAction extends AbstractAction {
 		main.setStatus(statusText);
 		try {
 			performAction();
+		} catch (SmugException ex) {
+			Logger.getLogger(TreeableAction.class.getName()).log(Level.SEVERE, null, ex);
+			JOptionPane.showMessageDialog(main, "ERROR: " + ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
 		} finally {
 			main.clearStatus();
 		}
 	}
 	
-	protected abstract void performAction();
+	protected abstract void performAction() throws SmugException;
 
 	public abstract void updateState();
 }

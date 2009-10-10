@@ -17,7 +17,7 @@ public class LaunchAction extends TreeableAction {
 	private static final String ACTION_MAP_KEY = "launch";
 	
 	public LaunchAction(TreeMenuManager menuManager, Main main, JTree tree) {
-		super(main, menuManager, "View in web browser", "Launching...");
+		super(main, menuManager, "Open", "Launching...");
 		
 		tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK), ACTION_MAP_KEY);
 		tree.getActionMap().put(ACTION_MAP_KEY, this);

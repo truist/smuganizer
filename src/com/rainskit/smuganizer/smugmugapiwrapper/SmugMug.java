@@ -1,14 +1,11 @@
 package com.rainskit.smuganizer.smugmugapiwrapper;
 
-import com.kallasoft.smugmug.api.APIConstants;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.DeleteException;
 import com.kallasoft.smugmug.api.json.v1_2_0.login.WithPassword;
 import com.kallasoft.smugmug.api.json.v1_2_0.users.GetTree;
 import com.rainskit.smuganizer.SmugMugSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MixedAlbumException;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MoveException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import java.awt.Desktop;
@@ -30,7 +27,7 @@ public class SmugMug extends TreeableGalleryItem {
 	
 	private ArrayList<SmugCategory> categories;
 
-	public SmugMug() {
+	public SmugMug() throws SmugException {
 		super(null);
 		
 		WithPassword withPassword = new WithPassword();
@@ -42,14 +39,14 @@ public class SmugMug extends TreeableGalleryItem {
 									String.valueOf(SmugMugSettings.getPassword()));
 
 		if (response.isError()) {
-			throw new SmugException("Login failed", response.getError());
+			throw new SmugException("Login failed", SmugException.convertError(response.getError()));
 		}
 		
 		sessionID = response.getSessionID();
 		userNickName = response.getNickName();
 	}
 
-	public List<? extends TreeableGalleryItem> loadChildren() {
+	public List<? extends TreeableGalleryItem> loadChildren() throws SmugException {
 		if (categories == null) {
 			categories = new ArrayList<SmugCategory>();
 			
@@ -57,7 +54,7 @@ public class SmugMug extends TreeableGalleryItem {
 			GetTree.GetTreeResponse response 
 				= getTree.execute(API_URL, API_KEY, sessionID, Boolean.FALSE);
 			if (response.isError()) {
-				throw new SmugException("GetTree failed", response.getError());
+				throw new SmugException("GetTree failed", SmugException.convertError(response.getError()));
 			}
 
 			List<com.kallasoft.smugmug.api.json.entity.Category> smCategories = response.getCategoryList();
@@ -110,7 +107,7 @@ public class SmugMug extends TreeableGalleryItem {
 		return (ItemType.ALBUM == newItem.getType() && newItem.getSubAlbumDepth() > 0 && newItem.getSubAlbumDepth() < 3);
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem sourceItem, TransferInterruption previousInterruption) {
+	public TreeableGalleryItem importItem(TreeableGalleryItem sourceItem, TransferInterruption previousInterruption) throws SmugException {
 		switch (sourceItem.getSubAlbumDepth()) {
 			case 1:
 			case 2:
@@ -120,7 +117,7 @@ public class SmugMug extends TreeableGalleryItem {
 		}
 	}
 	
-	private TreeableGalleryItem importAlbumAsCategory(TreeableGalleryItem sourceAlbum) throws MoveException {
+	private TreeableGalleryItem importAlbumAsCategory(TreeableGalleryItem sourceAlbum) throws SmugException {
 		for (TreeableGalleryItem each : categories) {
 			if (each.getFileName().equals(sourceAlbum.getCaption())) {
 				return each;
@@ -134,7 +131,7 @@ public class SmugMug extends TreeableGalleryItem {
 			com.kallasoft.smugmug.api.json.v1_2_0.categories.Create.CreateResponse createCategoryResponse 
 				= createCategory.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, sourceAlbum.getCaption());
 			if (createCategoryResponse.isError()) {
-				throw new MoveException(this, createCategoryResponse.getError());
+				throw new SmugException("Error moving " + getFullPathLabel(), SmugException.convertError(createCategoryResponse.getError()));
 			}
 			SmugCategory newCategory = new SmugCategory(this, createCategoryResponse.getCategoryID());
 			categories.add(newCategory);
@@ -158,7 +155,7 @@ public class SmugMug extends TreeableGalleryItem {
 		return false;
 	}
 
-	public void delete() throws DeleteException {
+	public void delete() throws SmugException {
 		throw new UnsupportedOperationException("Cannot delete SmugMug");
 	}
 

@@ -1,4 +1,7 @@
 
+add an "import from filesystem" option
+	implement "move" transfer type for uploading
+
 ease of use improvements:
 	sort imported albums appropriately
 	create settings for gallery sort order (default/date vs. name)
@@ -20,13 +23,6 @@ keyword support
 package for release
 
 -----
-
-add an "import from filesystem" option
-	implement "move" transfer type for uploading
-
-"copy" isn't implemented within the SmugMug tree
-
-allow copying from one smugmug gallery to another
 
 allow importing / moving in gallery, not just in smugmug
 	and on the filesystem, once that is implemented

@@ -1,43 +1,21 @@
 package com.rainskit.smuganizer.tree;
 
 import com.rainskit.smuganizer.tree.transfer.SmugTransferHandler;
-import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
-import com.kallasoft.smugmug.api.APIConstants;
 import com.rainskit.smuganizer.*;
-import com.rainskit.smuganizer.menu.TreeMenuManager;
-import com.rainskit.smuganizer.smugmugapiwrapper.SmugMug;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.BorderFactory;
 import javax.swing.DropMode;
-import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 public class SmugTree extends TransferTree implements SettingsListener {
-	private Main main;
-	private DefaultMutableTreeNode rootNode;
-	private DefaultTreeModel model;
 	
 	public SmugTree(Main main) {
-		super();
-		this.main = main;
-		this.model = (DefaultTreeModel)getModel();
-		this.rootNode = new DefaultMutableTreeNode();
-		model.setRoot(rootNode);
-		
-		setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
-		setCellRenderer(new TreeableRenderer());
-		setDragEnabled(true);
+		super(main);
 		setDropMode(DropMode.INSERT);
-		
-		new TreeMenuManager(main, this);
 	}
 
 	public void settingChanged(String settingName) {
@@ -47,17 +25,9 @@ public class SmugTree extends TransferTree implements SettingsListener {
 		}
 	}
 
-	public void loadTree(SmugMug smugMug) throws IOException {
-		rootNode.setUserObject(smugMug);
+	public void loadTree(TreeableGalleryItem root) throws IOException {
 		SmugMugSettings.setSettingsListener(this);
-		
-		main.setStatus("Loading data...");
-		rootNode.removeAllChildren();
-		model.nodeStructureChanged(rootNode);
-		
-		HttpConnectionManagerParams params = APIConstants.HTTP_CLIENT.getHttpConnectionManager().getParams();
-		HostConfiguration hostConfig = APIConstants.HTTP_CLIENT.getHostConfiguration();
-		new AsynchronousTreeLoader(main, this, rootNode, smugMug, SmugMugSettings.getTreeSort()).start(params, hostConfig);
+		loadTreeImpl(root, SmugMugSettings.getTreeSort());
 	}
 	
 	private void sortTree(DefaultMutableTreeNode parentNode) {
