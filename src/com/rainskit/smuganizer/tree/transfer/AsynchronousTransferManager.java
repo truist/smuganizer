@@ -9,14 +9,17 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 
 public class AsynchronousTransferManager implements StatusListener {
+	private TransferHandler transferHandler;
 	private LinkedBlockingDeque<AbstractTransferTask> taskDeque;
 	private TransferTableModel visibleTable;
 	private Thread transferThread;
 	private volatile boolean paused;
 	
 	public AsynchronousTransferManager(TransferTableModel visibleTable) {
+		this.transferHandler = new SmugTransferHandler(this);
 		this.taskDeque = new LinkedBlockingDeque<AbstractTransferTask>();
 		this.visibleTable = visibleTable;
 		
@@ -140,5 +143,9 @@ public class AsynchronousTransferManager implements StatusListener {
 				task.removeStatusListener(AsynchronousTransferManager.this);
 			}
 		});
+	}
+
+	public TransferHandler getTransferHandler() {
+		return transferHandler;
 	}
 }

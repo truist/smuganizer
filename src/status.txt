@@ -44,3 +44,7 @@ really hard import combinations:
 	album:mixed -> category
 	album:mixed -> smugmug
 	album:mixed:mixed -> smugmug
+
+drag and drop out to/from the windows filesystem
+
+copy/cut and paste support

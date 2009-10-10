@@ -73,6 +73,7 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 	
 	private JPanel leftPanel;
 	private JPanel rightPanel;
+	
 	private AsynchronousTransferManager transferManager;
 	
 	private SmugTree smugTree;
@@ -201,7 +202,7 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 	}
 
 	private void loadSmugTree(SmugMug smugMug, Side side) {
-		smugTree = new SmugTree(this, transferManager);
+		smugTree = new SmugTree(this);
 		initializeTree(smugTree, side);
 		try {
 			smugTree.loadTree(smugMug);
@@ -224,6 +225,7 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 	private void initializeTree(JTree tree, Side side) {
 		tree.addTreeSelectionListener(this);
 		tree.addMouseListener(this);
+		tree.setTransferHandler(transferManager.getTransferHandler());
 		
 		JPanel panel;
 		if (Side.LEFT.equals(side)) {

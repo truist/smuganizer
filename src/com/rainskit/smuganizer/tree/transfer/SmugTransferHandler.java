@@ -10,7 +10,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import javax.swing.DropMode;
 import javax.swing.JComponent;
-import javax.swing.JTree;
 import javax.swing.TransferHandler;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -24,6 +23,41 @@ public class SmugTransferHandler extends TransferHandler {
 	}
 	
 	//################################
+	//#######  EXPORT METHODS  #######
+	//################################
+	
+	@Override
+	public int getSourceActions(JComponent source) {
+		return ((TransferTree)source).getSourceActions();
+	}
+	
+	@Override
+	protected Transferable createTransferable(JComponent source) {
+		TransferTree srcTree = (TransferTree)source;
+		TreePath[] selectionPaths = srcTree.getSelectionPaths();
+		if (selectionPaths.length > 0) {
+			return new SmugTransferable(srcTree, (DefaultTreeModel)srcTree.getModel(), selectionPaths);
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	protected void exportDone(JComponent source, Transferable data, int action) {
+		//This never does anything, because we handle all parts of a "move"
+		//operation within the importData() method.  Doing it that way is an
+		//optimization with SmugMug, that can support a server-side move,
+		//which saves us having to download and re-upload the image, and
+		//eliminates the risk that we'd lose metadata.  
+		
+		//Once we support a "move" between different galleries, this method
+		//will be implemented to do the delete on the source gallery
+	}
+	
+	
+	
+	
+	//################################
 	//#######  IMPORT METHODS  #######
 	//################################
 	
@@ -32,7 +66,7 @@ public class SmugTransferHandler extends TransferHandler {
 		if (!transferSupport.isDataFlavorSupported(SmugTransferable.transferFlavor)) {
 			return false;
 		}
-		JTree.DropLocation location = (JTree.DropLocation)transferSupport.getDropLocation();
+		TransferTree.DropLocation location = (TransferTree.DropLocation)transferSupport.getDropLocation();
 		TreePath destParentPath = location.getPath();
 		if (destParentPath == null) {
 			return false;
@@ -46,12 +80,20 @@ public class SmugTransferHandler extends TransferHandler {
 		if (itemType == null) {
 			return false;
 		}
-		JTree destTree = (JTree)transferSupport.getComponent();
-		destTree.setDropMode(ItemType.IMAGE == itemType ? DropMode.ON_OR_INSERT : DropMode.ON);
+		TransferTree destTree = (TransferTree)transferSupport.getComponent();
+		if (!destTree.canImport()) {
+			return false;
+		}
+		if (destTree.canInsertAtSpecificLocation() && ItemType.IMAGE == itemType) {
+			destTree.setDropMode(DropMode.ON_OR_INSERT);
+		} else {
+			destTree.setDropMode(DropMode.ON);
+		}
 		
 		TreeableGalleryItem destParentItem = (TreeableGalleryItem)((DefaultMutableTreeNode)destParentPath.getLastPathComponent()).getUserObject();
 		TreeableGalleryItem srcItem = (TreeableGalleryItem)((DefaultMutableTreeNode)srcPaths[0].getLastPathComponent()).getUserObject();
-		if (flavorClass.getTreeModel() == destTree.getModel()) {
+		//if we are dragging and dropping in the same tree, then we try to support an in-place move
+		if (flavorClass.getTreeModel() == destTree.getModel() && transferSupport.getUserDropAction() == MOVE) {
 			return destParentItem.canMove(srcItem, location.getChildIndex());
 		} else {
 			return destParentItem.canImport(srcItem);
@@ -76,8 +118,8 @@ public class SmugTransferHandler extends TransferHandler {
 	@Override
 	public boolean importData(TransferSupport transferSupport) {
 		if (canImport(transferSupport)) {	//have to check, because "paste" doesn't call canImport()
-			JTree destTree = (JTree)transferSupport.getComponent();
-			JTree.DropLocation destLocation = (JTree.DropLocation)transferSupport.getDropLocation();
+			TransferTree destTree = (TransferTree)transferSupport.getComponent();
+			TransferTree.DropLocation destLocation = (TransferTree.DropLocation)transferSupport.getDropLocation();
 			TreePath destParentPath = destLocation.getPath();
 			DefaultMutableTreeNode destParentNode = (DefaultMutableTreeNode)destParentPath.getLastPathComponent();
 			int destChildIndex = destLocation.getChildIndex();
@@ -90,7 +132,8 @@ public class SmugTransferHandler extends TransferHandler {
 			for (TreePath srcPath : treePaths) {
 				DefaultMutableTreeNode srcNode = (DefaultMutableTreeNode)srcPath.getLastPathComponent();
 				AbstractTransferTask task = null;
-				if (transferData.getTreeModel() == destTree.getModel()) {
+				//if they are dragging and dropping in the same tree, we try to support an in-place move
+				if (transferData.getTreeModel() == destTree.getModel() && transferSupport.getUserDropAction() == MOVE) {
 					task = new MoveLocal(transferData.getSourceTree(), srcNode, destTree, destParentPath, destChildIndex++);
 				} else {
 					task = new CopyRemote(transferData.getSourceTree(), (TreeableGalleryItem)srcNode.getUserObject(), destTree, destParentPath, destChildIndex++);
@@ -110,27 +153,6 @@ public class SmugTransferHandler extends TransferHandler {
 		} catch (UnsupportedFlavorException e) {
 			return null;
 		} catch (IOException e) {
-			return null;
-		}
-	}
-	
-	
-	//################################
-	//#######  EXPORT METHODS  #######
-	//################################
-	
-	@Override
-	public int getSourceActions(JComponent source) {
-		return MOVE;
-	}
-	
-	@Override
-	protected Transferable createTransferable(JComponent source) {
-		JTree srcTree = (JTree)source;
-		TreePath[] selectionPaths = srcTree.getSelectionPaths();
-		if (selectionPaths.length > 0) {
-			return new SmugTransferable(srcTree, (DefaultTreeModel)srcTree.getModel(), selectionPaths);
-		} else {
 			return null;
 		}
 	}

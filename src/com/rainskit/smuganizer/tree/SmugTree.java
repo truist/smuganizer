@@ -20,12 +20,12 @@ import javax.swing.tree.DefaultTreeModel;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
-public class SmugTree extends JTree implements SettingsListener {
+public class SmugTree extends TransferTree implements SettingsListener {
 	private Main main;
 	private DefaultMutableTreeNode rootNode;
 	private DefaultTreeModel model;
 	
-	public SmugTree(Main main, AsynchronousTransferManager asyncTransferManager) {
+	public SmugTree(Main main) {
 		super();
 		this.main = main;
 		this.model = (DefaultTreeModel)getModel();
@@ -34,7 +34,6 @@ public class SmugTree extends JTree implements SettingsListener {
 		
 		setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		setCellRenderer(new TreeableRenderer());
-		setTransferHandler(new SmugTransferHandler(asyncTransferManager));
 		setDragEnabled(true);
 		setDropMode(DropMode.INSERT);
 		
@@ -79,5 +78,20 @@ public class SmugTree extends JTree implements SettingsListener {
 		for (TreeableGalleryItem each : childItems) {
 			parentNode.add(itemToNode.get(each));
 		}
+	}
+
+	@Override
+	public int getSourceActions() {
+		return SmugTransferHandler.COPY_OR_MOVE;
+	}
+
+	@Override
+	public boolean canImport() {
+		return true;
+	}
+
+	@Override
+	public boolean canInsertAtSpecificLocation() {
+		return true;
 	}
 }
