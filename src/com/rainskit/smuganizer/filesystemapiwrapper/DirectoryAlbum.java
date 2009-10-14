@@ -13,14 +13,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class DirectoryAlbum extends TreeableGalleryItem {
-	private File myDirectory;
+public class DirectoryAlbum extends AbstractFileGalleryItem {
 	private ArrayList<DirectoryAlbum> subDirs;
 	private ArrayList<FileImage> subFiles;
 	
 	public DirectoryAlbum(DirectoryAlbum parent, File myDirectory) {
 		super(parent);
-		this.myDirectory = myDirectory;
+		this.myFile = myDirectory;
 	}
 
 	@Override
@@ -29,7 +28,7 @@ public class DirectoryAlbum extends TreeableGalleryItem {
 			subDirs = new ArrayList<DirectoryAlbum>();
 			subFiles = new ArrayList<FileImage>();
 			
-			for (File each : myDirectory.listFiles()) {
+			for (File each : myFile.listFiles()) {
 				if (each.isDirectory()) {
 					subDirs.add(new DirectoryAlbum(this, each));
 				} else {
@@ -62,19 +61,29 @@ public class DirectoryAlbum extends TreeableGalleryItem {
 	}
 
 	@Override
-	public boolean canMoveLocally(TreeableGalleryItem parent, int childIndex) {
-		return (ItemType.ALBUM == parent.getType() || ItemType.ROOT == parent.getType());
+	public boolean canMoveLocally(TreeableGalleryItem newChild, int childIndex) {
+		return (ItemType.ROOT != newChild.getType() && checkAncestry(this, newChild));
+	}
+
+	private boolean checkAncestry(TreeableGalleryItem child, TreeableGalleryItem ancestor) {
+		return (child != ancestor) && (child == null || checkAncestry(child.getParent(), ancestor));
 	}
 
 	@Override
-	public void moveItemLocally(TreeableGalleryItem parent, int childIndex, TransferInterruption previousInterruption) throws SmugException {
-		throw new UnsupportedOperationException("Not supported yet.");
-//		File newPath = new File(((DirectoryAlbum)parent).myDirectory, myDirectory.getName());
-//		if (myDirectory.renameTo(newPath)) {
-//			myDirectory = newPath;
-//		} else {
-//			throw new SmugException("Error moving " + getFullPathLabel() + " to " + newPath.toString(), null);
-//		}
+	public void moveItemLocally(TreeableGalleryItem newChild, int childIndex, TransferInterruption previousInterruption) throws SmugException {
+		AbstractFileGalleryItem newChildFileItem = (AbstractFileGalleryItem)newChild;
+		File newFilePath = new File(myFile, newChildFileItem.myFile.getName());
+		if (newChildFileItem.moveSelfTo(newFilePath)) {
+			newChild.getParent().childRemoved(newChild);
+			if (ItemType.IMAGE == newChild.getType()) {
+				subFiles.add((FileImage)newChild);
+			} else {
+				subDirs.add((DirectoryAlbum)newChild);
+			}
+			newChild.setParent(this);
+		} else {
+			throw new SmugException("Error moving " + getFullPathLabel() + " to " + newFilePath.toString(), null);
+		}
 	}
 
 	@Override
@@ -104,17 +113,17 @@ public class DirectoryAlbum extends TreeableGalleryItem {
 
 	@Override
 	public void reLabel(String newLabel) throws SmugException {
-		File newName = new File(myDirectory.getParentFile(), newLabel);
-		if (myDirectory.renameTo(newName)) {
-			myDirectory = newName;
+		File newName = new File(myFile.getParentFile(), newLabel);
+		if (myFile.renameTo(newName)) {
+			myFile = newName;
 		} else {
-			throw new SmugException("Unable to rename " + myDirectory.toString() + " to " + newLabel, null);
+			throw new SmugException("Unable to rename " + myFile.toString() + " to " + newLabel, null);
 		}
 	}
 
 	@Override
 	public String getFileName() {
-		return myDirectory.getName();
+		return myFile.getName();
 	}
 
 	@Override
@@ -144,7 +153,7 @@ public class DirectoryAlbum extends TreeableGalleryItem {
 
 	@Override
 	public boolean isHidden() {
-		return myDirectory.isHidden();
+		return myFile.isHidden();
 	}
 
 	@Override
@@ -189,11 +198,14 @@ public class DirectoryAlbum extends TreeableGalleryItem {
 
 	@Override
 	public void launch() throws IOException, URISyntaxException {
-		Desktop.getDesktop().open(myDirectory);
+		Desktop.getDesktop().open(myFile);
 	}
 
 	public int compareTo(TreeableGalleryItem other) {
-		return toString().compareToIgnoreCase(other.toString());
+		if (ItemType.IMAGE == other.getType()) {
+			return -1;
+		} else {
+			return toString().compareToIgnoreCase(other.toString());
+		}
 	}
-
 }

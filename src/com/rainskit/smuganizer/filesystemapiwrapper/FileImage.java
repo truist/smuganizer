@@ -1,6 +1,5 @@
 package com.rainskit.smuganizer.filesystemapiwrapper;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
@@ -12,8 +11,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
-public class FileImage extends TreeableGalleryItem {
-	private File myFile;
+public class FileImage extends AbstractFileGalleryItem {
 	
 	public FileImage(DirectoryAlbum parent, File myFile) {
 		super(parent);
@@ -42,12 +40,12 @@ public class FileImage extends TreeableGalleryItem {
 
 	@Override
 	public boolean canMoveLocally(TreeableGalleryItem item, int childIndex) {
-		return (ItemType.ALBUM == item.getType() || ItemType.ROOT == item.getType());
+		return false;
 	}
 
 	@Override
 	public void moveItemLocally(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		throw new UnsupportedOperationException("Not supported.");
 	}
 
 	@Override
@@ -168,7 +166,11 @@ public class FileImage extends TreeableGalleryItem {
 	}
 
 	public int compareTo(TreeableGalleryItem other) {
-		return toString().compareToIgnoreCase(other.toString());
+		if (ItemType.IMAGE == other.getType()) {
+			return toString().compareToIgnoreCase(other.toString());
+		} else {
+			return 1;
+		}
 	}
 
 }

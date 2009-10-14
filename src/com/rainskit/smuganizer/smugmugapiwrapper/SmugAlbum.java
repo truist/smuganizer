@@ -45,7 +45,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 	}
 
 	public void setParent(SmugCategory newParent) throws SmugException {
-		this.parent = newParent;
+		super.setParent(newParent);
 		apiAlbum = reloadDetails(apiAlbum.getID(), apiAlbum.getAlbumKey(), parent.getFullPathLabel());
 	}
 
@@ -172,7 +172,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 			if (response.isError()) {
 				throw new SmugException("Error moving " + getFullPathLabel(), SmugException.convertError(response.getError()));
 			}
-			((SmugAlbum)childImage.getParent()).childRemoved(childImage);
+			childImage.getParent().childRemoved(childImage);
 			images.add(childImage);
 			childImage.setParent(this);
 		} 

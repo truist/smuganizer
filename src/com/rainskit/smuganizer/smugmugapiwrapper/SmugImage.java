@@ -29,7 +29,7 @@ public class SmugImage extends TreeableGalleryItem {
 	}
 
 	public void setParent(SmugAlbum newParent) throws SmugException {
-		this.parent = newParent;
+		super.setParent(newParent);
 		loadImageDetails();
 	}
 	

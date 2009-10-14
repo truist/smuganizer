@@ -38,10 +38,6 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 		subAlbums = new ArrayList<GalleryAlbum>();
 	}
 
-	void setParent(GalleryAlbum parent) {
-		this.parent = parent;
-	}
-
 	void addSubAlbum(GalleryAlbum newChild) {
 		subAlbums.add(newChild);
 	}

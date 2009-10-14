@@ -4,6 +4,11 @@ import com.kallasoft.smugmug.api.APIConstants;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.menu.TreeMenuManager;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -48,5 +53,27 @@ public abstract class TransferTree extends JTree {
 		HttpConnectionManagerParams params = APIConstants.HTTP_CLIENT.getHttpConnectionManager().getParams();
 		HostConfiguration hostConfig = APIConstants.HTTP_CLIENT.getHostConfiguration();
 		new AsynchronousTreeLoader(main, this, rootNode, root, sort).start(params, hostConfig);
+	}
+	
+	public static void sortTree(DefaultMutableTreeNode parentNode, boolean sortDescendants) {
+		ArrayList<TreeableGalleryItem> childItems = new ArrayList<TreeableGalleryItem>();
+		Map<TreeableGalleryItem, DefaultMutableTreeNode> itemToNode = new HashMap<TreeableGalleryItem, DefaultMutableTreeNode>();
+		
+		Enumeration children = parentNode.children();
+		while (children.hasMoreElements()) {
+			DefaultMutableTreeNode childNode = (DefaultMutableTreeNode)children.nextElement();
+			TreeableGalleryItem childItem = (TreeableGalleryItem)childNode.getUserObject();
+			if (sortDescendants) {
+				sortTree(childNode, sortDescendants);
+			}
+			childItems.add(childItem);
+			itemToNode.put(childItem, childNode);
+		}
+		
+		parentNode.removeAllChildren();
+		Collections.sort(childItems);
+		for (TreeableGalleryItem each : childItems) {
+			parentNode.add(itemToNode.get(each));
+		}
 	}
 }
