@@ -151,18 +151,18 @@ public class SmugAlbum extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new SmugException("Error deleting " + getFullPathLabel(), SmugException.convertError(response.getError()));
 		}
-		parent.removeChild(this);
+		parent.childRemoved(this);
 	}
 
-	public void removeChild(TreeableGalleryItem image) {
+	public void childRemoved(TreeableGalleryItem image) {
 		images.remove(image);
 	}
 
-	public boolean canMove(TreeableGalleryItem newChild, int childIndex) {
+	public boolean canMoveLocally(TreeableGalleryItem newChild, int childIndex) {
 		return (ItemType.IMAGE == newChild.getType());
 	}
 
-	public void moveItem(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) throws SmugException {
+	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) throws SmugException {
 		SmugImage childImage = (SmugImage)childItem;
 		if (childItem.getParent() != this) {
 			com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings changeSettings
@@ -172,7 +172,7 @@ public class SmugAlbum extends TreeableGalleryItem {
 			if (response.isError()) {
 				throw new SmugException("Error moving " + getFullPathLabel(), SmugException.convertError(response.getError()));
 			}
-			((SmugAlbum)childImage.getParent()).removeChild(childImage);
+			((SmugAlbum)childImage.getParent()).childRemoved(childImage);
 			images.add(childImage);
 			childImage.setParent(this);
 		} 

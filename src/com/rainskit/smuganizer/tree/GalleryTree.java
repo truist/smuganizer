@@ -20,12 +20,12 @@ public class GalleryTree extends TransferTree {
 	}
 
 	@Override
-	public boolean canImport() {
+	public boolean supportsImport() {
 		return false;
 	}
 
 	@Override
-	public boolean canInsertAtSpecificLocation() {
+	public boolean supportsInsertAtSpecificLocation() {
 		return false;
 	}
 }

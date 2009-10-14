@@ -45,7 +45,7 @@ public class CopyRemote extends AbstractTransferTask {
 		destTree.makeVisible(destParentPath.pathByAddingChild(newNode));
 
 		ArrayList<AbstractTransferTask> followUpTasks = new ArrayList<AbstractTransferTask>();
-		if (destParentItem.canMove(newItem, destChildIndex)) {
+		if (destParentItem.canMoveLocally(newItem, destChildIndex)) {
 			followUpTasks.add(new MoveLocal(destTree, newNode, destTree, destParentPath, destChildIndex));
 		}
 		if (srcItem.isProtected() && !newItem.isProtected()) {

@@ -32,9 +32,9 @@ public abstract class TransferTree extends JTree {
 
 	public abstract int getSourceActions();
 	
-	public abstract boolean canImport();
+	public abstract boolean supportsImport();
 
-	public abstract boolean canInsertAtSpecificLocation();
+	public abstract boolean supportsInsertAtSpecificLocation();
 	
 	public abstract void loadTree(TreeableGalleryItem root) throws IOException;
 	

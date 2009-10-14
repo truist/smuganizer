@@ -23,7 +23,7 @@ public class MoveLocal extends AbstractTransferTask {
 	}
 
 	protected TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption, SmugException {
-		destParentItem.moveItem(srcItem, destChildIndex, previousInterruption);
+		destParentItem.moveItemLocally(srcItem, destChildIndex, previousInterruption);
 		return null;
 	}
 	

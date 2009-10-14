@@ -95,11 +95,11 @@ public class SmugMug extends TreeableGalleryItem {
 		throw new UnsupportedOperationException("Cannot rename SmugMug");
 	}
 
-	public boolean canMove(TreeableGalleryItem newChild, int childIndex) {
+	public boolean canMoveLocally(TreeableGalleryItem newChild, int childIndex) {
 		return false;
 	}
 
-	public void moveItem(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) {
+	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	
@@ -199,7 +199,7 @@ public class SmugMug extends TreeableGalleryItem {
 	}
 
 	@Override
-	public void removeChild(TreeableGalleryItem child) {
+	public void childRemoved(TreeableGalleryItem child) {
 		categories.remove(child);
 	}
 

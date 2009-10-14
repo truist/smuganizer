@@ -157,15 +157,15 @@ public class SmugImage extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new SmugException("Error deleting " + getFullPathLabel(), SmugException.convertError(response.getError()));
 		}
-		parent.removeChild(this);
+		parent.childRemoved(this);
 		parent = null;
 	}
 
-	public boolean canMove(TreeableGalleryItem newChild, int childIndex) {
+	public boolean canMoveLocally(TreeableGalleryItem newChild, int childIndex) {
 		return false;
 	}
 
-	public void moveItem(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) {
+	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
@@ -244,7 +244,7 @@ public class SmugImage extends TreeableGalleryItem {
 	}
 
 	@Override
-	public void removeChild(TreeableGalleryItem child) {
+	public void childRemoved(TreeableGalleryItem child) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 }

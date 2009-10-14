@@ -16,12 +16,12 @@ public class FileGallery extends DirectoryAlbum {
 	}
 
 	@Override
-	public boolean canMove(TreeableGalleryItem item, int childIndex) {
+	public boolean canMoveLocally(TreeableGalleryItem item, int childIndex) {
 		return false;
 	}
 
 	@Override
-	public void moveItem(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption) {
+	public void moveItemLocally(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption) {
 		throw new UnsupportedOperationException("Not supported.");
 	}
 

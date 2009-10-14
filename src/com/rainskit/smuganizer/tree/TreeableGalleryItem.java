@@ -32,10 +32,10 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 	public TreeableGalleryItem getParent() {
 		return parent;
 	}
-	public abstract void removeChild(TreeableGalleryItem child);
+	public abstract void childRemoved(TreeableGalleryItem child);
 	
-	public abstract boolean canMove(TreeableGalleryItem item, int childIndex);
-	public abstract void moveItem(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption) throws SmugException;
+	public abstract boolean canMoveLocally(TreeableGalleryItem item, int childIndex);
+	public abstract void moveItemLocally(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption) throws SmugException;
 	public abstract boolean canImport(TreeableGalleryItem newItem);
 	public abstract TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) throws IOException, TransferInterruption;
 	
@@ -71,7 +71,6 @@ public abstract class TreeableGalleryItem implements Comparable<TreeableGalleryI
 			++receiving;
 		} else {
 			++sending;
-//			hasBeenSent = true;
 		}
 	}
 	public final void transferEnded(boolean recipient, boolean succeeded) {

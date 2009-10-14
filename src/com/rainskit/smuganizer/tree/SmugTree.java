@@ -56,12 +56,12 @@ public class SmugTree extends TransferTree implements SettingsListener {
 	}
 
 	@Override
-	public boolean canImport() {
+	public boolean supportsImport() {
 		return true;
 	}
 
 	@Override
-	public boolean canInsertAtSpecificLocation() {
+	public boolean supportsInsertAtSpecificLocation() {
 		return true;
 	}
 }

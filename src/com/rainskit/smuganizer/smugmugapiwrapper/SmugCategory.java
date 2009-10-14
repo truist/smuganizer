@@ -136,18 +136,18 @@ public class SmugCategory extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new SmugException("Error deleting " + getFullPathLabel(), SmugException.convertError(response.getError()));
 		}
-		parent.removeChild(this);
+		parent.childRemoved(this);
 	}
 
 	public void removeAlbum(SmugAlbum album) {
 		albums.remove(album);
 	}
 
-	public boolean canMove(TreeableGalleryItem newChild, int childIndex) {
+	public boolean canMoveLocally(TreeableGalleryItem newChild, int childIndex) {
 		return (childIndex == -1 && ItemType.ALBUM == newChild.getType());
 	}
 
-	public void moveItem(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) throws SmugException {
+	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) throws SmugException {
 		Integer category = getCategoryID();
 		Integer subCategory = getSubCategoryID();
 		SmugAlbum album = (SmugAlbum)childItem;
@@ -287,7 +287,7 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 
 	@Override
-	public void removeChild(TreeableGalleryItem child) {
+	public void childRemoved(TreeableGalleryItem child) {
 		albums.remove(child);
 		subCategories.remove(child);
 	}

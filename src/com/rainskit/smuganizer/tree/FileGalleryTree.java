@@ -21,12 +21,12 @@ public class FileGalleryTree extends TransferTree {
 	}
 
 	@Override
-	public boolean canImport() {
+	public boolean supportsImport() {
 		return true;
 	}
 
 	@Override
-	public boolean canInsertAtSpecificLocation() {
+	public boolean supportsInsertAtSpecificLocation() {
 		return false;
 	}
 }

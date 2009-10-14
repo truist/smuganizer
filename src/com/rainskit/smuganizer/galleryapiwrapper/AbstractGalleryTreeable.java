@@ -28,11 +28,11 @@ public abstract class AbstractGalleryTreeable extends TreeableGalleryItem {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 	
-	public final boolean canMove(TreeableGalleryItem childItem, int childIndex) {
+	public final boolean canMoveLocally(TreeableGalleryItem childItem, int childIndex) {
 		return false;
 	}
 
-	public final void moveItem(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) {
+	public final void moveItemLocally(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
@@ -61,7 +61,7 @@ public abstract class AbstractGalleryTreeable extends TreeableGalleryItem {
 	}
 
 	@Override
-	public void removeChild(TreeableGalleryItem child) {
+	public void childRemoved(TreeableGalleryItem child) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 }

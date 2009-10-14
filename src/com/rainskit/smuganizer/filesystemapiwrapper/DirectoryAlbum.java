@@ -56,18 +56,18 @@ public class DirectoryAlbum extends TreeableGalleryItem {
 	}
 
 	@Override
-	public void removeChild(TreeableGalleryItem child) {
+	public void childRemoved(TreeableGalleryItem child) {
 		subDirs.remove(child);
 		subFiles.remove(child);
 	}
 
 	@Override
-	public boolean canMove(TreeableGalleryItem parent, int childIndex) {
+	public boolean canMoveLocally(TreeableGalleryItem parent, int childIndex) {
 		return (ItemType.ALBUM == parent.getType() || ItemType.ROOT == parent.getType());
 	}
 
 	@Override
-	public void moveItem(TreeableGalleryItem parent, int childIndex, TransferInterruption previousInterruption) throws SmugException {
+	public void moveItemLocally(TreeableGalleryItem parent, int childIndex, TransferInterruption previousInterruption) throws SmugException {
 		throw new UnsupportedOperationException("Not supported yet.");
 //		File newPath = new File(((DirectoryAlbum)parent).myDirectory, myDirectory.getName());
 //		if (myDirectory.renameTo(newPath)) {
@@ -79,7 +79,7 @@ public class DirectoryAlbum extends TreeableGalleryItem {
 
 	@Override
 	public boolean canImport(TreeableGalleryItem newItem) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		return true;
 	}
 
 	@Override

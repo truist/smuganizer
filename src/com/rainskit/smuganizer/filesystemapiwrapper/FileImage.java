@@ -36,17 +36,17 @@ public class FileImage extends TreeableGalleryItem {
 	}
 
 	@Override
-	public void removeChild(TreeableGalleryItem child) {
+	public void childRemoved(TreeableGalleryItem child) {
 		throw new UnsupportedOperationException("Not supported.");
 	}
 
 	@Override
-	public boolean canMove(TreeableGalleryItem item, int childIndex) {
+	public boolean canMoveLocally(TreeableGalleryItem item, int childIndex) {
 		return (ItemType.ALBUM == item.getType() || ItemType.ROOT == item.getType());
 	}
 
 	@Override
-	public void moveItem(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption) {
+	public void moveItemLocally(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
