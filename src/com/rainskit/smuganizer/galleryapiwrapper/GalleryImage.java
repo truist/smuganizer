@@ -1,6 +1,7 @@
 package com.rainskit.smuganizer.galleryapiwrapper;
 
 import com.rainskit.smuganizer.GallerySettings;
+import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
 
-public class GalleryImage extends AbstractGalleryTreeable {
+public class GalleryImage extends TreeableGalleryItem {
 	private Properties imageDetails;
 	private int imageRefNum;
 	
@@ -23,11 +24,11 @@ public class GalleryImage extends AbstractGalleryTreeable {
 		this.imageRefNum = imageRefNum;
 	}
 
-	public List<? extends TreeableGalleryItem> loadChildren() {
+	public List<? extends TreeableGalleryContainer> loadChildren() {
 		return null;
 	}
 
-	public List<? extends TreeableGalleryItem> getChildren() {
+	public List<? extends TreeableGalleryContainer> getChildren() {
 		return null;
 	}
 	

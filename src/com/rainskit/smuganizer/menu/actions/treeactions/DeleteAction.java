@@ -4,6 +4,7 @@ import com.rainskit.smuganizer.menu.*;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -35,7 +36,7 @@ public class DeleteAction extends TreeableAction {
 		if (answer == JOptionPane.YES_OPTION) {
 			try {
 				for (TreeableGalleryItem each : currentItems) {
-					each.delete();
+					((WriteableTreeableGalleryItem)each).delete();
 				}
 				TreePath[] selectionPaths = menuManager.getTree().getSelectionPaths();
 				for (TreePath each : selectionPaths) {
@@ -53,7 +54,7 @@ public class DeleteAction extends TreeableAction {
 		ArrayList<TreeableGalleryItem> currentItems = menuManager.getCurrentItems();
 		boolean allDeletable = currentItems.size() > 0;
 		for (TreeableGalleryItem each : currentItems) {
-			allDeletable &= each.canBeDeleted();
+			allDeletable &= (each instanceof WriteableTreeableGalleryItem && ((WriteableTreeableGalleryItem)each).canBeDeleted());
 		}
 		setEnabled(allDeletable);
 	}

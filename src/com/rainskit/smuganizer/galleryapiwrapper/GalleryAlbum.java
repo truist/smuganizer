@@ -1,6 +1,7 @@
 package com.rainskit.smuganizer.galleryapiwrapper;
 
 import com.rainskit.smuganizer.GallerySettings;
+import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -9,11 +10,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.lang.StringEscapeUtils;
 
-public class GalleryAlbum extends AbstractGalleryTreeable {
+public class GalleryAlbum extends TreeableGalleryContainer {
 	private Gallery gallery;
 	
 	private ArrayList<GalleryAlbum> subAlbums;
@@ -98,10 +97,10 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 		return ItemType.ALBUM;
 	}
 
-	@Override
-	public TreeableGalleryItem getParent() {
-		return (parent == null ? gallery : parent);
-	}
+//	@Override
+//	public TreeableGalleryItem getParent() {
+//		return (parent == null ? gallery : parent);
+//	}
 
 	public int compareTo(TreeableGalleryItem other) {
 		if (other instanceof GalleryAlbum) {
@@ -130,7 +129,7 @@ public class GalleryAlbum extends AbstractGalleryTreeable {
 
 	@Override
 	public URL getDataURL() throws MalformedURLException {
-		throw new UnsupportedOperationException("Not supported yet.");
+		throw new UnsupportedOperationException("Not supported.");
 	}
 
 	@Override

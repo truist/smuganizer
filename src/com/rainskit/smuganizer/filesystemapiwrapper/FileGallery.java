@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.filesystemapiwrapper;
 
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.ModifiedItemAttributes;
 import java.io.File;
 
 public class FileGallery extends DirectoryAlbum {
@@ -21,7 +21,7 @@ public class FileGallery extends DirectoryAlbum {
 	}
 
 	@Override
-	public void moveItemLocally(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption) {
+	public void moveItemLocally(TreeableGalleryItem item, int childIndex, ModifiedItemAttributes modifiedItemAttributes) {
 		throw new UnsupportedOperationException("Not supported.");
 	}
 

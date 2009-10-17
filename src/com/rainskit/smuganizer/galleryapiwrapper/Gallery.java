@@ -1,6 +1,7 @@
 package com.rainskit.smuganizer.galleryapiwrapper;
 
 import com.rainskit.smuganizer.GallerySettings;
+import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;
 import java.net.MalformedURLException;
@@ -22,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 
-public class Gallery extends AbstractGalleryTreeable {
+public class Gallery extends TreeableGalleryContainer {
 	static final String ARG_ALBUMS_TOO = "albums_too";
 	static final String ARG_COMMAND = "cmd";
 	static final String ARG_G2_CONTROLLER = "g2_controller";
@@ -332,7 +333,7 @@ public class Gallery extends AbstractGalleryTreeable {
 
 	@Override
 	public URL getDataURL() throws MalformedURLException {
-		throw new UnsupportedOperationException("Not supported yet.");
+		throw new UnsupportedOperationException("Not supported.");
 	}
 
 	@Override

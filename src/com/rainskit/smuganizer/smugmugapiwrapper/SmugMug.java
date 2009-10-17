@@ -6,8 +6,11 @@ import com.kallasoft.smugmug.api.json.v1_2_0.login.WithPassword;
 import com.kallasoft.smugmug.api.json.v1_2_0.users.GetTree;
 import com.rainskit.smuganizer.SmugMugSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MixedAlbumException;
+import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
+import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryContainer;
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.ModifiedItemAttributes;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -17,7 +20,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SmugMug extends TreeableGalleryItem {
+public class SmugMug extends TreeableGalleryContainer implements WriteableTreeableGalleryContainer {
 	static final String API_URL = "https://api.smugmug.com/hack/json/1.2.0/";
 	static final String API_UPLOAD_URL = "http://upload.smugmug.com/";
 	static final String API_KEY = "aR8ks0WWmboWAcclI9poAboELIqNj3wW";
@@ -99,25 +102,37 @@ public class SmugMug extends TreeableGalleryItem {
 		return false;
 	}
 
-	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, ModifiedItemAttributes modifiedItemAttributes) {
+		throw new UnsupportedOperationException("Not supported.");
 	}
 	
 	public boolean canImport(TreeableGalleryItem newItem) {
-		return (ItemType.ALBUM == newItem.getType() && newItem.getSubAlbumDepth() > 0 && newItem.getSubAlbumDepth() < 3);
-	}
-
-	public TreeableGalleryItem importItem(TreeableGalleryItem sourceItem, TransferInterruption previousInterruption) throws SmugException {
-		switch (sourceItem.getSubAlbumDepth()) {
-			case 1:
-			case 2:
-				return importAlbumAsCategory(sourceItem);
-			default:
-				throw new IllegalStateException("This shoudln't ever happen");
+		if (ItemType.ALBUM == newItem.getType()) {
+			TreeableGalleryContainer newContainer = (TreeableGalleryContainer)newItem;
+			return (newContainer.getSubAlbumDepth() > 0 && newContainer.getSubAlbumDepth() < 3);
+		} else {
+			return false;
 		}
 	}
+
+	public boolean willChildBeDuplicate(String fileName, String caption) {
+		for (SmugCategory each : categories) {
+			if (each.getFileName().equalsIgnoreCase(fileName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean allowsDuplicateChildren() {
+		return false;
+	}
+
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
+		return importAlbumAsCategory((TreeableGalleryContainer)newItem);
+	}
 	
-	private TreeableGalleryItem importAlbumAsCategory(TreeableGalleryItem sourceAlbum) throws SmugException {
+	private TreeableGalleryItem importAlbumAsCategory(TreeableGalleryContainer sourceAlbum) throws SmugException {
 		for (TreeableGalleryItem each : categories) {
 			if (each.getFileName().equals(sourceAlbum.getCaption())) {
 				return each;
@@ -214,7 +229,7 @@ public class SmugMug extends TreeableGalleryItem {
 
 	@Override
 	public URL getDataURL() throws MalformedURLException {
-		throw new UnsupportedOperationException("Not supported yet.");
+		throw new UnsupportedOperationException("Not supported.");
 	}
 
 	@Override

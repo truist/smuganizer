@@ -1,10 +1,12 @@
 package com.rainskit.smuganizer.tree.transfer.tasks;
 
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
+import com.rainskit.smuganizer.tree.transfer.interruptions.DuplicateFileNameInterruption;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import com.rainskit.smuganizer.tree.transfer.*;
-import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryContainer;
+import com.rainskit.smuganizer.tree.transfer.interruptions.InterruptionSet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -17,6 +19,16 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 public abstract class AbstractTransferTask {
+	
+	public static enum HandleDuplicate { RENAME, OVERWRITE, DUPLICATE }
+	
+	public static class ModifiedItemAttributes { 
+		public byte[] imageData; 
+		public String caption; 
+		public HandleDuplicate handleDuplicate;
+	}
+	
+	
 	private enum TaskStatus { 
 		QUEUED, QUEUED_FOR_RETRY, STARTED, INTERRUPTED, ERRORED, CANCELED, DONE;
 
@@ -44,10 +56,11 @@ public abstract class AbstractTransferTask {
 	protected TreeableGalleryItem srcItem;
 	protected JTree destTree;
 	protected TreePath destParentPath;
-	protected TreeableGalleryItem destParentItem;
+	protected WriteableTreeableGalleryContainer destParentItem;
 	protected int destChildIndex;
 	
-	protected TransferInterruption transferInterruption;
+	
+	protected InterruptionSet transferInterruptions;
 	protected Throwable transferError;
 	
 	private TaskStatus status;
@@ -64,10 +77,11 @@ public abstract class AbstractTransferTask {
 		this.destTree = destTree;
 		this.destParentPath = destParentPath;
 		if (destParentPath != null) {
-			this.destParentItem = (TreeableGalleryItem)((DefaultMutableTreeNode)destParentPath.getLastPathComponent()).getUserObject();
+			this.destParentItem = (WriteableTreeableGalleryContainer)((DefaultMutableTreeNode)destParentPath.getLastPathComponent()).getUserObject();
 		}
 		this.destChildIndex = destChildIndex;
 		
+		this.transferInterruptions = new InterruptionSet();
 		this.listeners = new ArrayList<StatusListener>();
 		setStatus(TaskStatus.QUEUED);
 	}
@@ -82,12 +96,12 @@ public abstract class AbstractTransferTask {
 		}
 		setStatus(TaskStatus.STARTED);
 		try {
-			TreeableGalleryItem newItem = doInBackgroundImpl(transferInterruption);
+			TreeableGalleryItem newItem = doInBackgroundImpl(transferInterruptions);
 			setStatus(TaskStatus.DONE);
 			return newItem;
 		} catch (TransferInterruption te) {
+			transferInterruptions.add(te);
 			setStatus(TaskStatus.INTERRUPTED);
-			this.transferInterruption = te;
 			return null;
 		} catch (Exception ex) {
 			Logger.getLogger(AbstractTransferTask.class.getName()).log(Level.SEVERE, null, ex);
@@ -97,7 +111,19 @@ public abstract class AbstractTransferTask {
 		}
 	}
 	
-	protected abstract TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption, IOException;
+	protected abstract TreeableGalleryItem doInBackgroundImpl(InterruptionSet previousInterruptions) throws TransferInterruption, IOException;
+
+	protected ModifiedItemAttributes handleDuplicates(ModifiedItemAttributes imageAttributes, InterruptionSet previousInterruptions) throws DuplicateFileNameInterruption {
+		if (previousInterruptions.hasInterruption(DuplicateFileNameInterruption.class)) {
+			DuplicateFileNameInterruption duplicateInterruption = (DuplicateFileNameInterruption) previousInterruptions.getInterruption(DuplicateFileNameInterruption.class);
+			imageAttributes.handleDuplicate = duplicateInterruption.getChoice();
+		} else {
+			if (srcItem.getParent() != destParentItem && destParentItem.willChildBeDuplicate(srcItem.getFileName(), imageAttributes.caption)) {
+				throw new DuplicateFileNameInterruption(srcItem, imageAttributes.caption, destParentItem.allowsDuplicateChildren());
+			}
+		}
+		return imageAttributes;
+	}
 
 	public abstract List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem);
 
@@ -105,7 +131,7 @@ public abstract class AbstractTransferTask {
 	
 	private void setStatus(TaskStatus status) {
 		this.status = status;
-		TreeableGalleryItem recipientItem = (destParentItem != null ? destParentItem : srcItem);
+		TreeableGalleryItem recipientItem = (destParentItem != null ? ((TreeableGalleryItem)destParentItem) : srcItem);
 		switch (status) {
 			case QUEUED:
 				srcItem.transferStarted(false);
@@ -144,7 +170,7 @@ public abstract class AbstractTransferTask {
 	
 	public String getDestLabel() throws SmugException {
 		if (destParentItem != null) {
-			return destParentItem.getFullPathLabel();
+			return ((TreeableGalleryItem)destParentItem).getFullPathLabel();
 		} else {
 			return "";
 		}
@@ -171,12 +197,12 @@ public abstract class AbstractTransferTask {
 	}
 	
 	public TransferInterruption getInterruption() {
-		return transferInterruption;
+		return transferInterruptions.getLastInterruption();
 	}
 	
 	public String getStatusTooltip() {
 		if (isInterrupted()) {
-			return transferInterruption.getLocalizedMessage();
+			return getInterruption().getLocalizedMessage();
 		} else if (isErrored()) {
 			return transferError.getLocalizedMessage();
 		} else {
@@ -204,6 +230,6 @@ public abstract class AbstractTransferTask {
 	}
 	
 	public TreeableGalleryItem getDestParentItem() {
-		return destParentItem;
+		return (TreeableGalleryItem)destParentItem;
 	}
 }

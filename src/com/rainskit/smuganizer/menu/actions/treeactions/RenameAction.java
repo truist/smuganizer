@@ -5,6 +5,7 @@ import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,7 +49,7 @@ public class RenameAction extends TreeableAction {
 		if (answer != null) {
 			try {
 				for (TreeableGalleryItem each : currentItems) {
-					each.reLabel(answer);
+					((WriteableTreeableGalleryItem)each).reLabel(answer);
 				}
 			} catch (RenameException ex) {
 				Logger.getLogger(RenameAction.class.getName()).log(Level.SEVERE, null, ex);
@@ -65,7 +66,7 @@ public class RenameAction extends TreeableAction {
 		ArrayList<TreeableGalleryItem> currentItems = menuManager.getCurrentItems();
 		boolean allRenameable = currentItems.size() > 0;
 		for (TreeableGalleryItem each : currentItems) {
-			allRenameable &= each.canBeRelabeled();
+			allRenameable &= (each instanceof WriteableTreeableGalleryItem && ((WriteableTreeableGalleryItem)each).canBeRelabeled());
 		}
 		setEnabled(allRenameable);
 	}

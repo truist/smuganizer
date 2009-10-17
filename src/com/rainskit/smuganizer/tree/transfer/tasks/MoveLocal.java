@@ -2,8 +2,10 @@ package com.rainskit.smuganizer.tree.transfer.tasks;
 
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TransferTree;
+import com.rainskit.smuganizer.tree.transfer.interruptions.InterruptionSet;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import java.io.IOException;
 import java.util.List;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -23,8 +25,12 @@ public class MoveLocal extends AbstractTransferTask {
 		this.srcNode = srcNode;
 	}
 
-	protected TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption, SmugException {
-		destParentItem.moveItemLocally(srcItem, destChildIndex, previousInterruption);
+	protected TreeableGalleryItem doInBackgroundImpl(InterruptionSet previousInterruptions) throws TransferInterruption, SmugException {
+		ModifiedItemAttributes finalAttributes = new ModifiedItemAttributes();
+		finalAttributes = handleDuplicates(finalAttributes, previousInterruptions);
+		destParentItem.moveItemLocally(srcItem, destChildIndex, finalAttributes);
+		srcItem.transferStarted(false);
+		srcItem.transferEnded(false, true);
 		return null;
 	}
 	

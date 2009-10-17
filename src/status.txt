@@ -1,6 +1,10 @@
 
-add an "import from filesystem" option
-	implement "move" transfer type for uploading
+create setting for whether to use caption as filename
+allow users to specify renamed filename
+create setting for whether to overwrite/duplicate/rename automatically
+support moving/importing a duplicate album in smugmug
+
+implement "move" transfer type for uploading
 
 ease of use improvements:
 	sort imported albums appropriately

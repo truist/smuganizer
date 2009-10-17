@@ -2,16 +2,16 @@ package com.rainskit.smuganizer.filesystemapiwrapper;
 
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 
-public class FileImage extends AbstractFileGalleryItem {
+public class FileImage extends TreeableGalleryItem implements WriteableTreeableGalleryItem, FileGalleryItem {
+	private File myFile;
 	
 	public FileImage(DirectoryAlbum parent, File myFile) {
 		super(parent);
@@ -19,43 +19,8 @@ public class FileImage extends AbstractFileGalleryItem {
 	}
 
 	@Override
-	public List<? extends TreeableGalleryItem> loadChildren() throws IOException {
-		return null;
-	}
-
-	@Override
-	public List<? extends TreeableGalleryItem> getChildren() {
-		return null;
-	}
-
-	@Override
 	public ItemType getType() {
 		return ItemType.IMAGE;
-	}
-
-	@Override
-	public void childRemoved(TreeableGalleryItem child) {
-		throw new UnsupportedOperationException("Not supported.");
-	}
-
-	@Override
-	public boolean canMoveLocally(TreeableGalleryItem item, int childIndex) {
-		return false;
-	}
-
-	@Override
-	public void moveItemLocally(TreeableGalleryItem item, int childIndex, TransferInterruption previousInterruption) {
-		throw new UnsupportedOperationException("Not supported.");
-	}
-
-	@Override
-	public boolean canImport(TreeableGalleryItem newItem) {
-		return false;
-	}
-
-	@Override
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) throws IOException, TransferInterruption {
-		throw new UnsupportedOperationException("Not supported.");
 	}
 
 	@Override
@@ -173,4 +138,12 @@ public class FileImage extends AbstractFileGalleryItem {
 		}
 	}
 
+	public boolean moveSelfTo(File newLocation) {
+		if (myFile.renameTo(newLocation)) {
+			myFile = newLocation;
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

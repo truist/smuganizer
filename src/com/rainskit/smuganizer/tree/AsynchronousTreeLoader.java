@@ -125,14 +125,16 @@ class AsynchronousTreeLoader {
 			try {
 				main.setSubStatus(childItem.getFullPathLabel());
 				List<LoadTask> grandChildTasks = new ArrayList<LoadTask>();
-				List<? extends TreeableGalleryItem> grandChildren = childItem.loadChildren();
-				if (grandChildren != null) {
-					if (sort) {
-						Collections.sort(grandChildren);
-					}
-					for (TreeableGalleryItem each : grandChildren) {
-						if (each != null) {
-							grandChildTasks.add(new LoadTask(childNode, each));
+				if (childItem instanceof TreeableGalleryContainer) {
+					List<? extends TreeableGalleryItem> grandChildren = ((TreeableGalleryContainer)childItem).loadChildren();
+					if (grandChildren != null) {
+						if (sort) {
+							Collections.sort(grandChildren);
+						}
+						for (TreeableGalleryItem each : grandChildren) {
+							if (each != null) {
+								grandChildTasks.add(new LoadTask(childNode, each));
+							}
 						}
 					}
 				}

@@ -5,6 +5,7 @@ import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.menu.gui.SetPasswordDialog;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +38,7 @@ public class PasswordAction extends TreeableAction {
 				}
 			} 
 			for (TreeableGalleryItem each : menuManager.getCurrentItems()) {
-				each.setPassword(password, hint);
+				((WriteableTreeableGalleryItem)each).setPassword(password, hint);
 			}
 			
 			DefaultTreeModel model = (DefaultTreeModel)menuManager.getTree().getModel();
@@ -60,11 +61,19 @@ public class PasswordAction extends TreeableAction {
 		} else {
 			TreeableGalleryItem item = currentItems.get(0);
 			boolean currentState = item.hasPassword();
-			boolean allChangeable = item.canChangePassword(!currentState);
-			for (int i = 1; i < currentItems.size(); i++) {
-				item = currentItems.get(i);
-				allChangeable &= (currentState == item.hasPassword());
-				allChangeable &= item.canChangePassword(!currentState);
+			boolean allChangeable = false;
+			if (item instanceof WriteableTreeableGalleryItem) {
+				allChangeable = ((WriteableTreeableGalleryItem)item).canChangePassword(!currentState);
+				for (int i = 1; i < currentItems.size(); i++) {
+					item = currentItems.get(i);
+					if (item instanceof WriteableTreeableGalleryItem) {
+						allChangeable &= (currentState == item.hasPassword());
+						allChangeable &= ((WriteableTreeableGalleryItem)item).canChangePassword(!currentState);
+					} else {
+						allChangeable = false;
+						break;
+					}
+				}
 			}
 			setEnabled(allChangeable);
 			super.putValue(NAME, currentState ? REMOVE : ADD);

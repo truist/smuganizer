@@ -91,12 +91,16 @@ public class SmugTransferHandler extends TransferHandler {
 		}
 		
 		TreeableGalleryItem destParentItem = (TreeableGalleryItem)((DefaultMutableTreeNode)destParentPath.getLastPathComponent()).getUserObject();
+		if (!(destParentItem instanceof WriteableTreeableGalleryContainer)) {
+			return false;
+		}
+		
 		TreeableGalleryItem srcItem = (TreeableGalleryItem)((DefaultMutableTreeNode)srcPaths[0].getLastPathComponent()).getUserObject();
 		//if we are dragging and dropping in the same tree, then we try to support an in-place move
 		if (flavorClass.getTreeModel() == destTree.getModel() && transferSupport.getUserDropAction() == MOVE) {
-			return destParentItem.canMoveLocally(srcItem, location.getChildIndex());
+			return ((WriteableTreeableGalleryContainer)destParentItem).canMoveLocally(srcItem, location.getChildIndex());
 		} else {
-			return destParentItem.canImport(srcItem);
+			return ((WriteableTreeableGalleryContainer)destParentItem).canImport(srcItem);
 		}
 	}
 	

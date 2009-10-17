@@ -2,6 +2,8 @@ package com.rainskit.smuganizer.tree.transfer.tasks;
 
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
+import com.rainskit.smuganizer.tree.transfer.interruptions.InterruptionSet;
 import com.rainskit.smuganizer.tree.transfer.interruptions.PasswordRequiredInterruption;
 import java.io.IOException;
 import java.util.List;
@@ -18,13 +20,14 @@ public class ProtectItem extends AbstractTransferTask {
 	}
 
 	@Override
-	protected TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption, IOException {
-		if (srcItem.canChangeHiddenStatus(true)) {
-			srcItem.setHidden(true);
-		} else if (srcItem.canChangePassword(true)) {
-			if (previousInterruption != null && previousInterruption instanceof PasswordRequiredInterruption) {
-				PasswordRequiredInterruption passwordInterruption = (PasswordRequiredInterruption)previousInterruption;
-				srcItem.setPassword(passwordInterruption.getPassword(), passwordInterruption.getHint());
+	protected TreeableGalleryItem doInBackgroundImpl(InterruptionSet previousInterruptions) throws TransferInterruption, IOException {
+		WriteableTreeableGalleryItem writeableSrcItem = (WriteableTreeableGalleryItem)srcItem;
+		if (writeableSrcItem.canChangeHiddenStatus(true)) {
+			writeableSrcItem.setHidden(true);
+		} else if (writeableSrcItem.canChangePassword(true)) {
+			if (previousInterruptions.hasInterruption(PasswordRequiredInterruption.class)) {
+				PasswordRequiredInterruption passwordInterruption = (PasswordRequiredInterruption)previousInterruptions.getInterruption(PasswordRequiredInterruption.class);
+				writeableSrcItem.setPassword(passwordInterruption.getPassword(), passwordInterruption.getHint());
 			} else {
 				throw new PasswordRequiredInterruption(srcItem);
 			}

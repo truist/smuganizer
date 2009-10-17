@@ -4,6 +4,7 @@ import com.rainskit.smuganizer.menu.*;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +26,7 @@ public class HideAction extends TreeableAction {
 		ArrayList<TreeableGalleryItem> currentItems = menuManager.getCurrentItems();
 		try {
 			for (TreeableGalleryItem each : currentItems) {
-				each.setHidden(getValue(NAME).equals(HIDE));
+				((WriteableTreeableGalleryItem)each).setHidden(getValue(NAME).equals(HIDE));
 			}
 			DefaultTreeModel model = (DefaultTreeModel)menuManager.getTree().getModel();
 			for (TreePath each : menuManager.getTree().getSelectionPaths()) {
@@ -47,11 +48,19 @@ public class HideAction extends TreeableAction {
 		} else {
 			TreeableGalleryItem item = currentItems.get(0);
 			boolean currentState = item.isHidden();
-			boolean allChangeable = item.canChangeHiddenStatus(!currentState);
-			for (int i = 1; i < currentItems.size(); i++) {
-				item = currentItems.get(i);
-				allChangeable &= (currentState == item.isHidden());
-				allChangeable &= item.canChangeHiddenStatus(!currentState);
+			boolean allChangeable = false;
+			if (item instanceof WriteableTreeableGalleryItem) {
+				allChangeable = ((WriteableTreeableGalleryItem)item).canChangeHiddenStatus(!currentState);
+				for (int i = 1; i < currentItems.size(); i++) {
+					item = currentItems.get(i);
+					if (item instanceof WriteableTreeableGalleryItem) {
+						allChangeable &= (currentState == item.isHidden());
+						allChangeable &= ((WriteableTreeableGalleryItem)item).canChangeHiddenStatus(!currentState);
+					} else {
+						allChangeable = false;
+						break;
+					}
+				}
 			}
 			setEnabled(allChangeable);
 			putValue(NAME, currentState ? SHOW : HIDE);

@@ -1,12 +1,15 @@
 package com.rainskit.smuganizer.smugmugapiwrapper;
 
+import com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings;
 import com.kallasoft.smugmug.api.util.APIUtils;
 import com.rainskit.smuganizer.SmugMugSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MixedAlbumException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
+import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryContainer;
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.ModifiedItemAttributes;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -16,7 +19,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SmugCategory extends TreeableGalleryItem {
+public class SmugCategory extends TreeableGalleryContainer implements WriteableTreeableGalleryContainer {
 	private static final int NON_CATEGORY = 0;
 	
 	protected com.kallasoft.smugmug.api.json.entity.Category apiCategory;
@@ -24,7 +27,7 @@ public class SmugCategory extends TreeableGalleryItem {
 	private ArrayList<SmugAlbum> albums;
 	private String reName;
 
-	public SmugCategory(TreeableGalleryItem parent, com.kallasoft.smugmug.api.json.entity.Category apiCategory) {
+	public SmugCategory(TreeableGalleryContainer parent, com.kallasoft.smugmug.api.json.entity.Category apiCategory) {
 		super(parent);
 		this.apiCategory = apiCategory;
 	}
@@ -136,7 +139,7 @@ public class SmugCategory extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new SmugException("Error deleting " + getFullPathLabel(), SmugException.convertError(response.getError()));
 		}
-		parent.childRemoved(this);
+		((WriteableTreeableGalleryContainer)parent).childRemoved(this);
 	}
 
 	public void removeAlbum(SmugAlbum album) {
@@ -144,23 +147,35 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 
 	public boolean canMoveLocally(TreeableGalleryItem newChild, int childIndex) {
-		return (childIndex == -1 && ItemType.ALBUM == newChild.getType());
+		return (childIndex == -1 && ItemType.ALBUM == newChild.getType() && !willChildBeDuplicate(newChild.getFileName(), null));
+	}
+	
+	public boolean willChildBeDuplicate(String fileName, String caption) {
+		for (SmugAlbum each : albums) {
+			if (each.getFileName().equalsIgnoreCase(fileName)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
-	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) throws SmugException {
+	public boolean allowsDuplicateChildren() {
+		return false;
+	}
+
+	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
 		Integer category = getCategoryID();
 		Integer subCategory = getSubCategoryID();
 		SmugAlbum album = (SmugAlbum)childItem;
 		com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings changeSettings
 			= new com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings();
-		String[] arguments = new String[changeSettings.ARGUMENTS.length];
+		String[] arguments = new String[ChangeSettings.ARGUMENTS.length];
 		arguments[0] = SmugMug.API_KEY;
 		arguments[1] = SmugMug.sessionID;
 		arguments[2] = APIUtils.toString(album.getAlbumID());
 		arguments[6] = APIUtils.toString(category);
 		//it became necessary to work around this stupid API
 		arguments[7] = (subCategory == null ? "null" : APIUtils.toString(subCategory));
-//		arguments[17] = APIUtils.toString(Integer.valueOf(childIndex - subCategories.size() + 1));
 		com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings.ChangeSettingsResponse response
 			= changeSettings.execute(SmugMug.API_URL, arguments);
 		if (response.isError()) {
@@ -172,22 +187,27 @@ public class SmugCategory extends TreeableGalleryItem {
 	}
 	
 	public boolean canImport(TreeableGalleryItem newItem) {
-		return (ItemType.ALBUM == newItem.getType() && newItem.getSubAlbumDepth() <= acceptableSubAlbumImportDepth());
+		if (ItemType.ALBUM == newItem.getType()) {
+			return (((TreeableGalleryContainer)newItem).getSubAlbumDepth() <= acceptableSubAlbumImportDepth() && willChildBeDuplicate(newItem.getFileName(), null) );
+		} else {
+			return false;
+		}
 	}
 	
 	protected int acceptableSubAlbumImportDepth() {
 		return 1;
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem sourceItem, TransferInterruption previousInterruption) throws IOException, TransferInterruption {
-		int subAlbumDepth = sourceItem.getSubAlbumDepth();
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedAttributes) throws SmugException {
+		TreeableGalleryContainer newContainer = (TreeableGalleryContainer)newItem;
+		int subAlbumDepth = newContainer.getSubAlbumDepth();
 		if (0 == subAlbumDepth) {
-			return importAlbumAsAlbum(sourceItem);
+			return importAlbumAsAlbum(newItem);
 		} else if (1 == subAlbumDepth) {	//this new album has child albums under it
-			if (sourceItem.hasImageChildren()) {	//but it also has images under it
-				throw new MixedAlbumException(sourceItem);
+			if (newContainer.hasImageChildren()) {	//but it also has images under it
+				throw new MixedAlbumException(newItem);
 			} else {
-				return importAlbumAsSubCategory(sourceItem);
+				return importAlbumAsSubCategory(newItem);
 			}
 		} else {
 			throw new IllegalStateException("This shoudln't ever happen");
@@ -255,7 +275,7 @@ public class SmugCategory extends TreeableGalleryItem {
 	public String getMetaLabel() {
 		return "";
 	}
-
+	
 	@Override
 	public boolean canChangeHiddenStatus(boolean newState) {
 		return false;
@@ -294,7 +314,7 @@ public class SmugCategory extends TreeableGalleryItem {
 
 	@Override
 	public URL getDataURL() throws MalformedURLException {
-		throw new UnsupportedOperationException("Not supported yet.");
+		throw new UnsupportedOperationException("Not supported.");
 	}
 
 	@Override

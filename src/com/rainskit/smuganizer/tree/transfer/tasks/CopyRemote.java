@@ -1,16 +1,30 @@
 package com.rainskit.smuganizer.tree.transfer.tasks;
 
+import com.rainskit.smuganizer.ExifHandler;
+import com.rainskit.smuganizer.TransferSettings;
+import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
+import com.rainskit.smuganizer.tree.transfer.interruptions.DuplicateFileNameInterruption;
+import com.rainskit.smuganizer.tree.transfer.interruptions.InterruptionSet;
+import com.rainskit.smuganizer.tree.transfer.interruptions.UnexpectedCaptionInterruption;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import org.apache.commons.io.IOUtils;
+import org.apache.sanselan.ImageReadException;
+import org.apache.sanselan.ImageWriteException;
 
 public class CopyRemote extends AbstractTransferTask {
+	
 	public CopyRemote(JTree srcTree,
 						TreeableGalleryItem srcItem, 
 						JTree destTree, 
@@ -19,19 +33,54 @@ public class CopyRemote extends AbstractTransferTask {
 		super(srcTree, srcItem, destTree, destParentPath, destChildIndex);
 	}
 
-	protected TreeableGalleryItem doInBackgroundImpl(TransferInterruption previousInterruption) throws TransferInterruption, IOException {
-		if (destParentItem.canImport(srcItem)) {
-			TreeableGalleryItem newItem = destParentItem.importItem(srcItem, previousInterruption);
-			newItem.transferStarted(false);
-			newItem.transferEnded(false, true);
-			return newItem;
-		} else {
-			throw new IllegalStateException("Error: it is not possible to import \"" 
-				+ srcItem.getFullPathLabel() 
-				+ "\" into \"" 
-				+ destParentItem.getFullPathLabel()
-				+ "\"");
+	protected TreeableGalleryItem doInBackgroundImpl(InterruptionSet previousInterruptions) throws TransferInterruption, IOException {
+		ModifiedItemAttributes finalAttributes = new ModifiedItemAttributes();
+		if (ItemType.IMAGE == srcItem.getType()) {
+			finalAttributes = handleExifDescriptions(finalAttributes, previousInterruptions);
 		}
+		finalAttributes = handleDuplicates(finalAttributes, previousInterruptions);
+
+		TreeableGalleryItem newItem = destParentItem.importItem(srcItem, finalAttributes);
+		newItem.transferStarted(false);
+		newItem.transferEnded(false, true);
+		return newItem;
+	}
+
+	private ModifiedItemAttributes handleExifDescriptions(ModifiedItemAttributes imageAttributes, InterruptionSet previousInterruptions) throws IOException, UnexpectedCaptionInterruption {
+		if (previousInterruptions.hasInterruption(UnexpectedCaptionInterruption.class)) {
+			UnexpectedCaptionInterruption uci = (UnexpectedCaptionInterruption)previousInterruptions.getInterruption(UnexpectedCaptionInterruption.class);
+			imageAttributes.imageData = uci.getImageData();
+			imageAttributes.caption = uci.getFixedCaption();
+		} else {
+			InputStream sourceInputStream = srcItem.getDataURL().openStream();
+			try {
+				imageAttributes.imageData = IOUtils.toByteArray(sourceInputStream);
+			} finally {
+				sourceInputStream.close();
+			}
+			
+			imageAttributes.caption = srcItem.getCaption();
+			if (imageAttributes.caption == null) {
+				String fileName = srcItem.getFileName();
+				try {
+					String description = ExifHandler.getExifDescription(imageAttributes.imageData, fileName);
+					if (description != null && description.length() > 0) {
+						if (TransferSettings.getRemoveExifDescriptions()) {
+							imageAttributes.imageData = ExifHandler.removeExifDescription(imageAttributes.imageData, fileName);
+						} else if (!TransferSettings.getIgnoreExifDescriptions()) {
+							throw new UnexpectedCaptionInterruption(imageAttributes.imageData, fileName, description);
+						}
+					}
+				} catch (ImageWriteException ex) {
+					Logger.getLogger(CopyRemote.class.getName()).log(Level.SEVERE, null, ex);
+					throw new IOException("Error handling Exif tags in " + fileName, ex);
+				} catch (ImageReadException ex) {
+					Logger.getLogger(CopyRemote.class.getName()).log(Level.SEVERE, null, ex);
+					throw new IOException("Error handling Exif tags in " + fileName, ex);
+				}
+			}
+		}
+		return imageAttributes;
 	}
 	
 	public List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem) {
@@ -52,11 +101,13 @@ public class CopyRemote extends AbstractTransferTask {
 			followUpTasks.add(new ProtectItem(destTree, newItem, destTree, newNode));
 		}
 		
-		List<? extends TreeableGalleryItem> children = srcItem.getChildren();
-		if (children != null) {
-			int childIndex = 0;
-			for (TreeableGalleryItem childItem : children) {
-				followUpTasks.add(new CopyRemote(srcTree, childItem, destTree, new TreePath(newNode.getPath()), childIndex++));
+		if (srcItem instanceof TreeableGalleryContainer) {
+			List<? extends TreeableGalleryItem> children = ((TreeableGalleryContainer)srcItem).getChildren();
+			if (children != null) {
+				int childIndex = 0;
+				for (TreeableGalleryItem childItem : children) {
+					followUpTasks.add(new CopyRemote(srcTree, childItem, destTree, new TreePath(newNode.getPath()), childIndex++));
+				}
 			}
 		}
 		

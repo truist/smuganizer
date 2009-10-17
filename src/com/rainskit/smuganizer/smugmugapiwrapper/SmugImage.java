@@ -3,10 +3,11 @@ package com.rainskit.smuganizer.smugmugapiwrapper;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
+import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryContainer;
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
 import java.awt.Desktop;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class SmugImage extends TreeableGalleryItem {
+public class SmugImage extends TreeableGalleryItem implements WriteableTreeableGalleryItem {
 	private static final int HIDE_RETRY_DELAY = 1000;
 	private static final int HIDE_RETRY_LIMIT = 60000;
 	
@@ -31,15 +32,6 @@ public class SmugImage extends TreeableGalleryItem {
 	public void setParent(SmugAlbum newParent) throws SmugException {
 		super.setParent(newParent);
 		loadImageDetails();
-	}
-	
-	public List<? extends TreeableGalleryItem> loadChildren() throws SmugException {
-		loadImageDetails();
-		return null;
-	}
-	
-	public List<? extends TreeableGalleryItem> getChildren() {
-		return null;
 	}
 	
 	private void loadImageDetails() throws SmugException {
@@ -157,28 +149,8 @@ public class SmugImage extends TreeableGalleryItem {
 		if (response.isError()) {
 			throw new SmugException("Error deleting " + getFullPathLabel(), SmugException.convertError(response.getError()));
 		}
-		parent.childRemoved(this);
+		((WriteableTreeableGalleryContainer)parent).childRemoved(this);
 		parent = null;
-	}
-
-	public boolean canMoveLocally(TreeableGalleryItem newChild, int childIndex) {
-		return false;
-	}
-
-	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, TransferInterruption previousInterruption) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	public boolean canImport(TreeableGalleryItem newItem) {
-		return false;
-	}
-
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, TransferInterruption previousInterruption) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-	
-	public ItemType getType() {
-		return ItemType.IMAGE;
 	}
 
 	public int compareTo(TreeableGalleryItem o) {
@@ -244,7 +216,7 @@ public class SmugImage extends TreeableGalleryItem {
 	}
 
 	@Override
-	public void childRemoved(TreeableGalleryItem child) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public ItemType getType() {
+		return ItemType.IMAGE;
 	}
 }
