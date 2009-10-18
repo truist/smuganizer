@@ -39,6 +39,7 @@ public abstract class TreeableGalleryContainer extends TreeableGalleryItem {
 		return false;
 	}
 
+    private static final char[] ILLEGAL_CHARACTERS = { '/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':' };
 	protected String constructFileName(String fileName, String caption, boolean rename) {
 		String constructedName;
 		if (caption == null) {
@@ -46,16 +47,21 @@ public abstract class TreeableGalleryContainer extends TreeableGalleryItem {
 		} else {
 			constructedName = caption + getExtension(fileName);
 		}
+
 		if (rename) {
 			int i = 0;
 			String possibleFileName;
 			do {
 				possibleFileName = getBaseName(constructedName) + " (" + ++i + ")" + getExtension(constructedName);
 			} while (((WriteableTreeableGalleryContainer)this).willChildBeDuplicate(possibleFileName, null));
-			return possibleFileName;
-		} else {
-			return constructedName;
+			constructedName = possibleFileName;
 		}
+
+        for (char e : ILLEGAL_CHARACTERS) {
+            constructedName = constructedName.replace(e, '-');
+        }
+
+        return constructedName;
 	}
 	
 	private String getBaseName(String fileName) {

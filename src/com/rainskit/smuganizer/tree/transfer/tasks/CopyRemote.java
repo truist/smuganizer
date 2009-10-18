@@ -35,6 +35,7 @@ public class CopyRemote extends AbstractTransferTask {
 
 	protected TreeableGalleryItem doInBackgroundImpl(InterruptionSet previousInterruptions) throws TransferInterruption, IOException {
 		ModifiedItemAttributes finalAttributes = new ModifiedItemAttributes();
+		finalAttributes.caption = srcItem.getCaption();
 		if (ItemType.IMAGE == srcItem.getType()) {
 			finalAttributes = handleExifDescriptions(finalAttributes, previousInterruptions);
 		}
@@ -59,7 +60,6 @@ public class CopyRemote extends AbstractTransferTask {
 				sourceInputStream.close();
 			}
 			
-			imageAttributes.caption = srcItem.getCaption();
 			if (imageAttributes.caption == null) {
 				String fileName = srcItem.getFileName();
 				try {

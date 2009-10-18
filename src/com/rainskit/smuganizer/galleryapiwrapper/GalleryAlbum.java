@@ -10,6 +10,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang.StringEscapeUtils;
 
 public class GalleryAlbum extends TreeableGalleryContainer {
@@ -77,7 +79,13 @@ public class GalleryAlbum extends TreeableGalleryContainer {
 	public List<? extends TreeableGalleryItem> getChildren() {
 		ArrayList<TreeableGalleryItem> children = new ArrayList<TreeableGalleryItem>();
 		children.addAll(subAlbums);
-		children.addAll(images);
+        if (images != null) {
+            try {
+                children.addAll(getImages()); //call to getImages() is important in case we are trying to copy album before it has been loaded
+            } catch (IOException ex) {
+                Logger.getLogger(GalleryAlbum.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
 		return children;
 	}
 	
@@ -96,11 +104,6 @@ public class GalleryAlbum extends TreeableGalleryContainer {
 	public ItemType getType() {
 		return ItemType.ALBUM;
 	}
-
-//	@Override
-//	public TreeableGalleryItem getParent() {
-//		return (parent == null ? gallery : parent);
-//	}
 
 	public int compareTo(TreeableGalleryItem other) {
 		if (other instanceof GalleryAlbum) {

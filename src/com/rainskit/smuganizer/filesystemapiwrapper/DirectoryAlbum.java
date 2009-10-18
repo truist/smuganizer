@@ -38,13 +38,16 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 	public List<? extends TreeableGalleryItem> loadChildren() throws IOException {
 		if (!loaded) {
 			loaded = true;
-			for (File each : myFile.listFiles()) {
-				if (each.isDirectory()) {
-					subDirs.add(new DirectoryAlbum(this, each));
-				} else {
-					subFiles.add(new FileImage(this, each));
-				}
-			}
+            File[] children = myFile.listFiles();
+            if (children != null) {
+                for (File each : myFile.listFiles()) {
+                    if (each.isDirectory()) {
+                        subDirs.add(new DirectoryAlbum(this, each));
+                    } else {
+                        subFiles.add(new FileImage(this, each));
+                    }
+                }
+            }
 			Collections.sort(subDirs);
 			Collections.sort(subFiles);
 		}
@@ -72,7 +75,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 
 	@Override
 	public boolean canMoveLocally(TreeableGalleryItem newChild, int childIndex) {
-		return (ItemType.ROOT != newChild.getType() && checkAncestry(this, newChild));
+		return (ItemType.ROOT != newChild.getType() && checkAncestry(this, newChild) && this != newChild.getParent());
 	}
 
 	private boolean checkAncestry(TreeableGalleryItem child, TreeableGalleryItem ancestor) {
