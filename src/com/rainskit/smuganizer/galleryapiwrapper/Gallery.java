@@ -77,7 +77,7 @@ public class Gallery extends TreeableGalleryContainer {
 		super(null);
 		
 		String settingsURL = GallerySettings.getURL().toExternalForm();
-		this.baseURL = settingsURL + (settingsURL.endsWith("/") ? "" : "/");
+		Gallery.baseURL = settingsURL + (settingsURL.endsWith("/") ? "" : "/");
 		
 		loginHttpClient = new HttpClient();
 		loginHttpClient.setHttpConnectionManager(new MultiThreadedHttpConnectionManager());
@@ -87,7 +87,7 @@ public class Gallery extends TreeableGalleryContainer {
 		anonHttpClient.setHttpConnectionManager(new MultiThreadedHttpConnectionManager());
 //		anonHttpClient.getHostConfiguration().setProxy("127.0.0.1", 8888);
 		
-		this.galleryVersion = determineGalleryVersion(baseURL);
+		Gallery.galleryVersion = determineGalleryVersion(baseURL);
 		login();
 		
         this.rootAlbums = new ArrayList<GalleryAlbum>();
@@ -293,11 +293,19 @@ public class Gallery extends TreeableGalleryContainer {
 	}
 	
 	static URI generateUrlFor(String album, String image) throws URISyntaxException {
+		URI baseUri = new URI(baseURL);
+
+		String path;
+		String query = null;
 		if (galleryVersion == 2) {
-			return new URI("http", null, getBaseURL(), -1, "/" + G2_BASE, G2_ITEMID + (image == null ? album : image), null);
-		} else {
-			return new URI("http", null, getBaseURL(), -1, "/" + album + (image != null ? "/" + image : ""), null, null);
+			query = G2_ITEMID + (image == null ? album : image);
+			path = "/" + G2_BASE;
 		}
+		else {
+			path = "/" + album + (image != null ? "/" + image : "");
+		}
+
+		return new URI(baseUri.getScheme(), null, baseUri.getHost(), baseUri.getPort(), baseUri.getPath() + path, query, null);
 	}
 
 	public ItemType getType() {
