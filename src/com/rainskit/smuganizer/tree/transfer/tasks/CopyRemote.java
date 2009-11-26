@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.tree.transfer.tasks;
 
 import com.rainskit.smuganizer.ExifHandler;
-import com.rainskit.smuganizer.TransferSettings;
+import com.rainskit.smuganizer.settings.TransferSettings;
 import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;

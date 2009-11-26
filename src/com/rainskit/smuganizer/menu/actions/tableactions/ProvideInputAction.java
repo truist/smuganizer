@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.menu.actions.tableactions;
 
 import com.rainskit.smuganizer.Main;
-import com.rainskit.smuganizer.TransferTable;
+import com.rainskit.smuganizer.tree.transfer.TransferTable;
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;

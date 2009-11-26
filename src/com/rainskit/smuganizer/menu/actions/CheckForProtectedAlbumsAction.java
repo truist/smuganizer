@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.menu.actions;
 
-import com.rainskit.smuganizer.GallerySettings;
+import com.rainskit.smuganizer.settings.GallerySettings;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;

@@ -1,9 +1,8 @@
-package com.rainskit.smuganizer;
+package com.rainskit.smuganizer.settings;
 
+import com.rainskit.smuganizer.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 public class GallerySettings {
@@ -70,13 +69,5 @@ public class GallerySettings {
 	
 	public static void setCleanCaptions(boolean selected) {
 		storage.putBoolean(CLEAN_CAPTIONS, selected);
-	}
-
-	public static void addSettingListener(final SettingsListener listener) {
-		storage.addPreferenceChangeListener(new PreferenceChangeListener() {
-			public void preferenceChange(PreferenceChangeEvent evt) {
-				listener.settingChanged(evt.getKey());
-			}
-		});
 	}
 }

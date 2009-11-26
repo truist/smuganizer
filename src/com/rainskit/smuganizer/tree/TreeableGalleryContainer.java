@@ -1,5 +1,7 @@
 package com.rainskit.smuganizer.tree;
 
+import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.HandleDuplicate;
 import java.io.IOException;
 import java.util.List;
 
@@ -40,36 +42,34 @@ public abstract class TreeableGalleryContainer extends TreeableGalleryItem {
 	}
 
     private static final char[] ILLEGAL_CHARACTERS = { '/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':' };
-	protected String constructFileName(String fileName, String caption, boolean rename) {
-		String constructedName;
-		if (caption == null) {
-			constructedName = fileName;
-		} else {
-			constructedName = caption + getExtension(fileName);
-		}
-
-		if (rename) {
-			int i = 0;
-			String possibleFileName;
-			do {
-				possibleFileName = getBaseName(constructedName) + " (" + ++i + ")" + getExtension(constructedName);
-			} while (((WriteableTreeableGalleryContainer)this).willChildBeDuplicate(possibleFileName, null));
-			constructedName = possibleFileName;
-		}
-
-        for (char e : ILLEGAL_CHARACTERS) {
-            constructedName = constructedName.replace(e, '-');
+    protected String cleanUpName(String newName, HandleDuplicate rename, boolean stripIllegals) throws SmugException {
+        if (rename == HandleDuplicate.RENAME) {
+			int i = -1;
+            String baseName = getBaseName(newName);
+            String extension = getExtension(newName);
+            while (true) {
+                newName = baseName + (++i == 0 ? "" : " (" + i + ")") + extension;
+                if (!((WriteableTreeableGalleryContainer)this).willChildBeDuplicate(newName, null)) {
+                    break;
+                }
+            }
         }
 
-        return constructedName;
-	}
+        if (stripIllegals) {
+            for (char e : ILLEGAL_CHARACTERS) {
+                newName = newName.replace(e, '-');
+            }
+        }
+
+        return newName;
+    }
 	
-	private String getBaseName(String fileName) {
+	protected String getBaseName(String fileName) {
 		int lastPeriod = fileName.lastIndexOf('.');
-		return (lastPeriod > -1 ? fileName.substring(0, lastPeriod) : "");
+		return (lastPeriod > -1 ? fileName.substring(0, lastPeriod) : fileName);
 	}
 	
-	private String getExtension(String fileName) {
+	protected String getExtension(String fileName) {
 		int lastPeriod = fileName.lastIndexOf('.');
 		return (lastPeriod > -1 ? fileName.substring(lastPeriod) : "");
 	}

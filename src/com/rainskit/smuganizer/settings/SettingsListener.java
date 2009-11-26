@@ -1,4 +1,4 @@
-package com.rainskit.smuganizer;
+package com.rainskit.smuganizer.settings;
 
 public interface SettingsListener {
 

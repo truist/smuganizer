@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.menu;
 
+import com.rainskit.smuganizer.tree.transfer.TransferTable;
 import com.rainskit.smuganizer.menu.actions.treeactions.TreeableAction;
 import com.rainskit.smuganizer.menu.actions.SettingsSortCategoryAction;
 import com.rainskit.smuganizer.menu.actions.AboutAction;
@@ -11,6 +12,7 @@ import com.rainskit.smuganizer.*;
 import com.rainskit.smuganizer.menu.actions.AlwaysIgnoreFileCaptionAction;
 import com.rainskit.smuganizer.menu.actions.AlwaysRemoveFileCaptionAction;
 import com.rainskit.smuganizer.menu.actions.PauseTransfersAction;
+import com.rainskit.smuganizer.menu.actions.PreserveCaptionsAction;
 import com.rainskit.smuganizer.tree.GalleryTree;
 import com.rainskit.smuganizer.tree.SmugTree;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
@@ -36,6 +38,7 @@ public class SmugMenu extends JMenuBar {
 		JMenu menu = new JMenu("Settings");
 		menu.add(createGallerySettingsMenu());
 		menu.add(createSmugMugSettingsMenu());
+        menu.add(createFileSettingsMenu());
 		menu.add(createTransferSettingsMenu());
 		menu.addSeparator();
 		menu.add(new JCheckBoxMenuItem(new PauseTransfersAction(transferManager)));
@@ -60,6 +63,12 @@ public class SmugMenu extends JMenuBar {
 		return settingsMenu;
 	}
 	
+	private JMenu createFileSettingsMenu() {
+		JMenu settingsMenu = new JMenu("Local Computer");
+		settingsMenu.add(new JCheckBoxMenuItem(new PreserveCaptionsAction()));
+		return settingsMenu;
+	}
+
 	private JMenu createTransferSettingsMenu() {
 		JMenu settingsMenu = new JMenu("Transfer");
 		MaxOneGroup group = new MaxOneGroup();

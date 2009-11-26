@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.galleryapiwrapper;
 
-import com.rainskit.smuganizer.GallerySettings;
+import com.rainskit.smuganizer.settings.GallerySettings;
 import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;

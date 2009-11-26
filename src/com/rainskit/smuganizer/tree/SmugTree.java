@@ -1,5 +1,7 @@
 package com.rainskit.smuganizer.tree;
 
+import com.rainskit.smuganizer.settings.SettingsListener;
+import com.rainskit.smuganizer.settings.SmugMugSettings;
 import com.rainskit.smuganizer.tree.transfer.SmugTransferHandler;
 import com.rainskit.smuganizer.*;
 import java.io.IOException;

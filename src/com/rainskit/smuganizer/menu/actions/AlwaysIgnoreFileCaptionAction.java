@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.menu.actions;
 
-import com.rainskit.smuganizer.TransferSettings;
+import com.rainskit.smuganizer.settings.TransferSettings;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;

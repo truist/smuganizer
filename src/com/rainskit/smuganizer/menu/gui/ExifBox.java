@@ -13,9 +13,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import org.apache.sanselan.common.ImageMetadata;
 import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
 import org.apache.sanselan.formats.tiff.TiffField;
-import org.apache.sanselan.formats.tiff.TiffImageMetadata;
 import org.apache.sanselan.formats.tiff.constants.TagInfo;
 import org.apache.sanselan.formats.tiff.constants.TiffConstants;
 
@@ -59,7 +59,7 @@ public class ExifBox extends JDialog {
 	private String[][] convertToArray(ArrayList standardItems) {
 		String[][] table = new String[standardItems.size()][2];
 		for (int i = 0; i < standardItems.size(); i++) {
-			TiffImageMetadata.Item each = (TiffImageMetadata.Item)standardItems.get(i);
+			ImageMetadata.Item each = (ImageMetadata.Item)standardItems.get(i);
 			table[i][0] = each.getKeyword();
 			table[i][1] = each.getText();
 		}

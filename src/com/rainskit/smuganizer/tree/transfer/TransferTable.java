@@ -1,5 +1,6 @@
-package com.rainskit.smuganizer;
+package com.rainskit.smuganizer.tree.transfer;
 
+import com.rainskit.smuganizer.*;
 import com.rainskit.smuganizer.menu.TableMenuManager;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
@@ -177,22 +178,5 @@ public class TransferTable extends JTable {
 			progressBar.setString(value.toString());
 			return modifyRendererForTask(progressBar, currentTask, table, isSelected, hasFocus, true);
 		}
-	}
-}
-
-
-
-class JProgressBarTest {
-	public static void main(String[] args) {
-		JFrame frame = new JFrame("ProgressBar test");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(new BorderLayout());
-		JProgressBar testBar = new JProgressBar();
-		testBar.setIndeterminate(true);
-		testBar.setStringPainted(true);
-		testBar.setString("Test");
-		frame.getContentPane().add(testBar);
-		frame.pack();
-		frame.setVisible(true);
 	}
 }

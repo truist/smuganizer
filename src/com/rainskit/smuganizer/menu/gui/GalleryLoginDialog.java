@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.menu.gui;
 
+import com.rainskit.smuganizer.settings.GallerySettings;
 import com.rainskit.smuganizer.*;
 import java.net.MalformedURLException;
 import java.net.URL;

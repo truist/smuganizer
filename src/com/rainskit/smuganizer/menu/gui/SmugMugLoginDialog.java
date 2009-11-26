@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.menu.gui;
 
+import com.rainskit.smuganizer.settings.SmugMugSettings;
 import com.rainskit.smuganizer.*;
 import java.net.URL;
 import javax.swing.JFrame;

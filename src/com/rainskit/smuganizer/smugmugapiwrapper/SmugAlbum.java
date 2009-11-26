@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.smugmugapiwrapper;
 
-import com.rainskit.smuganizer.SmugMugSettings;
+import com.rainskit.smuganizer.settings.SmugMugSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
@@ -150,11 +150,11 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 	}
 
 	public void childRemoved(TreeableGalleryItem image) {
-		images.remove(image);
+		images.remove((SmugImage)image);
 	}
 
 	public boolean canMoveLocally(TreeableGalleryItem newChild, int childIndex) {
-		return (ItemType.IMAGE == newChild.getType() && (newChild.getParent() == this || !willChildBeDuplicate(newChild.getFileName(), null)));
+		return (ItemType.IMAGE == newChild.getType() && (newChild.getParent() == this));
 	}
 
 	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
@@ -175,7 +175,7 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 		reorderItem(childImage, childIndex);
 		
 		if (HandleDuplicate.RENAME == modifiedItemAttributes.handleDuplicate) {
-			reLabel(constructFileName(childItem.getFileName(), null, true));
+            reLabel(cleanUpName(childItem.getLabel(), modifiedItemAttributes.handleDuplicate, false));
 		}
 	}
 
@@ -183,13 +183,13 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 		return (ItemType.IMAGE == newItem.getType());
 	}
 
-	public boolean willChildBeDuplicate(String fileName, String caption) {
-		for (SmugImage each : images) {
-			if (each.getFileName().equalsIgnoreCase(fileName)) {
-				return true;
-			}
-		}
-		return false;
+	public boolean willChildBeDuplicate(String fileName, String caption) throws SmugException {
+        for (SmugImage each : images) {
+            if (each.getLabel().equalsIgnoreCase(caption)) {
+                return true;
+            }
+        }
+        return false;
 	}
 
 	public boolean allowsDuplicateChildren() {
@@ -197,14 +197,15 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 	}
 
 	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
-		String fileName = constructFileName(newItem.getFileName(), null, HandleDuplicate.RENAME == modifiedItemAttributes.handleDuplicate);
+        String caption = (modifiedItemAttributes.caption == null ? newItem.getCaption() : modifiedItemAttributes.caption);
+        caption = cleanUpName(caption, modifiedItemAttributes.handleDuplicate, false);
 		com.kallasoft.smugmug.api.json.v1_2_0.images.UploadHTTPPut uploadMethod
 			= new com.kallasoft.smugmug.api.json.v1_2_0.images.UploadHTTPPut();
 		com.kallasoft.smugmug.api.json.v1_2_0.images.UploadHTTPPut.UploadHTTPPutResponse uploadResponse
 			= uploadMethod.execute(SmugMug.API_UPLOAD_URL, SmugMug.sessionID, 
 									apiAlbum.getID(), null, 
-									fileName, new ByteArrayInputStream(modifiedItemAttributes.imageData),
-									modifiedItemAttributes.caption, null, 
+									newItem.getFileName(), new ByteArrayInputStream(modifiedItemAttributes.imageData),
+									caption, null, 
 									null, null, null);
 		if (uploadResponse.isError()) {
 			throw new SmugException("Error moving " + getFullPathLabel(), SmugException.convertError(uploadResponse.getError()));
@@ -225,6 +226,9 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 	}
 	
 	private void reorderItem(SmugImage childImage, int childIndex) throws SmugException {
+        if (childIndex > images.size()) {   //this can happen if we cancel intermediate transfers
+            childIndex = images.size();
+        }
 		reorderItemInSmugMug(childImage, childIndex);
 		
 		boolean movingTowardEnd = (images.indexOf(childImage) < childIndex);

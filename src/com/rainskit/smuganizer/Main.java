@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer;
 
+import com.rainskit.smuganizer.tree.transfer.TransferTable;
 import com.rainskit.smuganizer.filesystemapiwrapper.FileGallery;
 import com.rainskit.smuganizer.tree.SmugTree;
 import com.rainskit.smuganizer.tree.GalleryTree;
@@ -43,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.TreeSelectionEvent;
@@ -312,8 +314,13 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 			this.side = side;
 		}
 		
-		public void actionPerformed(ActionEvent ae) {
-			connectTo((GalleryType)((JComboBox)ae.getSource()).getSelectedItem(), side);
+		public void actionPerformed(final ActionEvent ae) {
+			SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    connectTo((GalleryType)((JComboBox)ae.getSource()).getSelectedItem(), side);
+                }
+            });
+
 		}
 	}
 

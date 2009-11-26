@@ -34,7 +34,7 @@ public class SmugSubCategory extends SmugCategory {
 	
 	@Override
 	public void launch() throws IOException, URISyntaxException {
-		Desktop.getDesktop().browse(new URI("http", SmugMug.getBaseURL(), "/" + parent.getLabel() + "/" + apiCategory.getID(), null));
+		Desktop.getDesktop().browse(new URI("http", SmugMug.getBaseURL(), "/" + parent.getURLName() + "/" + apiCategory.getID(), null));
 	}
 	
 	@Override

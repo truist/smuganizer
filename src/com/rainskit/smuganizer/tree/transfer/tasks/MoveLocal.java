@@ -44,6 +44,10 @@ public class MoveLocal extends AbstractTransferTask {
 		}
 		DefaultTreeModel destModel = (DefaultTreeModel)destTree.getModel();
 		destModel.removeNodeFromParent(srcNode);
+        if (destChildIndex > destParentNode.getChildCount()) {  //can happen if intermediate transfers were cancelled
+            destChildIndex = destParentNode.getChildCount();
+            destChildOffset = 0;
+        }
 		destModel.insertNodeInto(srcNode, destParentNode, destChildIndex + destChildOffset);
 		TransferTree.sortTree(destParentNode, false);
 		destModel.nodeStructureChanged(destParentNode);

@@ -9,7 +9,7 @@ public interface WriteableTreeableGalleryContainer extends WriteableTreeableGall
 	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, ModifiedItemAttributes modifiedItemAttributes) throws SmugException;
 
 	public boolean canImport(TreeableGalleryItem newItem);
-	public boolean willChildBeDuplicate(String fileName, String caption);
+	public boolean willChildBeDuplicate(String fileName, String caption) throws SmugException;
 	public boolean allowsDuplicateChildren();
 	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedAttributes) throws SmugException;
 	

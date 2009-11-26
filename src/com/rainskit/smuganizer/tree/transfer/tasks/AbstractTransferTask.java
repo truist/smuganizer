@@ -113,7 +113,7 @@ public abstract class AbstractTransferTask {
 	
 	protected abstract TreeableGalleryItem doInBackgroundImpl(InterruptionSet previousInterruptions) throws TransferInterruption, IOException;
 
-	protected ModifiedItemAttributes handleDuplicates(ModifiedItemAttributes imageAttributes, InterruptionSet previousInterruptions) throws DuplicateFileNameInterruption {
+	protected ModifiedItemAttributes handleDuplicates(ModifiedItemAttributes imageAttributes, InterruptionSet previousInterruptions) throws DuplicateFileNameInterruption, SmugException {
 		if (previousInterruptions.hasInterruption(DuplicateFileNameInterruption.class)) {
 			DuplicateFileNameInterruption duplicateInterruption = (DuplicateFileNameInterruption) previousInterruptions.getInterruption(DuplicateFileNameInterruption.class);
 			imageAttributes.handleDuplicate = duplicateInterruption.getChoice();

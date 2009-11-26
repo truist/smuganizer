@@ -1,5 +1,6 @@
-package com.rainskit.smuganizer;
+package com.rainskit.smuganizer.settings;
 
+import com.rainskit.smuganizer.*;
 import java.util.prefs.Preferences;
 
 public class TransferSettings {

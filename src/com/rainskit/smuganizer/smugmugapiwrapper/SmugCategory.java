@@ -2,13 +2,14 @@ package com.rainskit.smuganizer.smugmugapiwrapper;
 
 import com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings;
 import com.kallasoft.smugmug.api.util.APIUtils;
-import com.rainskit.smuganizer.SmugMugSettings;
+import com.rainskit.smuganizer.settings.SmugMugSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MixedAlbumException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryContainer;
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.HandleDuplicate;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.ModifiedItemAttributes;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -92,8 +93,11 @@ public class SmugCategory extends TreeableGalleryContainer implements WriteableT
 		return (reName != null) ? reName : apiCategory.getName();
 	}
 	
+    @SuppressWarnings("empty-statement")
 	public String getURLName() {
-		return getFileName();
+        String start = getLabel().replaceAll("[^A-Za-z0-9\\s-]", "").replaceAll("[\\s]", "-");
+        while (!start.equals(start = start.replace("--", "-")));
+		return start;
 	}
 
 	public String getCaption() {
@@ -124,7 +128,7 @@ public class SmugCategory extends TreeableGalleryContainer implements WriteableT
 	}
 
 	public void launch() throws IOException, URISyntaxException {
-		Desktop.getDesktop().browse(new URI("http", SmugMug.getBaseURL(), "/" + getLabel(), null));
+		Desktop.getDesktop().browse(new URI("http", SmugMug.getBaseURL(), "/" + getURLName(), null));
 	}
 
 	public boolean canBeDeleted() {
@@ -147,20 +151,25 @@ public class SmugCategory extends TreeableGalleryContainer implements WriteableT
 	}
 
 	public boolean canMoveLocally(TreeableGalleryItem newChild, int childIndex) {
-		return (childIndex == -1 && ItemType.ALBUM == newChild.getType() && !willChildBeDuplicate(newChild.getFileName(), null));
+		return (childIndex == -1 && ItemType.ALBUM == newChild.getType());
 	}
 	
 	public boolean willChildBeDuplicate(String fileName, String caption) {
-		for (SmugAlbum each : albums) {
-			if (each.getFileName().equalsIgnoreCase(fileName)) {
-				return true;
-			}
-		}
-		return false;
+        for (SmugSubCategory each : subCategories) {
+            if (each.getLabel().equalsIgnoreCase(fileName) || each.getLabel().equalsIgnoreCase(caption)) {
+                return true;
+            }
+        }
+        for (SmugAlbum each : albums) {
+            if (each.getLabel().equalsIgnoreCase(fileName) || each.getLabel().equalsIgnoreCase(caption)) {
+                return true;
+            }
+        }
+        return false;
 	}
 
 	public boolean allowsDuplicateChildren() {
-		return false;
+		return true;
 	}
 
 	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
@@ -188,7 +197,7 @@ public class SmugCategory extends TreeableGalleryContainer implements WriteableT
 	
 	public boolean canImport(TreeableGalleryItem newItem) {
 		if (ItemType.ALBUM == newItem.getType()) {
-			return (((TreeableGalleryContainer)newItem).getSubAlbumDepth() <= acceptableSubAlbumImportDepth() && willChildBeDuplicate(newItem.getFileName(), null) );
+			return (((TreeableGalleryContainer)newItem).getSubAlbumDepth() <= acceptableSubAlbumImportDepth());
 		} else {
 			return false;
 		}
@@ -202,24 +211,25 @@ public class SmugCategory extends TreeableGalleryContainer implements WriteableT
 		TreeableGalleryContainer newContainer = (TreeableGalleryContainer)newItem;
 		int subAlbumDepth = newContainer.getSubAlbumDepth();
 		if (0 == subAlbumDepth) {
-			return importAlbumAsAlbum(newItem);
+			return importAlbumAsAlbum(newItem, modifiedAttributes);
 		} else if (1 == subAlbumDepth) {	//this new album has child albums under it
 			if (newContainer.hasImageChildren()) {	//but it also has images under it
 				throw new MixedAlbumException(newItem);
 			} else {
-				return importAlbumAsSubCategory(newItem);
+				return importAlbumAsSubCategory(newItem, modifiedAttributes);
 			}
 		} else {
 			throw new IllegalStateException("This shoudln't ever happen");
 		}
 	}
 	
-	private TreeableGalleryItem importAlbumAsAlbum(TreeableGalleryItem sourceAlbum) throws SmugException {
+	private TreeableGalleryItem importAlbumAsAlbum(TreeableGalleryItem sourceAlbum, ModifiedItemAttributes modifiedAttributes) throws SmugException {
+        String newTitle = cleanUpName(sourceAlbum.getLabel(), modifiedAttributes.handleDuplicate, false);
 		com.kallasoft.smugmug.api.json.v1_2_0.albums.Create createAlbum 
 			= new com.kallasoft.smugmug.api.json.v1_2_0.albums.Create();
 		com.kallasoft.smugmug.api.json.v1_2_0.albums.Create.CreateResponse createAlbumResponse 
 			= createAlbum.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, 
-									sourceAlbum.getCaption(), sourceAlbum.getDescription(), null, 
+									newTitle, sourceAlbum.getDescription(), null,
 									getCategoryID(), getSubCategoryID(), 
 									null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
 		if (createAlbumResponse.isError()) {
@@ -231,17 +241,23 @@ public class SmugCategory extends TreeableGalleryContainer implements WriteableT
 		return newAlbum;
 	}
 
-	private TreeableGalleryItem importAlbumAsSubCategory(TreeableGalleryItem sourceAlbum) throws SmugException {
-		for (TreeableGalleryItem each : getSubCategories()) {
-			if (each.getFileName().equals(sourceAlbum.getCaption())) {
-				return each;
-			}
-		}
+	private TreeableGalleryItem importAlbumAsSubCategory(TreeableGalleryItem sourceAlbum, ModifiedItemAttributes modifiedAttributes) throws SmugException {
+        String categoryName = sourceAlbum.getLabel();
+        if (modifiedAttributes.handleDuplicate == HandleDuplicate.OVERWRITE) {
+            for (TreeableGalleryItem each : subCategories) {
+                if (each.getLabel().equals(categoryName)) {
+                    return each;
+                }
+            }
+        } else if (modifiedAttributes.handleDuplicate == HandleDuplicate.RENAME) {
+            categoryName = cleanUpName(categoryName, null, false);
+        }
+
 		com.kallasoft.smugmug.api.json.v1_2_0.subcategories.Create createSubCategory 
 			= new com.kallasoft.smugmug.api.json.v1_2_0.subcategories.Create();
 		com.kallasoft.smugmug.api.json.v1_2_0.subcategories.Create.CreateResponse createSubCategoryResponse 
 			= createSubCategory.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, 
-			sourceAlbum.getCaption(), getCategoryID());
+			categoryName, getCategoryID());
 		if (createSubCategoryResponse.isError()) {
 			throw new SmugException("Error moving " + getFullPathLabel(), SmugException.convertError(createSubCategoryResponse.getError()));
 		}

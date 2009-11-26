@@ -4,12 +4,13 @@ import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.kallasoft.smugmug.api.json.v1_2_0.login.WithPassword;
 import com.kallasoft.smugmug.api.json.v1_2_0.users.GetTree;
-import com.rainskit.smuganizer.SmugMugSettings;
+import com.rainskit.smuganizer.settings.SmugMugSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MixedAlbumException;
 import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryContainer;
+import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.HandleDuplicate;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.ModifiedItemAttributes;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -117,7 +118,7 @@ public class SmugMug extends TreeableGalleryContainer implements WriteableTreeab
 
 	public boolean willChildBeDuplicate(String fileName, String caption) {
 		for (SmugCategory each : categories) {
-			if (each.getFileName().equalsIgnoreCase(fileName)) {
+			if (each.getLabel().equalsIgnoreCase(fileName) || each.getLabel().equalsIgnoreCase(caption)) {
 				return true;
 			}
 		}
@@ -129,29 +130,35 @@ public class SmugMug extends TreeableGalleryContainer implements WriteableTreeab
 	}
 
 	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
-		return importAlbumAsCategory((TreeableGalleryContainer)newItem);
+		return importAlbumAsCategory((TreeableGalleryContainer)newItem, modifiedItemAttributes);
 	}
 	
-	private TreeableGalleryItem importAlbumAsCategory(TreeableGalleryContainer sourceAlbum) throws SmugException {
-		for (TreeableGalleryItem each : categories) {
-			if (each.getFileName().equals(sourceAlbum.getCaption())) {
-				return each;
-			}
-		}
+	private TreeableGalleryItem importAlbumAsCategory(TreeableGalleryContainer sourceAlbum, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
 		if (sourceAlbum.hasImageChildren()) {
 			throw new MixedAlbumException(sourceAlbum);
-		} else {
-			com.kallasoft.smugmug.api.json.v1_2_0.categories.Create createCategory 
-				= new com.kallasoft.smugmug.api.json.v1_2_0.categories.Create();
-			com.kallasoft.smugmug.api.json.v1_2_0.categories.Create.CreateResponse createCategoryResponse 
-				= createCategory.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, sourceAlbum.getCaption());
-			if (createCategoryResponse.isError()) {
-				throw new SmugException("Error moving " + getFullPathLabel(), SmugException.convertError(createCategoryResponse.getError()));
-			}
-			SmugCategory newCategory = new SmugCategory(this, createCategoryResponse.getCategoryID());
-			categories.add(newCategory);
-			return newCategory;
-		}
+        }
+
+        String categoryName = sourceAlbum.getLabel();
+        if (modifiedItemAttributes.handleDuplicate == HandleDuplicate.OVERWRITE) {
+            for (TreeableGalleryItem each : categories) {
+                if (each.getLabel().equals(categoryName)) {
+                    return each;
+                }
+            }
+        }
+
+        categoryName = cleanUpName(categoryName, modifiedItemAttributes.handleDuplicate, false);
+
+        com.kallasoft.smugmug.api.json.v1_2_0.categories.Create createCategory
+            = new com.kallasoft.smugmug.api.json.v1_2_0.categories.Create();
+        com.kallasoft.smugmug.api.json.v1_2_0.categories.Create.CreateResponse createCategoryResponse
+            = createCategory.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, categoryName);
+        if (createCategoryResponse.isError()) {
+            throw new SmugException("Error importing " + sourceAlbum.getFullPathLabel(), SmugException.convertError(createCategoryResponse.getError()));
+        }
+        SmugCategory newCategory = new SmugCategory(this, createCategoryResponse.getCategoryID());
+        categories.add(newCategory);
+        return newCategory;
 	}
 	
 	public boolean canBeLaunched() {

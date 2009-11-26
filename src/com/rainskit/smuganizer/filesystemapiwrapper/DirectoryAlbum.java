@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.filesystemapiwrapper;
 
+import com.rainskit.smuganizer.settings.FileSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
@@ -83,7 +84,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 	}
 
 	public void moveItemLocally(TreeableGalleryItem newChild, int childIndex, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
-		String newFileName = constructFileName(newChild.getFileName(), null, HandleDuplicate.RENAME == modifiedItemAttributes.handleDuplicate);
+        String newFileName = cleanUpName(constructFileName(newChild.getFileName(), null), modifiedItemAttributes.handleDuplicate, true);
 		File newFilePath = new File(myFile, newFileName);
 		if (HandleDuplicate.OVERWRITE == modifiedItemAttributes.handleDuplicate) {
 			newFilePath.delete();
@@ -107,8 +108,8 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 	}
 	
 	@Override
-	public boolean willChildBeDuplicate(String fileName, String caption) {
-		return new File(myFile, constructFileName(fileName, caption, false)).exists();
+	public boolean willChildBeDuplicate(String fileName, String caption) throws SmugException {
+        return new File(myFile, cleanUpName(constructFileName(fileName, caption), null, true)).exists();
 	}
 	
 	public boolean allowsDuplicateChildren() {
@@ -125,7 +126,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 	}
 
 	private TreeableGalleryItem importImage(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
-		String fileName = constructFileName(newItem.getFileName(), modifiedItemAttributes.caption, HandleDuplicate.RENAME == modifiedItemAttributes.handleDuplicate);
+        String fileName = cleanUpName(constructFileName(newItem.getFileName(), modifiedItemAttributes.caption), modifiedItemAttributes.handleDuplicate, true);
 		File newFile = new File(myFile, fileName);
 		FileOutputStream fileOutput = null;
 		try {
@@ -158,7 +159,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 	}
 
 	private TreeableGalleryItem importNonImage(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
-		String fileName = constructFileName(newItem.getFileName(), modifiedItemAttributes.caption, HandleDuplicate.RENAME == modifiedItemAttributes.handleDuplicate);
+        String fileName = cleanUpName(constructFileName(newItem.getFileName(), modifiedItemAttributes.caption), modifiedItemAttributes.handleDuplicate, true);
 		File newFile = new File(myFile, fileName);
 		if (newFile.mkdir()) {
 			DirectoryAlbum newAlbum = new DirectoryAlbum(this, newFile);
@@ -297,5 +298,13 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 		} else {
 			return false;
 		}
+	}
+
+	private String constructFileName(String fileName, String caption) {
+        if (caption == null || !FileSettings.getPreserveCaptions()) {
+            return fileName;
+        } else {
+            return caption + getExtension(fileName);
+        }
 	}
 }

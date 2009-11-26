@@ -1,14 +1,12 @@
 
-create setting for whether to use caption as filename
 allow users to specify renamed filename
 create setting for whether to overwrite/duplicate/rename automatically
-support moving/importing a duplicate album in smugmug
 
 implement "move" transfer type for uploading
 
 ease of use improvements:
 	sort imported albums appropriately
-	create settings for gallery sort order (default/date vs. name)
+	create settings for gallery sort order (default (i.e. date) vs. name)
 
 tree refactoring improvements:
 	implement a "new album" menu for SmugMug
@@ -48,3 +46,5 @@ really hard import combinations:
 drag and drop out to/from the windows filesystem
 
 copy/cut and paste support
+
+delete to the recycle bin
