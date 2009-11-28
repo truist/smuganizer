@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -192,9 +193,15 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 		} else if (GalleryType.COMPUTER.equals(galleryType)) {
 			JFileChooser directoryChooser = new JFileChooser();
 			directoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			
+			final String LOCAL_DIR = "local.dir";
+			Preferences storage = Preferences.userNodeForPackage(Main.class);
+			String localDir = storage.get(LOCAL_DIR, null);
+			directoryChooser.setCurrentDirectory(localDir == null ? null : new File(localDir));
 			if (directoryChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 				File chosen = directoryChooser.getSelectedFile();
 				if (chosen.exists() && chosen.isDirectory()) {
+					storage.put(LOCAL_DIR, chosen.getPath());
 					loadFileGalleryTree(new FileGallery(chosen), side);
 				}
 			}
