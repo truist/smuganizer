@@ -243,7 +243,7 @@ public class Gallery extends TreeableGalleryContainer {
 		get.setFollowRedirects(false);
 		try {
 			String url = generateUrlFor(album.getURLName(), null).toString();
-			get.setURI(new org.apache.commons.httpclient.URI(url));
+			get.setURI(new org.apache.commons.httpclient.URI(url, false));
 			try {
 				return (HttpStatus.SC_MOVED_TEMPORARILY == anonHttpClient.executeMethod(get));
 			} finally {
@@ -302,7 +302,15 @@ public class Gallery extends TreeableGalleryContainer {
 			path = "/" + G2_BASE;
 		}
 		else {
-			path = "/" + album + (image != null ? "/" + image : "");
+			// Works with Gallery 1.5.10.
+			query = "set_albumName=" + album;
+			if(image == null){
+				path = "/view_album.php";
+			}
+			else {
+				path = "/view_photo.php";
+				query += "&id=" + image;
+			}
 		}
 
 		return new URI(baseUri.getScheme(), null, baseUri.getHost(), baseUri.getPort(), baseUri.getPath() + path, query, null);
