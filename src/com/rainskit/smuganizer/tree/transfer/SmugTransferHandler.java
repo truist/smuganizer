@@ -16,6 +16,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 public class SmugTransferHandler extends TransferHandler {
+	private static final long serialVersionUID = 1L;
 	private AsynchronousTransferManager asyncTransferManager;
 	
 	public SmugTransferHandler(AsynchronousTransferManager asyncTransferManager) {
