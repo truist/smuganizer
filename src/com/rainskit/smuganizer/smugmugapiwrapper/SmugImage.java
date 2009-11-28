@@ -3,7 +3,6 @@ package com.rainskit.smuganizer.smugmugapiwrapper;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
-import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
 import java.awt.Desktop;
@@ -11,7 +10,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
