@@ -8,6 +8,7 @@ import com.rainskit.smuganizer.menu.SmugMenu;
 import com.rainskit.smuganizer.galleryapiwrapper.Gallery;
 import com.rainskit.smuganizer.menu.gui.GalleryLoginDialog;
 import com.rainskit.smuganizer.menu.gui.SmugMugLoginDialog;
+import com.rainskit.smuganizer.settings.FileSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugMug;
 import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.FileGalleryTree;
@@ -193,15 +194,16 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 		} else if (GalleryType.COMPUTER.equals(galleryType)) {
 			JFileChooser directoryChooser = new JFileChooser();
 			directoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			
-			final String LOCAL_DIR = "local.dir";
-			Preferences storage = Preferences.userNodeForPackage(Main.class);
-			String localDir = storage.get(LOCAL_DIR, null);
-			directoryChooser.setCurrentDirectory(localDir == null ? null : new File(localDir));
+
+            
+            String prevDir = FileSettings.getPreviousDirectory();
+            if (prevDir != null) {
+    			directoryChooser.setCurrentDirectory(new File(prevDir));
+            }
 			if (directoryChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 				File chosen = directoryChooser.getSelectedFile();
 				if (chosen.exists() && chosen.isDirectory()) {
-					storage.put(LOCAL_DIR, chosen.getPath());
+                    FileSettings.setPreviousDirectory(chosen.getPath());
 					loadFileGalleryTree(new FileGallery(chosen), side);
 				}
 			}

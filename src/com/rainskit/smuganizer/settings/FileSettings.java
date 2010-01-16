@@ -5,6 +5,7 @@ import java.util.prefs.Preferences;
 
 public class FileSettings {
     private static final String PRESERVE_CAPTIONS = "file.preserve_captions";
+	private static final String LOCAL_DIR = "file.local.dir";
 
 	private static Preferences storage = Preferences.userNodeForPackage(Main.class);
 
@@ -17,4 +18,12 @@ public class FileSettings {
 	public static void setPreserveCaptions(boolean selected) {
 		storage.putBoolean(PRESERVE_CAPTIONS, selected);
 	}
+
+    public static String getPreviousDirectory() {
+        return storage.get(LOCAL_DIR, null);
+    }
+
+    public static void setPreviousDirectory(String path) {
+        storage.put(LOCAL_DIR, path);
+    }
 }
