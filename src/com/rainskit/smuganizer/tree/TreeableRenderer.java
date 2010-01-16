@@ -4,6 +4,7 @@ import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -13,9 +14,19 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 public class TreeableRenderer extends DefaultTreeCellRenderer {
-	private static ImageIcon categoryIcon = new ImageIcon("lib/images/images_stack.png");
-	private static ImageIcon albumIcon = new ImageIcon("lib/images/camera.png");
-	private static ImageIcon imageIcon = new ImageIcon("lib/images/image.png");
+	private static ImageIcon categoryIcon = createIcon("/images/images_stack.png");
+	private static ImageIcon albumIcon = createIcon("/images/camera.png");
+	private static ImageIcon imageIcon = createIcon("/images/image.png");
+
+    private static ImageIcon createIcon(String path) {
+        URL imageURL = TreeableRenderer.class.getResource(path);
+        if (imageURL != null) {
+            return new ImageIcon(imageURL, "");
+        } else {
+            System.err.println("Couldn't find image: " + path);
+            return null;
+        }
+    }
 	
 	private TreeableGalleryItem currentItem;
 	
