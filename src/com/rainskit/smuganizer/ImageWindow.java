@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
@@ -50,6 +51,7 @@ public class ImageWindow extends JFrame {
 	
 	public ImageWindow(Main parent) throws FileNotFoundException, IOException {
 		super("Image Viewer");
+        setIconImage(parent.getIconImage());
 		
 		this.imageLoader = new ImageLoader();
 		

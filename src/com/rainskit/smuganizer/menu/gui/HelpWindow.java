@@ -16,6 +16,7 @@ public class HelpWindow extends JFrame {
 	public HelpWindow(Main parent) throws FileNotFoundException, IOException {
 		super("Smuganizer Help");
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setIconImage(parent.getIconImage());
 		
 		JEditorPane helpPane = new JEditorPane();
 		helpPane.setContentType("text/html");

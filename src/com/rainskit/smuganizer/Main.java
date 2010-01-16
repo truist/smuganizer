@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,10 +34,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -140,7 +143,12 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 		pack();
 		setSize(800, 600);
 		setLocationRelativeTo(null);
-		
+
+        URL imageURL = getClass().getResource("/images/camera_icon.png");
+        if (imageURL != null) {
+            setIconImage(new ImageIcon(imageURL, "").getImage());
+        }
+
 		floatingImageWindow = new ImageWindow(this);
 		
 		setVisible(true);
