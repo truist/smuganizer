@@ -8,7 +8,7 @@ ease of use improvements:
 	sort imported albums appropriately
 	create settings for gallery sort order (default (i.e. date) vs. name)
 
-tree refactoring improvements:
+tree editing improvements:
 	implement a "new album" menu for SmugMug
 	implement a "new category" and "new subcategory" menu for SmugMug
 	implement category drag-and-drop within the smugmug tree
@@ -16,13 +16,9 @@ tree refactoring improvements:
 		update the api???? objects when doing so - I'll have to update the whole tree
 	implement a "promote to category" menu for subcategories
 
-need an application icon
-
-fix the logging
-
 keyword support
 
-package for release
+update the help / intro doc
 
 -----
 

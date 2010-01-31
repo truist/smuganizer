@@ -10,5 +10,5 @@ to build this project for yourself, I suggest using NetBeans
 			http://commons.apache.org/lang/
 		sanselan EXIF library (0.97)
 			http://incubator.apache.org/sanselan/site/index.html
-
-to run with the icons appearing correctly in the tree, ensure that the 'lib' directory is on the classpath
+		sfl4j bridge handler for java.util.logging  (jul-to-slf4j.jar)
+			http://www.slf4j.org/legacy.html

@@ -22,7 +22,6 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,11 +32,13 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -57,6 +58,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public class Main extends JFrame implements TreeSelectionListener, StatusCallback, MouseListener, WindowListener {
 	private enum Side {LEFT, RIGHT}
@@ -93,6 +95,7 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 	private String baseStatus;
 	
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, FileNotFoundException, IOException{
+		SLF4JBridgeHandler.install();	//make java.util.logging play nice with @#$% kallasoft slf4j logging
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		Toolkit.getDefaultToolkit().getSystemEventQueue().push(new WaitCursorEventQueue(170));
 		new Main();
