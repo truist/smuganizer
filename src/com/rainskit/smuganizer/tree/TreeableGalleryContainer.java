@@ -1,6 +1,5 @@
 package com.rainskit.smuganizer.tree;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.HandleDuplicate;
 import java.io.IOException;
 import java.util.List;
@@ -12,9 +11,9 @@ public abstract class TreeableGalleryContainer extends TreeableGalleryItem {
 	}
 
 	public abstract List<? extends TreeableGalleryItem> loadChildren() throws IOException;
-	public abstract List<? extends TreeableGalleryItem> getChildren();
+	public abstract List<? extends TreeableGalleryItem> getChildren() throws IOException;
 	
-	public final int getSubAlbumDepth() {
+	public final int getSubAlbumDepth() throws IOException {
 		int subDepth = 0;
 		boolean hasChildAlbums = false;
 		List<? extends TreeableGalleryItem> children = getChildren();
@@ -29,7 +28,7 @@ public abstract class TreeableGalleryContainer extends TreeableGalleryItem {
 		return (hasChildAlbums ? 1 : 0) + subDepth;
 	}
 
-	public final boolean hasImageChildren() {
+	public final boolean hasImageChildren() throws IOException {
 		List<? extends TreeableGalleryItem> children = getChildren();
 		if (children != null) {
 			for (TreeableGalleryItem eachChild : children) {
@@ -42,7 +41,7 @@ public abstract class TreeableGalleryContainer extends TreeableGalleryItem {
 	}
 
     private static final char[] ILLEGAL_CHARACTERS = { '/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':' };
-    protected String cleanUpName(String newName, HandleDuplicate rename, boolean stripIllegals) throws SmugException {
+    protected String cleanUpName(String newName, HandleDuplicate rename, boolean stripIllegals) throws IOException {
         if (rename == HandleDuplicate.RENAME) {
 			int i = -1;
             String baseName = getBaseName(newName);

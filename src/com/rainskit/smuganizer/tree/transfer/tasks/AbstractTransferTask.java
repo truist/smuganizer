@@ -1,6 +1,5 @@
 package com.rainskit.smuganizer.tree.transfer.tasks;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.transfer.interruptions.DuplicateFileNameInterruption;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import com.rainskit.smuganizer.tree.transfer.*;
@@ -113,7 +112,7 @@ public abstract class AbstractTransferTask {
 	
 	protected abstract TreeableGalleryItem doInBackgroundImpl(InterruptionSet previousInterruptions) throws TransferInterruption, IOException;
 
-	protected ModifiedItemAttributes handleDuplicates(ModifiedItemAttributes imageAttributes, InterruptionSet previousInterruptions) throws DuplicateFileNameInterruption, SmugException {
+	protected ModifiedItemAttributes handleDuplicates(ModifiedItemAttributes imageAttributes, InterruptionSet previousInterruptions) throws DuplicateFileNameInterruption, IOException {
 		if (previousInterruptions.hasInterruption(DuplicateFileNameInterruption.class)) {
 			DuplicateFileNameInterruption duplicateInterruption = (DuplicateFileNameInterruption) previousInterruptions.getInterruption(DuplicateFileNameInterruption.class);
 			imageAttributes.handleDuplicate = duplicateInterruption.getChoice();
@@ -125,7 +124,7 @@ public abstract class AbstractTransferTask {
 		return imageAttributes;
 	}
 
-	public abstract List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem);
+	public abstract List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem) throws IOException;
 
 	public abstract String getActionString();
 	
@@ -164,11 +163,11 @@ public abstract class AbstractTransferTask {
 		return status.toString();
 	}
 
-	public String getSourceLabel() throws SmugException {
+	public String getSourceLabel() throws IOException {
 		return srcItem.getFullPathLabel();
 	}
 	
-	public String getDestLabel() throws SmugException {
+	public String getDestLabel() throws IOException {
 		if (destParentItem != null) {
 			return ((TreeableGalleryItem)destParentItem).getFullPathLabel();
 		} else {

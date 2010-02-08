@@ -63,7 +63,7 @@ public class Gallery extends TreeableGalleryContainer {
 	static final String RESPONSE_STATUS_TEXT = "status_text";
 	static final String USER_AGENT = "Smuganizer";
 
-    private HttpClient loginHttpClient;
+    static final HttpClient loginHttpClient = new HttpClient();
 	private HttpClient anonHttpClient;
 	
     private static String baseURL;
@@ -79,7 +79,6 @@ public class Gallery extends TreeableGalleryContainer {
 		String settingsURL = GallerySettings.getURL().toExternalForm();
 		Gallery.baseURL = settingsURL + (settingsURL.endsWith("/") ? "" : "/");
 		
-		loginHttpClient = new HttpClient();
 		loginHttpClient.setHttpConnectionManager(new MultiThreadedHttpConnectionManager());
 //		loginHttpClient.getHostConfiguration().setProxy("127.0.0.1", 8888);
 		

@@ -1,15 +1,12 @@
 package com.rainskit.smuganizer.smugmugapiwrapper;
 
 import com.rainskit.smuganizer.settings.SmugMugSettings;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
-import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.HandleDuplicate;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.ModifiedItemAttributes;
 import java.awt.Desktop;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -17,64 +14,69 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.httpclient.methods.PostMethod;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class SmugAlbum extends TreeableGalleryContainer implements WriteableTreeableGalleryContainer {
-	private static final int NO_IMAGES_FOUND_ERROR = 15;
-	
-	private com.kallasoft.smugmug.api.json.entity.Album apiAlbum;
+public class SmugAlbum extends TreeableGalleryContainer implements WriteableTreeableGalleryContainer, SmugAPIConstants {
+	private static final int NO_IMAGES_FOUND_ERROR_CODE = 15;
+	private static final String PASSWORD_SET_TO_EMPTY = "";
+
+	private JSONObject albumJSON;
 	private boolean childrenLoaded;
 	private ArrayList<SmugImage> images;
-	private String reName;
 	private String password;
+	private String reName;
 
-	public SmugAlbum(SmugCategory parent, com.kallasoft.smugmug.api.json.entity.Album apiAlbum) {
+	public SmugAlbum(SmugCategory parent, JSONObject albumJSON, boolean loadDetails) throws IOException {
 		super(parent);
-		this.apiAlbum = apiAlbum;
+		this.albumJSON = albumJSON;
+		if (loadDetails) {
+			this.albumJSON = reloadDetails();
+		}
 		images = new ArrayList<SmugImage>();
 	}
 
-	public SmugAlbum(SmugCategory parent, Integer albumID, String albumKey) throws SmugException {
-		this(parent, reloadDetails(albumID, albumKey, parent.getFullPathLabel()));
-		childrenLoaded = true;
-	}
-
-	public void setParent(SmugCategory newParent) throws SmugException {
+	public void setParent(SmugCategory newParent) throws IOException {
 		super.setParent(newParent);
-		apiAlbum = reloadDetails(apiAlbum.getID(), apiAlbum.getAlbumKey(), parent.getFullPathLabel());
+		albumJSON = reloadDetails();
 	}
 
-	private static com.kallasoft.smugmug.api.json.entity.Album reloadDetails(Integer albumID, String albumKey, String parentPathLabel) throws SmugException {
-		com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo getInfo
-			= new com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo();
-		com.kallasoft.smugmug.api.json.v1_2_0.albums.GetInfo.GetInfoResponse response
-			= getInfo.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, albumID, albumKey);
-		if (response.isError()) {
-			throw new SmugException("Error loading album details for album with ID \"" + albumID + "\" in category \"" + parentPathLabel + "\"", SmugException.convertError(response.getError()));
-		}
-		return response.getAlbum();
+	private JSONObject reloadDetails() throws IOException {
+		SmugAPIMethod getInfo = new SmugAPIMethod(GET_ALBUM_INFO);
+		getInfo.addParameter(ALBUM_ACTION_ID, getAlbumID().toString());
+		getInfo.addParameter(ALBUM_ACTION_KEY, getAlbumKey());
+		return getInfo.execute().getNestedObject(new String[] {ALBUM_OBJECT});
 	}
 
 	public List<? extends TreeableGalleryItem> loadChildren() throws IOException{
-		apiAlbum = reloadDetails(apiAlbum.getID(), apiAlbum.getAlbumKey(), parent.getFullPathLabel());
-		
-		com.kallasoft.smugmug.api.json.v1_2_0.images.Get imageGet = new com.kallasoft.smugmug.api.json.v1_2_0.images.Get();
-		com.kallasoft.smugmug.api.json.v1_2_0.images.Get.GetResponse imageResponse 
-			= imageGet.execute(SmugMug.API_URL, 
-								SmugMug.API_KEY, 
-								SmugMug.sessionID, 
-								apiAlbum.getID(), 
-								apiAlbum.getAlbumKey(), 
-								Boolean.FALSE);
-		if (imageResponse.isError() && imageResponse.getError().getCode().intValue() != NO_IMAGES_FOUND_ERROR) {
-			throw new SmugException("Failed to get images from album \"" + getFullPathLabel() + "\"", SmugException.convertError(imageResponse.getError()));
+		try {
+			albumJSON = reloadDetails();
+
+			SmugAPIMethod imageGet = new SmugAPIMethod(GET_IMAGES);
+			imageGet.addParameter(ALBUM_ACTION_ID, getAlbumID().toString());
+			imageGet.addParameter(ALBUM_ACTION_KEY, getAlbumKey());
+
+			try {
+				SmugAPIResponse response = imageGet.execute();
+
+				JSONArray imagesJSON = response.getArray(new String[]{"Images"});
+				for (int i = 0; i < imagesJSON.length(); i++) {
+					images.add(new SmugImage(this, imagesJSON.getJSONObject(i)));
+				}
+			} catch (SmugAPIResponse ex) {
+				if (ex.getErrorCode() != NO_IMAGES_FOUND_ERROR_CODE) {
+					throw new IOException(ex);
+				}
+			}
+
+			childrenLoaded = true;
+			return images;
+		} catch (JSONException ex) {
+			throw new IOException(ex);
 		}
-		
-		for (com.kallasoft.smugmug.api.json.entity.Image each : imageResponse.getImageList()) {
-			images.add(new SmugImage(this, each));
-		}
-		childrenLoaded = true;
-		return images;
 	}
 	
 	public List<? extends TreeableGalleryItem> getChildren() {
@@ -88,15 +90,15 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 		return images;
 	}
 
-	public String getLabel() {
+	public String getLabel() throws IOException {
 		return getFileName();
 	}
 
-	public String getFileName() {
-		return (reName != null) ? reName : apiAlbum.getTitle();
+	public String getFileName() throws IOException {
+		return (reName != null ? reName : SmugAPIUtils.getStringSafely(albumJSON, ALBUM_TITLE));
 	}
 	
-	public String getURLName() {
+	public String getURLName() throws IOException {
 		return getFileName();
 	}
 	
@@ -104,25 +106,19 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 		return null;
 	}
 	
-	public String getDescription() {
-		return apiAlbum.getDescription();
+	public String getDescription() throws IOException {
+		return SmugAPIUtils.getStringSafely(albumJSON, ALBUM_DESCRIPTION);
 	}
 
 	public boolean canBeRelabeled() {
 		return true;
 	}
 
-	public void reLabel(String newName) throws SmugException {
-		com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings changeSettings = new com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings();
-		com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings.ChangeSettingsResponse response 
-			= changeSettings.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, apiAlbum.getID(), newName, 
-			null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 
-			null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 
-			null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
-
-		if (response.isError()) {
-			throw new SmugException("Error renaming " + getFullPathLabel() + " to " + newName, SmugException.convertError(response.getError()));
-		}
+	public void reLabel(String newName) throws IOException {
+		SmugAPIMethod changeSettings = new SmugAPIMethod(CHANGE_ALBUM_SETTINGS);
+		changeSettings.addParameter(ALBUM_ACTION_ID, getAlbumID().toString());
+		changeSettings.addParameter(ALBUM_NAME, newName);
+		changeSettings.execute();
 		reName = newName;
 	}
 
@@ -131,21 +127,18 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 	}
 
 	public void launch() throws IOException, URISyntaxException  {
-		Desktop.getDesktop().browse(new URI("http", SmugMug.getBaseURL(), "/gallery/" + apiAlbum.getID() + "_" + apiAlbum.getAlbumKey(), null));
+		Desktop.getDesktop().browse(new URI("http", SmugMug.getBaseURL(), "/gallery/" + getAlbumID() + "_" + getAlbumKey(), null));
 	}
 
 	public boolean canBeDeleted() {
 		return true;
 	}
 
-	public void delete() throws SmugException {
-		com.kallasoft.smugmug.api.json.v1_2_0.albums.Delete delete 
-			= new com.kallasoft.smugmug.api.json.v1_2_0.albums.Delete();
-		com.kallasoft.smugmug.api.json.v1_2_0.albums.Delete.DeleteResponse response 
-			= delete.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, apiAlbum.getID());
-		if (response.isError()) {
-			throw new SmugException("Error deleting " + getFullPathLabel(), SmugException.convertError(response.getError()));
-		}
+	public void delete() throws IOException {
+		SmugAPIMethod delete = new SmugAPIMethod(DELETE_ALBUM);
+		delete.addParameter(ALBUM_ACTION_ID, getAlbumID().toString());
+		delete.execute();
+
 		((WriteableTreeableGalleryContainer)parent).childRemoved(this);
 	}
 
@@ -154,19 +147,17 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 	}
 
 	public boolean canMoveLocally(TreeableGalleryItem newChild, int childIndex) {
-		return (ItemType.IMAGE == newChild.getType() && (newChild.getParent() == this));
+		return (ItemType.IMAGE == newChild.getType());// && (newChild.getParent() == this));
 	}
 
-	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
+	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, ModifiedItemAttributes modifiedItemAttributes) throws IOException {
 		SmugImage childImage = (SmugImage)childItem;
 		if (childItem.getParent() != this) {
-			com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings changeSettings
-				= new com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings();
-			com.kallasoft.smugmug.api.json.v1_2_0.images.ChangeSettings.ChangeSettingsResponse response
-				= changeSettings.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, childImage.getImageID(), apiAlbum.getID());
-			if (response.isError()) {
-				throw new SmugException("Error moving " + getFullPathLabel(), SmugException.convertError(response.getError()));
-			}
+			SmugAPIMethod changeSettings = new SmugAPIMethod(CHANGE_IMAGE_SETTINGS);
+			changeSettings.addParameter(ALBUM_ACTION_ID, getAlbumID().toString());
+			changeSettings.addParameter(IMAGE_ACTION_ID, childImage.getImageID().toString());
+			changeSettings.execute();
+
 			((WriteableTreeableGalleryContainer)childImage.getParent()).childRemoved(childImage);
 			images.add(childImage);
 			childImage.setParent(this);
@@ -183,7 +174,7 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 		return (ItemType.IMAGE == newItem.getType());
 	}
 
-	public boolean willChildBeDuplicate(String fileName, String caption) throws SmugException {
+	public boolean willChildBeDuplicate(String fileName, String caption) throws IOException {
         for (SmugImage each : images) {
             if (each.getLabel().equalsIgnoreCase(caption)) {
                 return true;
@@ -196,36 +187,28 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 		return true;
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws IOException {
         String caption = (modifiedItemAttributes.caption == null ? newItem.getCaption() : modifiedItemAttributes.caption);
         caption = cleanUpName(caption, modifiedItemAttributes.handleDuplicate, false);
-		com.kallasoft.smugmug.api.json.v1_2_0.images.UploadHTTPPut uploadMethod
-			= new com.kallasoft.smugmug.api.json.v1_2_0.images.UploadHTTPPut();
-		com.kallasoft.smugmug.api.json.v1_2_0.images.UploadHTTPPut.UploadHTTPPutResponse uploadResponse
-			= uploadMethod.execute(SmugMug.API_UPLOAD_URL, SmugMug.sessionID, 
-									apiAlbum.getID(), null, 
-									newItem.getFileName(), new ByteArrayInputStream(modifiedItemAttributes.imageData),
-									caption, null, 
-									null, null, null);
-		if (uploadResponse.isError()) {
-			throw new SmugException("Error moving " + getFullPathLabel(), SmugException.convertError(uploadResponse.getError()));
+
+		SmugAPIMethod upload = new SmugAPIMethod(UPLOAD_IMAGE);
+		upload.addParameter(UPLOAD_ALBUM_ID, getAlbumID().toString());
+		upload.addParameter(UPLOAD_FILENAME, newItem.getFileName());
+		if (caption != null) {
+			upload.addParameter(UPLOAD_CAPTION, caption);
 		}
 
-		com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo getInfo
-			= new com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo();
-		com.kallasoft.smugmug.api.json.v1_2_0.images.GetInfo.GetInfoResponse getInfoResponse
-			= getInfo.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, uploadResponse.getImageID(), uploadResponse.getImageKey());
-		if (getInfoResponse.isError()) {
-			throw new SmugException("Error moving " + getFullPathLabel(), SmugException.convertError(getInfoResponse.getError()));
-		}
-		
-		SmugImage newImage = new SmugImage(this, getInfoResponse.getImage());
+		SmugAPIResponse uploadResponse = upload.executeUpload(modifiedItemAttributes.imageData, newItem.getFileName());
+
+		SmugImage newImage = new SmugImage(this,
+									uploadResponse.getValue(new String[] {IMAGE_OBJECT, UPLOAD_RESPONSE_ID}),
+									uploadResponse.getValue(new String[] {IMAGE_OBJECT, UPLOAD_RESPONSE_KEY}));
 		images.add(newImage);
 		
 		return newImage;
 	}
 	
-	private void reorderItem(SmugImage childImage, int childIndex) throws SmugException {
+	private void reorderItem(SmugImage childImage, int childIndex) throws IOException {
         if (childIndex > images.size()) {   //this can happen if we cancel intermediate transfers
             childIndex = images.size();
         }
@@ -245,24 +228,26 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 		}
 	}
 	
-	private void reorderItemInSmugMug(SmugImage childImage, int childIndex) throws SmugException {
+	private void reorderItemInSmugMug(SmugImage childImage, int childIndex) throws IOException {
 		boolean movingTowardEnd = (images.indexOf(childImage) < childIndex);
-		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangePosition changePosition 
-			= new com.kallasoft.smugmug.api.json.v1_2_0.images.ChangePosition();
-		com.kallasoft.smugmug.api.json.v1_2_0.images.ChangePosition.ChangePositionResponse response
-			= changePosition.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, 
-										childImage.getImageID(), childIndex + (movingTowardEnd ? 0 : 1));
-		if (response.isError()) {
-			throw new SmugException("Error changing position of " + getFullPathLabel(), SmugException.convertError(response.getError()));
-		}
+
+		SmugAPIMethod changePosition = new SmugAPIMethod(CHANGE_IMAGE_POSITION);
+		changePosition.addParameter(IMAGE_ACTION_ID, childImage.getImageID().toString());
+		changePosition.addParameter(IMAGE_POSITION, "" + (childIndex + (movingTowardEnd ? 0 : 1)));
+
+		changePosition.execute();
 	}
 	
-	public Integer getAlbumID() {
-		return apiAlbum.getID();
+	protected Integer getAlbumID() throws IOException {
+		return SmugAPIUtils.getIntegerSafely(albumJSON, ALBUM_ID);
+	}
+
+	private String getAlbumKey() throws IOException {
+		return SmugAPIUtils.getStringSafely(albumJSON, ALBUM_KEY);
 	}
 	
-	public Integer getPosition() {
-		return apiAlbum.getPosition();
+	private Integer getPosition() throws IOException {
+		return SmugAPIUtils.getIntegerSafely(albumJSON, ALBUM_POSITION);
 	}
 
 	public ItemType getType() {
@@ -276,12 +261,16 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 		}
 		
 		if (!SmugMugSettings.getTreeSort() && ItemType.ALBUM == other.getType()) {
-			Integer leftPosition = getPosition();
-			Integer rightPosition = ((SmugAlbum)other).getPosition();
-			if (leftPosition != null && rightPosition != null) {
-				return leftPosition.compareTo(rightPosition);
-			} else {
-				return 0;
+			try {
+				Integer leftPosition = getPosition();
+				Integer rightPosition = ((SmugAlbum)other).getPosition();
+				if (leftPosition != null && rightPosition != null) {
+					return leftPosition.compareTo(rightPosition);
+				} else {
+					return 0;
+				}
+			} catch (IOException ex) {
+				Logger.getLogger(SmugAlbum.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 
@@ -289,7 +278,7 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 	}
 
 	@Override
-	public String getMetaLabel() {
+	public String getMetaLabel() throws IOException {
 		return (hasPassword() ? " [password protected]" : "");
 	}
 
@@ -308,11 +297,11 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 		return false;
 	}
 	
-	public boolean hasPassword() {
-		if ("".equals(password)) {
+	public boolean hasPassword() throws IOException {
+		if (PASSWORD_SET_TO_EMPTY.equals(password)) {
 			return false;
 		}
-		return (password != null || !"".equals(apiAlbum.getPassword()));
+		return (password != null || !"".equals(SmugAPIUtils.getStringSafely(albumJSON, ALBUM_PASSWORD)));
 	}
 
 	@Override
@@ -321,32 +310,15 @@ public class SmugAlbum extends TreeableGalleryContainer implements WriteableTree
 	}
 
 	@Override
-	public void setPassword(final String password, final String passwordHint) throws SmugException {
-		com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings changeSettings = new com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings() {
-			@Override
-			protected void setupPostParameters(PostMethod postMethod, String[] argumentValues) {
-				super.setupPostParameters(postMethod, argumentValues);
-				//have to work around stupid things the API wrapper library is doing
-				if (password == null) {
-					postMethod.addParameter("Password", "");
-				}
-				if (passwordHint == null) {
-					postMethod.addParameter("PasswordHint", "");
-				}
-			}
-		};
-		com.kallasoft.smugmug.api.json.v1_2_0.albums.ChangeSettings.ChangeSettingsResponse response 
-			= changeSettings.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, apiAlbum.getID(),
-									null, null, null, null, null, null, null, null,
-									null, null, null, null, null, null, null, null,
-									null, password, passwordHint, null, null, null, null, null,
-									null, null, null, null, null, null, null, null,
-									null, null, null, null, null, null, null, null,
-									null, null, null, null, null, null);
-		if (response.isError()) {
-			throw new SmugException("Error changing password for " + getFullPathLabel(), SmugException.convertError(response.getError()));
-		}
-		this.password = (password == null ? "" : password);
+	public void setPassword(final String password, final String passwordHint) throws IOException {
+		SmugAPIMethod changeSettings = new SmugAPIMethod(CHANGE_ALBUM_SETTINGS);
+		changeSettings.addParameter(ALBUM_ACTION_ID, getAlbumID().toString());
+		changeSettings.addParameter(ALBUM_PASSWORD, (password == null ? "" : password));
+		changeSettings.addParameter(ALBUM_PASSWORD_HINT, (passwordHint == null ? "" : passwordHint));
+
+		changeSettings.execute();
+
+		this.password = (password == null ? PASSWORD_SET_TO_EMPTY : password);
 	}
 
 	public URL getDataURL() throws MalformedURLException {

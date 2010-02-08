@@ -1,6 +1,5 @@
 package com.rainskit.smuganizer.tree.transfer.tasks;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TransferTree;
 import com.rainskit.smuganizer.tree.transfer.interruptions.InterruptionSet;
 import com.rainskit.smuganizer.tree.transfer.interruptions.TransferInterruption;
@@ -25,7 +24,7 @@ public class MoveLocal extends AbstractTransferTask {
 		this.srcNode = srcNode;
 	}
 
-	protected TreeableGalleryItem doInBackgroundImpl(InterruptionSet previousInterruptions) throws TransferInterruption, SmugException {
+	protected TreeableGalleryItem doInBackgroundImpl(InterruptionSet previousInterruptions) throws TransferInterruption, IOException {
 		ModifiedItemAttributes finalAttributes = new ModifiedItemAttributes();
 		finalAttributes = handleDuplicates(finalAttributes, previousInterruptions);
 		destParentItem.moveItemLocally(srcItem, destChildIndex, finalAttributes);

@@ -1,5 +1,6 @@
-package com.rainskit.smuganizer.tree;
+package com.rainskit.smuganizer.smugmugapiwrapper;
 
+import com.rainskit.smuganizer.tree.*;
 import com.rainskit.smuganizer.settings.SettingsListener;
 import com.rainskit.smuganizer.settings.SmugMugSettings;
 import com.rainskit.smuganizer.tree.transfer.SmugTransferHandler;
@@ -10,7 +11,7 @@ import javax.swing.DropMode;
 public class SmugTree extends TransferTree implements SettingsListener {
 	
 	public SmugTree(Main main) {
-		super(main);
+		super(main, SmugAPIMethod.httpClient);
 		setDropMode(DropMode.INSERT);
 	}
 

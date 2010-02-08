@@ -1,17 +1,17 @@
 package com.rainskit.smuganizer.tree;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.ModifiedItemAttributes;
+import java.io.IOException;
 
 public interface WriteableTreeableGalleryContainer extends WriteableTreeableGalleryItem {
 	
-	public boolean canMoveLocally(TreeableGalleryItem childItem, int childIndex);
-	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, ModifiedItemAttributes modifiedItemAttributes) throws SmugException;
+	public boolean canMoveLocally(TreeableGalleryItem childItem, int childIndex) throws IOException;
+	public void moveItemLocally(TreeableGalleryItem childItem, int childIndex, ModifiedItemAttributes modifiedItemAttributes) throws IOException;
 
-	public boolean canImport(TreeableGalleryItem newItem);
-	public boolean willChildBeDuplicate(String fileName, String caption) throws SmugException;
+	public boolean canImport(TreeableGalleryItem newItem) throws IOException;
+	public boolean willChildBeDuplicate(String fileName, String caption) throws IOException;
 	public boolean allowsDuplicateChildren();
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedAttributes) throws SmugException;
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedAttributes) throws IOException;
 	
 	public void childRemoved(TreeableGalleryItem child);
 }

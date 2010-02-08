@@ -2,13 +2,11 @@ package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.menu.*;
 import com.rainskit.smuganizer.Main;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -28,7 +26,7 @@ public class RenameAction extends TreeableAction {
 		tree.getActionMap().put(ACTION_MAP_KEY, this);
 	}
 
-	protected void performAction() throws SmugException {
+	protected void performAction() throws IOException {
 		ArrayList<TreeableGalleryItem> currentItems = menuManager.getCurrentItems();
 		String prompt;
 		String defaultAnswer;
@@ -51,7 +49,7 @@ public class RenameAction extends TreeableAction {
 				for (TreeableGalleryItem each : currentItems) {
 					((WriteableTreeableGalleryItem)each).reLabel(answer);
 				}
-			} catch (RenameException ex) {
+			} catch (IOException ex) {
 				Logger.getLogger(RenameAction.class.getName()).log(Level.SEVERE, null, ex);
 				JOptionPane.showMessageDialog(main, "Error: rename failed.  (Note: standard SmugMug categories cannot be renamed.)", "Error", JOptionPane.WARNING_MESSAGE);
 			}
@@ -63,11 +61,15 @@ public class RenameAction extends TreeableAction {
 	}
 
 	public void updateState() {
-		ArrayList<TreeableGalleryItem> currentItems = menuManager.getCurrentItems();
-		boolean allRenameable = currentItems.size() > 0;
-		for (TreeableGalleryItem each : currentItems) {
-			allRenameable &= (each instanceof WriteableTreeableGalleryItem && ((WriteableTreeableGalleryItem)each).canBeRelabeled());
+		try {
+			ArrayList<TreeableGalleryItem> currentItems = menuManager.getCurrentItems();
+			boolean allRenameable = currentItems.size() > 0;
+			for (TreeableGalleryItem each : currentItems) {
+				allRenameable &= (each instanceof WriteableTreeableGalleryItem && ((WriteableTreeableGalleryItem)each).canBeRelabeled());
+			}
+			setEnabled(allRenameable);
+		} catch (IOException ex) {
+			Logger.getLogger(RenameAction.class.getName()).log(Level.SEVERE, "Unable to update menu state", ex);
 		}
-		setEnabled(allRenameable);
 	}
 }

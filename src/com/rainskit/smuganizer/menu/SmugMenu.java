@@ -1,7 +1,6 @@
 package com.rainskit.smuganizer.menu;
 
 import com.rainskit.smuganizer.tree.transfer.TransferTable;
-import com.rainskit.smuganizer.menu.actions.treeactions.TreeableAction;
 import com.rainskit.smuganizer.menu.actions.SettingsSortCategoryAction;
 import com.rainskit.smuganizer.menu.actions.AboutAction;
 import com.rainskit.smuganizer.menu.actions.CleanCaptionsAction;
@@ -13,23 +12,18 @@ import com.rainskit.smuganizer.menu.actions.AlwaysIgnoreFileCaptionAction;
 import com.rainskit.smuganizer.menu.actions.AlwaysRemoveFileCaptionAction;
 import com.rainskit.smuganizer.menu.actions.PauseTransfersAction;
 import com.rainskit.smuganizer.menu.actions.PreserveCaptionsAction;
-import com.rainskit.smuganizer.tree.GalleryTree;
-import com.rainskit.smuganizer.tree.SmugTree;
+import com.rainskit.smuganizer.galleryapiwrapper.GalleryTree;
+import com.rainskit.smuganizer.smugmugapiwrapper.SmugTree;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
-import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
-import javax.swing.Action;
-import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JTree;
 
 public class SmugMenu extends JMenuBar {
 	public SmugMenu(Main main, SmugTree smugTree, GalleryTree galleryTree, TransferTable transferTable, AsynchronousTransferManager transferManager) {

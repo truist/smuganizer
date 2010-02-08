@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.tree.transfer;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -84,7 +84,7 @@ public class TransferTableModel extends AbstractTableModel {
 				default:
 					throw new IllegalArgumentException("Invalid column: " + columnIndex);
 			}
-		} catch (SmugException ex) {
+		} catch (IOException ex) {
 			Logger.getLogger(TransferTableModel.class.getName()).log(Level.SEVERE, null, ex);
 			return "ERROR: " + ex.getMessage();
 		}

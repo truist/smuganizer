@@ -1,7 +1,6 @@
 package com.rainskit.smuganizer.filesystemapiwrapper;
 
 import com.rainskit.smuganizer.settings.FileSettings;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryContainer;
@@ -9,7 +8,6 @@ import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.HandleDu
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.ModifiedItemAttributes;
 import java.awt.Desktop;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -83,7 +81,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 		return (child != ancestor) && (child == null || checkAncestry(child.getParent(), ancestor));
 	}
 
-	public void moveItemLocally(TreeableGalleryItem newChild, int childIndex, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
+	public void moveItemLocally(TreeableGalleryItem newChild, int childIndex, ModifiedItemAttributes modifiedItemAttributes) throws IOException {
         String newFileName = cleanUpName(constructFileName(newChild.getFileName(), null), modifiedItemAttributes.handleDuplicate, true);
 		File newFilePath = new File(myFile, newFileName);
 		if (HandleDuplicate.OVERWRITE == modifiedItemAttributes.handleDuplicate) {
@@ -98,7 +96,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 			}
 			newChild.setParent(this);
 		} else {
-			throw new SmugException("Error moving " + newChild.getFileName() + " to " + newFilePath.toString(), null);
+			throw new IOException("Error moving " + newChild.getFileName() + " to " + newFilePath.toString(), null);
 		}
 	}
 
@@ -108,7 +106,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 	}
 	
 	@Override
-	public boolean willChildBeDuplicate(String fileName, String caption) throws SmugException {
+	public boolean willChildBeDuplicate(String fileName, String caption) throws IOException {
         return new File(myFile, cleanUpName(constructFileName(fileName, caption), null, true)).exists();
 	}
 	
@@ -117,7 +115,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 	}
 	
 	@Override
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws IOException {
 		if (ItemType.IMAGE == newItem.getType()) {
 			return importImage(newItem, modifiedItemAttributes);
 		} else {
@@ -125,7 +123,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 		}
 	}
 
-	private TreeableGalleryItem importImage(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
+	private TreeableGalleryItem importImage(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws IOException {
         String fileName = cleanUpName(constructFileName(newItem.getFileName(), modifiedItemAttributes.caption), modifiedItemAttributes.handleDuplicate, true);
 		File newFile = new File(myFile, fileName);
 		FileOutputStream fileOutput = null;
@@ -144,9 +142,6 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 				subFiles.add(newImage);
 				return newImage;
 			}
-		} catch (IOException ex) {
-			Logger.getLogger(DirectoryAlbum.class.getName()).log(Level.SEVERE, null, ex);
-			throw new SmugException("Unable to write file " + newFile.getAbsolutePath(), ex);
 		} finally {
 			if (fileOutput != null) {
 				try {
@@ -158,7 +153,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 		}
 	}
 
-	private TreeableGalleryItem importNonImage(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
+	private TreeableGalleryItem importNonImage(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws IOException {
         String fileName = cleanUpName(constructFileName(newItem.getFileName(), modifiedItemAttributes.caption), modifiedItemAttributes.handleDuplicate, true);
 		File newFile = new File(myFile, fileName);
 		if (newFile.mkdir()) {
@@ -166,7 +161,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 			subDirs.add(newAlbum);
 			return newAlbum;
 		} else {
-			throw new SmugException("Failed to make sub-album named " + fileName, null);
+			throw new IOException("Failed to make sub-album named " + fileName, null);
 		}
 	}
 
@@ -186,12 +181,12 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 	}
 
 	@Override
-	public void reLabel(String newLabel) throws SmugException {
+	public void reLabel(String newLabel) throws IOException {
 		File newName = new File(myFile.getParentFile(), newLabel);
 		if (myFile.renameTo(newName)) {
 			myFile = newName;
 		} else {
-			throw new SmugException("Unable to rename " + myFile.toString() + " to " + newLabel, null);
+			throw new IOException("Unable to rename " + myFile.toString() + " to " + newLabel, null);
 		}
 	}
 
@@ -221,7 +216,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 	}
 
 	@Override
-	public void delete() throws SmugException {
+	public void delete() throws IOException {
 		for (DirectoryAlbum each : subDirs) {
 			each.delete();
 		}
@@ -229,7 +224,7 @@ public class DirectoryAlbum extends TreeableGalleryContainer implements Writeabl
 			each.delete();
 		}
 		if (!myFile.delete()) {
-			throw new SmugException("Error deleting " + myFile.toString(), null);
+			throw new IOException("Error deleting " + myFile.toString(), null);
 		}
 	}
 

@@ -1,6 +1,5 @@
 package com.rainskit.smuganizer.filesystemapiwrapper;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
 import java.awt.Desktop;
@@ -39,12 +38,12 @@ public class FileImage extends TreeableGalleryItem implements WriteableTreeableG
 	}
 
 	@Override
-	public void reLabel(String newLabel) throws SmugException {
+	public void reLabel(String newLabel) throws IOException {
 		File newName = new File(myFile.getParentFile(), newLabel);
 		if (myFile.renameTo(newName)) {
 			myFile = newName;
 		} else {
-			throw new SmugException("Unable to rename " + myFile.toString() + " to " + newLabel, null);
+			throw new IOException("Unable to rename " + myFile.toString() + " to " + newLabel, null);
 		}
 	}
 
@@ -74,9 +73,9 @@ public class FileImage extends TreeableGalleryItem implements WriteableTreeableG
 	}
 
 	@Override
-	public void delete() throws SmugException {
+	public void delete() throws IOException {
 		if (!myFile.delete()) {
-			throw new SmugException("Unable to delete " + myFile.toString(), null);
+			throw new IOException("Unable to delete " + myFile.toString(), null);
 		}
 	}
 

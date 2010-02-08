@@ -16,9 +16,15 @@ tree editing improvements:
 		update the api???? objects when doing so - I'll have to update the whole tree
 	implement a "promote to category" menu for subcategories
 
+deleting a category just reassigns the galleries under it; provide an option to explicitly delete the whole tree
+
 keyword support
 
 update the help / intro doc
+
+make logging consistent / configurable / reviewable
+
+add license info to source files
 
 -----
 

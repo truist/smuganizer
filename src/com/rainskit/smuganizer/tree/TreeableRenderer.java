@@ -1,9 +1,9 @@
 package com.rainskit.smuganizer.tree;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,7 +51,7 @@ public class TreeableRenderer extends DefaultTreeCellRenderer {
 				String newValue;
 				try {
 					newValue = currentItem.getLabel() + currentItem.getMetaLabel();
-				} catch (SmugException ex) {
+				} catch (IOException ex) {
 					Logger.getLogger(TreeableRenderer.class.getName()).log(Level.SEVERE, null, ex);
 					newValue = "ERROR: " + ex.getMessage();
 				}
@@ -85,10 +85,18 @@ public class TreeableRenderer extends DefaultTreeCellRenderer {
 				rendererComponent.setForeground(Color.ORANGE);
 			}
 		} else {
-			if (currentItem.isProtected() || currentItem.isParentProtected()) {
-				rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.ITALIC));
-			} else {
-				rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.PLAIN));
+			try {
+				if (currentItem.isProtected() || currentItem.isParentProtected()) {
+					rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.ITALIC));
+				} else {
+					rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.PLAIN));
+				}
+			} catch (IOException ex) {
+				try {
+					Logger.getLogger(TreeableRenderer.class.getName()).log(Level.SEVERE, "Unable to determine protectedness of " + currentItem.getFullPathLabel(), ex);
+				} catch (IOException ex1) {
+					Logger.getLogger(TreeableRenderer.class.getName()).log(Level.SEVERE, null, ex1);
+				}
 			}
 			if (currentItem.hasBeenSent() && !isSelected) {
 				rendererComponent.setForeground(Color.BLUE);

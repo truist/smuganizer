@@ -8,6 +8,8 @@ import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DropMode;
 import javax.swing.JComponent;
 import javax.swing.TransferHandler;
@@ -97,10 +99,15 @@ public class SmugTransferHandler extends TransferHandler {
 		
 		TreeableGalleryItem srcItem = (TreeableGalleryItem)((DefaultMutableTreeNode)srcPaths[0].getLastPathComponent()).getUserObject();
 		//if we are dragging and dropping in the same tree, then we try to support an in-place move
-		if (flavorClass.getTreeModel() == destTree.getModel() && transferSupport.getUserDropAction() == MOVE) {
-			return ((WriteableTreeableGalleryContainer)destParentItem).canMoveLocally(srcItem, location.getChildIndex());
-		} else {
-			return ((WriteableTreeableGalleryContainer)destParentItem).canImport(srcItem);
+		try {
+			if (flavorClass.getTreeModel() == destTree.getModel() && transferSupport.getUserDropAction() == MOVE) {
+				return ((WriteableTreeableGalleryContainer) destParentItem).canMoveLocally(srcItem, location.getChildIndex());
+			} else {
+				return ((WriteableTreeableGalleryContainer)destParentItem).canImport(srcItem);
+			}
+		} catch (IOException ex) {
+			Logger.getLogger(SmugTransferHandler.class.getName()).log(Level.SEVERE, null, ex);
+			return false;
 		}
 	}
 	

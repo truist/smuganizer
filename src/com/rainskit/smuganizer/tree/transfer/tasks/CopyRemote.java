@@ -83,7 +83,7 @@ public class CopyRemote extends AbstractTransferTask {
 		return imageAttributes;
 	}
 	
-	public List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem) {
+	public List<AbstractTransferTask> cleanUp(TreeableGalleryItem newItem) throws IOException {
 		DefaultTreeModel destModel = (DefaultTreeModel)destTree.getModel();
 		DefaultMutableTreeNode destParentNode = (DefaultMutableTreeNode)destParentPath.getLastPathComponent();
 		DefaultMutableTreeNode newNode = checkIfItemIsAlreadyInSubTree(newItem, destParentNode);

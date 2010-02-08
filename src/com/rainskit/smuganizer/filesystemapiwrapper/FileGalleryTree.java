@@ -1,27 +1,29 @@
-package com.rainskit.smuganizer.tree;
+package com.rainskit.smuganizer.filesystemapiwrapper;
 
-import com.rainskit.smuganizer.*;
+import com.rainskit.smuganizer.tree.*;
+import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.tree.transfer.SmugTransferHandler;
 import java.io.IOException;
 
-public class GalleryTree extends TransferTree {
-
-	public GalleryTree(Main main) {
-		super(main);
-	}
+public class FileGalleryTree extends TransferTree {
 	
+	public FileGalleryTree(Main main) {
+		super(main, null);
+	}
+
+	@Override
 	public void loadTree(TreeableGalleryItem root) throws IOException {
-		loadTreeImpl(root, true);
+		loadTreeImpl(root, false);
 	}
 
 	@Override
 	public int getSourceActions() {
-		return SmugTransferHandler.COPY;
+		return SmugTransferHandler.COPY_OR_MOVE;
 	}
 
 	@Override
 	public boolean supportsImport() {
-		return false;
+		return true;
 	}
 
 	@Override

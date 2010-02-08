@@ -3,9 +3,9 @@ package com.rainskit.smuganizer.menu.actions.treeactions;
 import com.rainskit.smuganizer.menu.*;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.menu.gui.SetPasswordDialog;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +23,7 @@ public class PasswordAction extends TreeableAction {
 	}
 
 	@Override
-	protected void performAction() {
+	protected void performAction() throws IOException {
 		try {
 			String password = null;
 			String hint = null;
@@ -47,7 +47,7 @@ public class PasswordAction extends TreeableAction {
 			}
 			setEnabled(true);
 			super.putValue(NAME, getValue(NAME).equals(ADD) ? REMOVE : ADD);
-		} catch (SmugException ex) {
+		} catch (IOException ex) {
 			Logger.getLogger(HideAction.class.getName()).log(Level.SEVERE, null, ex);
 			JOptionPane.showMessageDialog(main, "Error: password change failed.", "Error", JOptionPane.WARNING_MESSAGE);
 		}
@@ -59,24 +59,29 @@ public class PasswordAction extends TreeableAction {
 		if (currentItems.size() == 0) {
 			setEnabled(false);
 		} else {
-			TreeableGalleryItem item = currentItems.get(0);
-			boolean currentState = item.hasPassword();
-			boolean allChangeable = false;
-			if (item instanceof WriteableTreeableGalleryItem) {
-				allChangeable = ((WriteableTreeableGalleryItem)item).canChangePassword(!currentState);
-				for (int i = 1; i < currentItems.size(); i++) {
-					item = currentItems.get(i);
-					if (item instanceof WriteableTreeableGalleryItem) {
-						allChangeable &= (currentState == item.hasPassword());
-						allChangeable &= ((WriteableTreeableGalleryItem)item).canChangePassword(!currentState);
-					} else {
-						allChangeable = false;
-						break;
+			try {
+				TreeableGalleryItem item = currentItems.get(0);
+				boolean currentState = item.hasPassword();
+				boolean allChangeable = false;
+				if (item instanceof WriteableTreeableGalleryItem) {
+					allChangeable = ((WriteableTreeableGalleryItem)item).canChangePassword(!currentState);
+					for (int i = 1; i < currentItems.size(); i++) {
+						item = currentItems.get(i);
+						if (item instanceof WriteableTreeableGalleryItem) {
+							allChangeable &= (currentState == item.hasPassword());
+							allChangeable &= ((WriteableTreeableGalleryItem)item).canChangePassword(!currentState);
+						} else {
+							allChangeable = false;
+							break;
+						}
 					}
 				}
+				setEnabled(allChangeable);
+				super.putValue(NAME, currentState ? REMOVE : ADD);
+			} catch (IOException ex) {
+				Logger.getLogger(PasswordAction.class.getName()).log(Level.SEVERE, "Unable to determine menu state", ex);
+				setEnabled(false);
 			}
-			setEnabled(allChangeable);
-			super.putValue(NAME, currentState ? REMOVE : ADD);
 		}
 	}
 

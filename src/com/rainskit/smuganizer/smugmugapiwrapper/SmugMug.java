@@ -1,11 +1,6 @@
 package com.rainskit.smuganizer.smugmugapiwrapper;
 
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.RenameException;
-import com.kallasoft.smugmug.api.json.v1_2_0.login.WithPassword;
-import com.kallasoft.smugmug.api.json.v1_2_0.users.GetTree;
 import com.rainskit.smuganizer.settings.SmugMugSettings;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.MixedAlbumException;
 import com.rainskit.smuganizer.tree.TreeableGalleryContainer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
@@ -20,51 +15,39 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONException;
 
-public class SmugMug extends TreeableGalleryContainer implements WriteableTreeableGalleryContainer {
-	static final String API_URL = "https://api.smugmug.com/hack/json/1.2.0/";
-	static final String API_UPLOAD_URL = "http://upload.smugmug.com/";
-	static final String API_KEY = "aR8ks0WWmboWAcclI9poAboELIqNj3wW";
-
-	static String sessionID;
+public class SmugMug extends TreeableGalleryContainer implements WriteableTreeableGalleryContainer, SmugAPIConstants {
 	private static String userNickName;
 	
 	private ArrayList<SmugCategory> categories;
 
-	public SmugMug() throws SmugException {
+	public SmugMug() throws IOException {
 		super(null);
-		
-		WithPassword withPassword = new WithPassword();
-		
-		WithPassword.WithPasswordResponse response 
-			= withPassword.execute(API_URL, 
-									API_KEY, 
-									SmugMugSettings.getUsername(), 
-									String.valueOf(SmugMugSettings.getPassword()));
 
-		if (response.isError()) {
-			throw new SmugException("Login failed", SmugException.convertError(response.getError()));
-		}
-		
-		sessionID = response.getSessionID();
-		userNickName = response.getNickName();
+		SmugAPIMethod login = new SmugAPIMethod(LOGIN_WITH_PASSWORD);
+		login.addParameter(USER_NAME, SmugMugSettings.getUsername());
+		login.addParameter(PASSWORD, String.valueOf(SmugMugSettings.getPassword()));
+		SmugAPIResponse response = login.execute();
+		SmugAPIMethod.sessionID = response.getValue(new String[] {JSON_LOGIN, JSON_LOGIN_SESSION, JSON_LOGIN_SESSION_ID});
+		userNickName = response.getValue(new String[] {JSON_LOGIN, JSON_LOGIN_USER, JSON_LOGIN_USER_NICKNAME});
 	}
 
-	public List<? extends TreeableGalleryItem> loadChildren() throws SmugException {
+	public List<? extends TreeableGalleryItem> loadChildren() throws IOException {
 		if (categories == null) {
 			categories = new ArrayList<SmugCategory>();
-			
-			GetTree getTree = new GetTree();
-			GetTree.GetTreeResponse response 
-				= getTree.execute(API_URL, API_KEY, sessionID, Boolean.FALSE);
-			if (response.isError()) {
-				throw new SmugException("GetTree failed", SmugException.convertError(response.getError()));
-			}
 
-			List<com.kallasoft.smugmug.api.json.entity.Category> smCategories = response.getCategoryList();
-			for (com.kallasoft.smugmug.api.json.entity.Category each : smCategories) {
-				if (each.getAlbumList().size() > 0 || each.getSubCategoryList().size() > 0) {
-					categories.add(new SmugCategory(this, each));
+			SmugAPIResponse response = new SmugAPIMethod(GET_TREE).execute();
+			JSONArray jsonCategories = response.getArray(new String[] {JSON_CATEGORIES});
+			for (int i = 0; i < jsonCategories.length(); i++) {
+				try {
+					SmugCategory category = new SmugCategory(this, jsonCategories.getJSONObject(i), false);
+					if (category.hasSubItems()) {
+						categories.add(category);
+					}
+				} catch (JSONException ex) {
+					throw new IOException("Unable to parse JSON tree", ex);
 				}
 			}
 		}
@@ -95,7 +78,7 @@ public class SmugMug extends TreeableGalleryContainer implements WriteableTreeab
 		return false;
 	}
 
-	public void reLabel(String newName) throws RenameException {
+	public void reLabel(String newName) {
 		throw new UnsupportedOperationException("Cannot rename SmugMug");
 	}
 
@@ -107,7 +90,7 @@ public class SmugMug extends TreeableGalleryContainer implements WriteableTreeab
 		throw new UnsupportedOperationException("Not supported.");
 	}
 	
-	public boolean canImport(TreeableGalleryItem newItem) {
+	public boolean canImport(TreeableGalleryItem newItem) throws IOException {
 		if (ItemType.ALBUM == newItem.getType()) {
 			TreeableGalleryContainer newContainer = (TreeableGalleryContainer)newItem;
 			return (newContainer.getSubAlbumDepth() > 0 && newContainer.getSubAlbumDepth() < 3);
@@ -116,7 +99,7 @@ public class SmugMug extends TreeableGalleryContainer implements WriteableTreeab
 		}
 	}
 
-	public boolean willChildBeDuplicate(String fileName, String caption) {
+	public boolean willChildBeDuplicate(String fileName, String caption) throws IOException {
 		for (SmugCategory each : categories) {
 			if (each.getLabel().equalsIgnoreCase(fileName) || each.getLabel().equalsIgnoreCase(caption)) {
 				return true;
@@ -129,36 +112,33 @@ public class SmugMug extends TreeableGalleryContainer implements WriteableTreeab
 		return false;
 	}
 
-	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
+	public TreeableGalleryItem importItem(TreeableGalleryItem newItem, ModifiedItemAttributes modifiedItemAttributes) throws IOException {
 		return importAlbumAsCategory((TreeableGalleryContainer)newItem, modifiedItemAttributes);
 	}
 	
-	private TreeableGalleryItem importAlbumAsCategory(TreeableGalleryContainer sourceAlbum, ModifiedItemAttributes modifiedItemAttributes) throws SmugException {
+	private TreeableGalleryItem importAlbumAsCategory(TreeableGalleryContainer sourceAlbum, ModifiedItemAttributes modifiedItemAttributes) throws IOException {
 		if (sourceAlbum.hasImageChildren()) {
 			throw new MixedAlbumException(sourceAlbum);
-        }
+		}
 
-        String categoryName = sourceAlbum.getLabel();
-        if (modifiedItemAttributes.handleDuplicate == HandleDuplicate.OVERWRITE) {
-            for (TreeableGalleryItem each : categories) {
-                if (each.getLabel().equals(categoryName)) {
-                    return each;
-                }
-            }
-        }
+		String categoryName = sourceAlbum.getLabel();
+		if (modifiedItemAttributes.handleDuplicate == HandleDuplicate.OVERWRITE) {
+			for (TreeableGalleryItem each : categories) {
+				if (each.getLabel().equals(categoryName)) {
+					return each;
+				}
+			}
+		}
 
-        categoryName = cleanUpName(categoryName, modifiedItemAttributes.handleDuplicate, false);
+		categoryName = cleanUpName(categoryName, modifiedItemAttributes.handleDuplicate, false);
 
-        com.kallasoft.smugmug.api.json.v1_2_0.categories.Create createCategory
-            = new com.kallasoft.smugmug.api.json.v1_2_0.categories.Create();
-        com.kallasoft.smugmug.api.json.v1_2_0.categories.Create.CreateResponse createCategoryResponse
-            = createCategory.execute(SmugMug.API_URL, SmugMug.API_KEY, SmugMug.sessionID, categoryName);
-        if (createCategoryResponse.isError()) {
-            throw new SmugException("Error importing " + sourceAlbum.getFullPathLabel(), SmugException.convertError(createCategoryResponse.getError()));
-        }
-        SmugCategory newCategory = new SmugCategory(this, createCategoryResponse.getCategoryID());
-        categories.add(newCategory);
-        return newCategory;
+		SmugAPIMethod createCategory = new SmugAPIMethod(CREATE_CATEGORY);
+		createCategory.addParameter(CATEGORY_NAME, categoryName);
+		SmugAPIResponse response = createCategory.execute();
+
+		SmugCategory newCategory = new SmugCategory(this, response.getNestedObject(new String[] {CATEGORY_OBJECT}), true);
+		categories.add(newCategory);
+		return newCategory;
 	}
 	
 	public boolean canBeLaunched() {
@@ -177,7 +157,7 @@ public class SmugMug extends TreeableGalleryContainer implements WriteableTreeab
 		return false;
 	}
 
-	public void delete() throws SmugException {
+	public void delete() throws IOException {
 		throw new UnsupportedOperationException("Cannot delete SmugMug");
 	}
 
@@ -222,7 +202,7 @@ public class SmugMug extends TreeableGalleryContainer implements WriteableTreeab
 
 	@Override
 	public void childRemoved(TreeableGalleryItem child) {
-		categories.remove(child);
+		categories.remove((SmugCategory)child);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.rainskit.smuganizer.tree.transfer;
 
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -117,9 +118,13 @@ public class AsynchronousTransferManager implements StatusListener {
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
 				public void run() {
-					List<AbstractTransferTask> followUpTasks = task.cleanUp(newItem);
-					if (followUpTasks != null) {
-						submitCleanUpTasks(followUpTasks, task);
+					try {
+						List<AbstractTransferTask> followUpTasks = task.cleanUp(newItem);
+						if (followUpTasks != null) {
+							submitCleanUpTasks(followUpTasks, task);
+						}
+					} catch (IOException ex) {
+						Logger.getLogger(AsynchronousTransferManager.class.getName()).log(Level.SEVERE, null, ex);
 					}
 				}
 			});

@@ -1,17 +1,13 @@
 package com.rainskit.smuganizer;
 
-import com.kallasoft.smugmug.api.APIConstants;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
+import com.rainskit.smuganizer.smugmugapiwrapper.SmugAPIConstants;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.GridBagLayout;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -32,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOUtils;
@@ -46,6 +43,7 @@ public class ImageWindow extends JFrame {
 	private static int lastCallID;
 	
 	private JPanel displayPanel;
+	private JScrollPane displayScrollPane;
 	private CardLayout cardLayout;
 	private JLabel imageLabel;
 	
@@ -57,12 +55,14 @@ public class ImageWindow extends JFrame {
 		
 		imageLabel = new JLabel("");
 		imageLabel.setHorizontalAlignment(JLabel.CENTER);
+		imageLabel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.GRAY, 1), BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 		JPanel imagePanel = new JPanel(new GridBagLayout());
 		imagePanel.setBackground(Color.DARK_GRAY);
 		imagePanel.add(imageLabel);
 		
 		JPanel progressPanel = new JPanel(new GridBagLayout());
 		progressPanel.setBackground(Color.DARK_GRAY);
+		progressPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		JProgressBar progressBar = new JProgressBar(0, 100);
 		progressBar.setIndeterminate(true);
 		progressBar.setStringPainted(true);
@@ -71,20 +71,21 @@ public class ImageWindow extends JFrame {
 		
 		cardLayout = new CardLayout();
 		displayPanel = new JPanel(cardLayout);
-		displayPanel.add(new JScrollPane(imagePanel), IMAGE_CARD);
+		displayScrollPane = new JScrollPane(imagePanel);
+		displayPanel.add(displayScrollPane, IMAGE_CARD);
 		displayPanel.add(progressPanel, PROGRESS_CARD);
 		
 		setDefaultCloseOperation(HIDE_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(displayPanel);
 		pack();
-		setSize(500, 500);
+		setSize(700, 500);
 		
 		setLocationRelativeTo(parent);
 		setFocusableWindowState(false);
 	}
 	
-	public void displayImage(TreeableGalleryItem image) throws IOException {
+	public void displayImage(TreeableGalleryItem image, HttpClient httpClient) throws IOException {
 		++lastCallID;
 		if (image != null && image.getPreviewURL() != null) {
 			ImageIcon cachedImage = imageLoader.getImage(image);
@@ -92,7 +93,7 @@ public class ImageWindow extends JFrame {
 				imageLoaded(cachedImage, image.getFullPathLabel(), lastCallID);
 			} else {
 				clearImage(true);
-				imageLoader.addImage(image, lastCallID);
+				imageLoader.addImage(image, lastCallID, httpClient);
 			}
 		} else {
 			clearImage(false);
@@ -101,7 +102,6 @@ public class ImageWindow extends JFrame {
 	
 	private void clearImage(boolean showProgressBar) {
 		imageLabel.setIcon(null);
-		imageLabel.setBorder(null);
 		setTitle(NO_IMAGE_TITLE);
 		cardLayout.show(displayPanel, (showProgressBar ? PROGRESS_CARD : IMAGE_CARD));
 	}
@@ -110,54 +110,48 @@ public class ImageWindow extends JFrame {
 		if (callID < lastCallID) {
 			return;
 		}
-		
-		Dimension screenSize = findSmallestScreenSize();
-		Dimension preferredSize = new Dimension(Math.max(imageIcon.getIconWidth() + 20, getWidth()),
-												Math.max(imageIcon.getIconHeight() + 40, getHeight()));
-		if (preferredSize.width < screenSize.width && preferredSize.height < screenSize.height) {
-			setSize(preferredSize);
+
+		Dimension viewportSize = displayScrollPane.getViewport().getExtentSize();
+		viewportSize.width -= displayScrollPane.getVerticalScrollBar().getPreferredSize().width;
+		viewportSize.height -= displayScrollPane.getHorizontalScrollBar().getPreferredSize().height;
+		if (viewportSize.width < imageIcon.getIconWidth() || viewportSize.height < imageIcon.getIconHeight()) {
+			imageIcon = resizeImage(imageIcon, viewportSize);
 		}
-		
+
 		imageLabel.setIcon(imageIcon);
-		imageLabel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.GRAY, 1), BorderFactory.createEmptyBorder(1, 1, 1, 1)));
 		cardLayout.show(displayPanel, IMAGE_CARD);
 		setTitle(title);
 	}
 	
-	private Dimension findSmallestScreenSize() {
-		Dimension size = new Dimension(0, 0);
-		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		for (GraphicsDevice screen : graphicsEnvironment.getScreenDevices()) {
-			Rectangle screenBounds = screen.getDefaultConfiguration().getBounds();
-			if (size.width == 0 || size.width > screenBounds.width) {
-				size.width = screenBounds.width;
-			}
-			if (size.height == 0 || size.height > screenBounds.height) {
-				size.height = screenBounds.height;
-			}
+	private ImageIcon resizeImage(ImageIcon imageIcon, Dimension newSize) {
+		Image image = imageIcon.getImage();
+		float imageRatio = ((float)image.getWidth(null)) / image.getHeight(null);
+		float windowRatio = ((float)newSize.width) / newSize.height;
+		if (imageRatio > windowRatio) {
+			return new ImageIcon(image.getScaledInstance(newSize.width, -1, Image.SCALE_FAST));
+		} else {
+			return new ImageIcon(image.getScaledInstance(-1, newSize.height, Image.SCALE_FAST));
 		}
-		return size;
 	}
 
 	
 	private class ImageLoader implements Runnable {
-		private HashMap<String, SoftReference<ImageIcon>> cachedImageData;
+		private final HashMap<String, SoftReference<ImageIcon>> cachedImageData = new HashMap<String, SoftReference<ImageIcon>>();
 		private BlockingDeque<AddImageCall> imageQueue;
 		
 		private ImageLoader() {
-			cachedImageData = new HashMap<String, SoftReference<ImageIcon>>();
 			imageQueue = new LinkedBlockingDeque<AddImageCall>();
 			
 			new Thread(this).start();
 		}
 		
-		public void addImage(TreeableGalleryItem image, int ID) throws IOException {
+		public void addImage(TreeableGalleryItem image, int ID, HttpClient httpClient) throws IOException {
 			try {
 				ImageIcon cachedImage = getImage(image);
 				if (cachedImage != null) {
 					imageLoaded(cachedImage, image.getFullPathLabel(), ID);
 				} else {
-					imageQueue.putFirst(new AddImageCall(image, ID));
+					imageQueue.putFirst(new AddImageCall(image, ID, httpClient));
 				}
 			} catch (InterruptedException ex) {
 				Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
@@ -234,9 +228,9 @@ public class ImageWindow extends JFrame {
 				}
 			} else {
 				GetMethod getMethod = new GetMethod(imageURL.toExternalForm());
-				getMethod.setRequestHeader("User-Agent", APIConstants.USER_AGENT);
+				getMethod.setRequestHeader("User-Agent", SmugAPIConstants.USER_AGENT);
 				try {
-					int responseCode = APIConstants.HTTP_CLIENT.executeMethod(getMethod);
+					int responseCode = nextCall.httpClient.executeMethod(getMethod);
 					if (responseCode != HttpStatus.SC_OK) {
 						throw new IOException("Received unexpected response code (" + responseCode + ") from server when trying to retrieve URL: " + imageURL.toExternalForm());
 					}
@@ -257,7 +251,7 @@ public class ImageWindow extends JFrame {
 				public void run() {
 					try {
 						imageLoaded(imageIcon, image.getFullPathLabel(), ID);
-					} catch (SmugException ex) {
+					} catch (IOException ex) {
 						Logger.getLogger(ImageWindow.class.getName()).log(Level.SEVERE, null, ex);
 						imageLoaded(imageIcon, "ERROR: " + ex.getMessage(), ID);
 					}
@@ -269,10 +263,12 @@ public class ImageWindow extends JFrame {
 		private class AddImageCall {
 			public final TreeableGalleryItem image;
 			public final int ID;
+			private HttpClient httpClient;
 			
-			public AddImageCall(TreeableGalleryItem image, int ID) {
+			public AddImageCall(TreeableGalleryItem image, int ID, HttpClient httpClient) {
 				this.image = image;
 				this.ID = ID;
+				this.httpClient = httpClient;
 			}
 		}
 	}

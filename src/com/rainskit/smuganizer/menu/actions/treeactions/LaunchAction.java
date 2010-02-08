@@ -38,8 +38,13 @@ public class LaunchAction extends TreeableAction {
 	@Override
 	public void updateState() {
 		boolean anyLaunchable = false;
-		for (TreeableGalleryItem each : menuManager.getCurrentItems()) {
-			anyLaunchable |= each.canBeLaunched();
+		try {
+			for (TreeableGalleryItem each : menuManager.getCurrentItems()) {
+					anyLaunchable |= each.canBeLaunched();
+			}
+		} catch (IOException ex) {
+			Logger.getLogger(LaunchAction.class.getName()).log(Level.SEVERE, null, ex);
+			anyLaunchable = false;
 		}
 		setEnabled(anyLaunchable && Desktop.isDesktopSupported());
 	}

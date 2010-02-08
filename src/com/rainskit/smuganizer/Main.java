@@ -2,16 +2,16 @@ package com.rainskit.smuganizer;
 
 import com.rainskit.smuganizer.tree.transfer.TransferTable;
 import com.rainskit.smuganizer.filesystemapiwrapper.FileGallery;
-import com.rainskit.smuganizer.tree.SmugTree;
-import com.rainskit.smuganizer.tree.GalleryTree;
+import com.rainskit.smuganizer.smugmugapiwrapper.SmugTree;
+import com.rainskit.smuganizer.galleryapiwrapper.GalleryTree;
 import com.rainskit.smuganizer.menu.SmugMenu;
 import com.rainskit.smuganizer.galleryapiwrapper.Gallery;
 import com.rainskit.smuganizer.menu.gui.GalleryLoginDialog;
 import com.rainskit.smuganizer.menu.gui.SmugMugLoginDialog;
 import com.rainskit.smuganizer.settings.FileSettings;
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugMug;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
-import com.rainskit.smuganizer.tree.FileGalleryTree;
+import com.rainskit.smuganizer.filesystemapiwrapper.FileGalleryTree;
+import com.rainskit.smuganizer.tree.TransferTree;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
@@ -32,12 +32,9 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -58,21 +55,22 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public class Main extends JFrame implements TreeSelectionListener, StatusCallback, MouseListener, WindowListener {
+	public static final String VERSION = "0.90";
+	
 	private enum Side {LEFT, RIGHT}
 	
 	private enum GalleryType { 
-		GALLERY, SMUGMUG, COMPUTER;
+		SMUGMUG, GALLERY, COMPUTER;
 
 		@Override
 		public String toString() {
 			switch (this) {
-				case GALLERY:
-					return "Gallery";
 				case SMUGMUG:
 					return "SmugMug";
+				case GALLERY:
+					return "Gallery";
 				case COMPUTER:
 					return "Local Computer";
 				default:
@@ -91,18 +89,22 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 	
 	private JPanel leftPanel;
 	private JPanel rightPanel;
-	private JLabel statusLabel;
+	private final JLabel statusLabel = new JLabel(" ");
 	private String baseStatus;
 	
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, FileNotFoundException, IOException{
-		SLF4JBridgeHandler.install();	//make java.util.logging play nice with @#$% kallasoft slf4j logging
+//		System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
+//		System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
+//		System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "debug");
+//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
+
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		Toolkit.getDefaultToolkit().getSystemEventQueue().push(new WaitCursorEventQueue(170));
 		new Main();
     }
 
 	private Main() throws FileNotFoundException, IOException {
-		super("Smuganizer");
+		super("Smuganizer " + VERSION);
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		addWindowListener(this);
 		
@@ -131,7 +133,6 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 												new JScrollPane(transferTable));
 		tbSplitPane.setResizeWeight(0.8);
 		
-		statusLabel = new JLabel(" ");
 		statusLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		JPanel statusPanel = new JPanel(new BorderLayout());
 		statusPanel.setBorder(BorderFactory.createLoweredBevelBorder());
@@ -183,7 +184,7 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 				setStatus("Logging in...");
 				try {
 					loadSmugTree(new SmugMug(), side);
-				} catch (SmugException se) {
+				} catch (IOException se) {
 					Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, se);
 					JOptionPane.showMessageDialog(this, se.getLocalizedMessage(), "Error connecting to SmugMug", JOptionPane.ERROR_MESSAGE);
 					clearStatus();
@@ -293,13 +294,14 @@ public class Main extends JFrame implements TreeSelectionListener, StatusCallbac
 	}
 	
 	public void valueChanged(TreeSelectionEvent tse) {
-		DefaultMutableTreeNode node = (DefaultMutableTreeNode) tse.getPath().getLastPathComponent();
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode)tse.getPath().getLastPathComponent();
 		try {
-			if (node.getUserObject() instanceof TreeableGalleryItem && ((JTree)tse.getSource()).getSelectionCount() == 1) {
+			TransferTree sourceTree = (TransferTree)tse.getSource();
+			if (node.getUserObject() instanceof TreeableGalleryItem && sourceTree.getSelectionCount() == 1) {
 				TreeableGalleryItem item = (TreeableGalleryItem)node.getUserObject();
-				floatingImageWindow.displayImage(item);
+				floatingImageWindow.displayImage(item, sourceTree.getHttpClient());
 			} else {
-				floatingImageWindow.displayImage(null);
+				floatingImageWindow.displayImage(null, null);
 			}
 		} catch (MalformedURLException ex) {
 			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);

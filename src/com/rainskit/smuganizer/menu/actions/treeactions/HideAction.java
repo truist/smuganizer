@@ -2,9 +2,9 @@ package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.menu.*;
 import com.rainskit.smuganizer.Main;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +34,7 @@ public class HideAction extends TreeableAction {
 			}
 			setEnabled(true);
 			putValue(NAME, getValue(NAME).equals(SHOW) ? HIDE : SHOW);
-		} catch (SmugException ex) {
+		} catch (IOException ex) {
 			Logger.getLogger(HideAction.class.getName()).log(Level.SEVERE, null, ex);
 			JOptionPane.showMessageDialog(main, "Error: show/hide failed.", "Error", JOptionPane.WARNING_MESSAGE);
 		}
@@ -46,24 +46,29 @@ public class HideAction extends TreeableAction {
 		if (currentItems.size() == 0) {
 			setEnabled(false);
 		} else {
-			TreeableGalleryItem item = currentItems.get(0);
-			boolean currentState = item.isHidden();
-			boolean allChangeable = false;
-			if (item instanceof WriteableTreeableGalleryItem) {
-				allChangeable = ((WriteableTreeableGalleryItem)item).canChangeHiddenStatus(!currentState);
-				for (int i = 1; i < currentItems.size(); i++) {
-					item = currentItems.get(i);
-					if (item instanceof WriteableTreeableGalleryItem) {
-						allChangeable &= (currentState == item.isHidden());
-						allChangeable &= ((WriteableTreeableGalleryItem)item).canChangeHiddenStatus(!currentState);
-					} else {
-						allChangeable = false;
-						break;
+			try {
+				TreeableGalleryItem item = currentItems.get(0);
+				boolean currentState = item.isHidden();
+				boolean allChangeable = false;
+				if (item instanceof WriteableTreeableGalleryItem) {
+					allChangeable = ((WriteableTreeableGalleryItem)item).canChangeHiddenStatus(!currentState);
+					for (int i = 1; i < currentItems.size(); i++) {
+						item = currentItems.get(i);
+						if (item instanceof WriteableTreeableGalleryItem) {
+							allChangeable &= (currentState == item.isHidden());
+							allChangeable &= ((WriteableTreeableGalleryItem)item).canChangeHiddenStatus(!currentState);
+						} else {
+							allChangeable = false;
+							break;
+						}
 					}
 				}
+				setEnabled(allChangeable);
+				putValue(NAME, currentState ? SHOW : HIDE);
+			} catch (IOException ex) {
+				Logger.getLogger(HideAction.class.getName()).log(Level.SEVERE, "Unable to determine menu state", ex);
+				setEnabled(false);
 			}
-			setEnabled(allChangeable);
-			putValue(NAME, currentState ? SHOW : HIDE);
 		}
 	}
 

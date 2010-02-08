@@ -1,6 +1,5 @@
 package com.rainskit.smuganizer.tree;
 
-import com.kallasoft.smugmug.api.APIConstants;
 import com.rainskit.smuganizer.Main;
 import com.rainskit.smuganizer.menu.TreeMenuManager;
 import java.io.IOException;
@@ -14,25 +13,38 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import org.apache.commons.httpclient.HostConfiguration;
+import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 public abstract class TransferTree extends JTree {
 	protected Main main;
 	protected DefaultMutableTreeNode rootNode;
 	protected DefaultTreeModel model;
+	protected HttpClient httpClient;
 
-	public TransferTree(Main main) {
+	public TransferTree(Main main, HttpClient httpClient) {
 		super();
 		this.main = main;
 		this.model = (DefaultTreeModel)getModel();
 		this.rootNode = new DefaultMutableTreeNode();
 		model.setRoot(rootNode);
+		this.httpClient = httpClient;
 		
 		setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		setCellRenderer(new TreeableRenderer());
 		setDragEnabled(true);
+
+		if (httpClient != null) {
+			HttpConnectionManagerParams params = httpClient.getHttpConnectionManager().getParams();
+			HostConfiguration hostConfig = httpClient.getHostConfiguration();
+			params.setMaxConnectionsPerHost(hostConfig, AsynchronousTreeLoader.TREE_LOADER_THREADS);
+		}
 		
 		new TreeMenuManager(main, this);
+	}
+
+	public HttpClient getHttpClient() {
+		return httpClient;
 	}
 
 	public abstract int getSourceActions();
@@ -50,9 +62,7 @@ public abstract class TransferTree extends JTree {
 		rootNode.removeAllChildren();
 		model.nodeStructureChanged(rootNode);
 		
-		HttpConnectionManagerParams params = APIConstants.HTTP_CLIENT.getHttpConnectionManager().getParams();
-		HostConfiguration hostConfig = APIConstants.HTTP_CLIENT.getHostConfiguration();
-		new AsynchronousTreeLoader(main, this, rootNode, root, sort).start(params, hostConfig);
+		new AsynchronousTreeLoader(main, this, rootNode, root, sort).start();
 	}
 	
 	public static void sortTree(DefaultMutableTreeNode parentNode, boolean sortDescendants) {

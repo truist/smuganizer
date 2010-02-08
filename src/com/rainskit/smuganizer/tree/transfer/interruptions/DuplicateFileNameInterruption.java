@@ -1,12 +1,12 @@
 package com.rainskit.smuganizer.tree.transfer.interruptions;
 
 import com.rainskit.smuganizer.menu.gui.TransferErrorDialog.RepairPanel;
-import com.rainskit.smuganizer.smugmugapiwrapper.exceptions.SmugException;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask.HandleDuplicate;
 import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,16 +43,19 @@ public class DuplicateFileNameInterruption extends TransferInterruption {
 	@Override
 	public String getErrorText() {
 		String itemLabel;
+		String itemFileName;
 		try {
 			itemLabel = item.getFullPathLabel();
-		} catch (SmugException ex) {
+			itemFileName = item.getFileName();
+		} catch (IOException ex) {
 			Logger.getLogger(DuplicateFileNameInterruption.class.getName()).log(Level.SEVERE, null, ex);
 			itemLabel = "ERROR: " + ex.getMessage();
+			itemFileName = "ERROR: " + ex.getMessage();
 		}
 		return "The item you are trying to transfer ("
 			+ itemLabel + ") has the same file name as a file "
 			+ "that is already in the destination album.  The source file's name is \""
-			+ item.getFileName() + "\" and its caption is\"" + caption + "\".";
+			+ itemFileName + "\".";
 	}
 
 	@Override
@@ -104,7 +107,7 @@ public class DuplicateFileNameInterruption extends TransferInterruption {
 		public String getDescription() {
 			try {
 				return item.getFullPathLabel();
-			} catch (SmugException ex) {
+			} catch (IOException ex) {
 				Logger.getLogger(DuplicateFileNameInterruption.class.getName()).log(Level.SEVERE, null, ex);
 				return "ERROR: " + ex.getLocalizedMessage();
 			}
@@ -114,7 +117,7 @@ public class DuplicateFileNameInterruption extends TransferInterruption {
 		public String getUniqueKey() {
 			try {
 				return item.getFullPathLabel();
-			} catch (SmugException ex) {
+			} catch (IOException ex) {
 				Logger.getLogger(DuplicateFileNameInterruption.class.getName()).log(Level.SEVERE, null, ex);
 				return "ERROR: " + ex.getLocalizedMessage();
 			}

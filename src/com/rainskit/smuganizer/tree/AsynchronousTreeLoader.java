@@ -1,7 +1,6 @@
 package com.rainskit.smuganizer.tree;
 
 import com.rainskit.smuganizer.Main;
-import com.rainskit.smuganizer.settings.SmugMugSettings;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,11 +20,9 @@ import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 class AsynchronousTreeLoader {
-	private static final int TREE_LOADER_THREADS = 15;
+	public static final int TREE_LOADER_THREADS = 15;
 	private static final int QUEUE_TIMEOUT = 4;
 	private static final TimeUnit QUEUE_TIMEOUT_UNITS = TimeUnit.SECONDS;
 	
@@ -50,8 +47,7 @@ class AsynchronousTreeLoader {
 		this.sort = sort;
 	}
 	
-	public void start(HttpConnectionManagerParams params, HostConfiguration hostConfig) throws IOException {
-		params.setMaxConnectionsPerHost(hostConfig, TREE_LOADER_THREADS);
+	public void start() throws IOException {
 		ThreadPoolExecutor executorService = (ThreadPoolExecutor)Executors.newFixedThreadPool(TREE_LOADER_THREADS);
 		CompletionService<List<LoadTask>> completionService
 			= new ExecutorCompletionService<List<LoadTask>>(executorService);
