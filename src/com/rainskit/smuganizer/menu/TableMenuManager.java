@@ -3,7 +3,7 @@ package com.rainskit.smuganizer.menu;
 import com.rainskit.smuganizer.menu.actions.tableactions.CancelTaskAction;
 import com.rainskit.smuganizer.menu.actions.tableactions.ProvideInputAction;
 import com.rainskit.smuganizer.menu.actions.tableactions.TableableAction;
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.tree.transfer.TransferTable;
 import com.rainskit.smuganizer.menu.actions.tableactions.RetryTaskAction;
 import com.rainskit.smuganizer.menu.actions.tableactions.ShowErrorAction;
@@ -29,7 +29,7 @@ public class TableMenuManager implements ListSelectionListener {
 	private ProvideInputAction inputAction;
 	private ShowErrorAction errorAction;
 	
-	public TableMenuManager(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
+	public TableMenuManager(Smuganizer main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
 		this.transferTable = transferTable;
 		
 		actions = createActions(main, transferTable, transferManager);
@@ -51,7 +51,7 @@ public class TableMenuManager implements ListSelectionListener {
 		return actions;
 	}
 	
-	private ArrayList<TableableAction> createActions(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
+	private ArrayList<TableableAction> createActions(Smuganizer main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
 		ArrayList<TableableAction> newActions = new ArrayList<TableableAction>();
 		newActions.add(new ShowInTreeAction(main, transferTable, transferManager));
 		newActions.add(null);

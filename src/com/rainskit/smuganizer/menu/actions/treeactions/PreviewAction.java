@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.menu.actions.treeactions;
 
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.menu.TreeMenuManager;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem.ItemType;
@@ -13,7 +13,7 @@ import javax.swing.KeyStroke;
 public class PreviewAction extends TreeableAction {
 	private static final String ACTION_MAP_KEY = "preview";
 	
-	public PreviewAction(TreeMenuManager menuManager, Main main, JTree tree) {
+	public PreviewAction(TreeMenuManager menuManager, Smuganizer main, JTree tree) {
 		super(main, menuManager, "Preview", "Previewing...");
 		
 		tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), ACTION_MAP_KEY);

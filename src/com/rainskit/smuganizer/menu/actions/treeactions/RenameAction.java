@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.menu.*;
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
 import java.awt.event.KeyEvent;
@@ -19,7 +19,7 @@ import javax.swing.tree.TreePath;
 public class RenameAction extends TreeableAction {
 	private static final String ACTION_MAP_KEY = "rename";
 	
-	public RenameAction(TreeMenuManager menuManager, Main main, JTree tree) {
+	public RenameAction(TreeMenuManager menuManager, Smuganizer main, JTree tree) {
 		super(main, menuManager, "Rename...", "Renaming...");
 		
 		tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), ACTION_MAP_KEY);

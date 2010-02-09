@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.menu.actions.tableactions;
 
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.tree.transfer.TransferTable;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
@@ -13,7 +13,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 public class ShowInTreeAction extends TableableAction {
-	public ShowInTreeAction(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
+	public ShowInTreeAction(Smuganizer main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
 		super(main, transferTable, transferManager, "Show in tree", "Showing...");
 	}
 	

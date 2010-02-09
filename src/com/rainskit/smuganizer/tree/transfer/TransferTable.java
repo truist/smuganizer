@@ -31,7 +31,7 @@ import javax.swing.table.TableColumn;
 public class TransferTable extends JTable {
 	private static final int PROGRESS_PAINT_FREQUENCY = 25;
 	
-	public TransferTable(Main main, AsynchronousTransferManager transferManager,
+	public TransferTable(Smuganizer main, AsynchronousTransferManager transferManager,
 						TransferTableModel dataModel, boolean multipleSelection) {
 		super(dataModel);
 		

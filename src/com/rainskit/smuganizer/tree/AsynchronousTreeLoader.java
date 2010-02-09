@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.tree;
 
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +26,7 @@ class AsynchronousTreeLoader {
 	private static final int QUEUE_TIMEOUT = 4;
 	private static final TimeUnit QUEUE_TIMEOUT_UNITS = TimeUnit.SECONDS;
 	
-	private Main main;
+	private Smuganizer main;
 	private JTree tree;
 	private DefaultMutableTreeNode rootNode;
 	private TreeableGalleryItem rootItem;
@@ -35,7 +35,7 @@ class AsynchronousTreeLoader {
 	
 	private int errorCount;
 	
-	public AsynchronousTreeLoader(Main main, 
+	public AsynchronousTreeLoader(Smuganizer main,
 									JTree tree, 
 									DefaultMutableTreeNode rootNode, 
 									TreeableGalleryItem rootItem,

@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.menu.actions.tableactions;
 
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.tree.transfer.TransferTable;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
@@ -12,7 +12,7 @@ import javax.swing.KeyStroke;
 public class CancelTaskAction extends TableableAction {
 	private static final String ACTION_MAP_KEY = "delete";
 
-	public CancelTaskAction(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
+	public CancelTaskAction(Smuganizer main, TransferTable transferTable, AsynchronousTransferManager transferManager) {
 		super(main, transferTable, transferManager, "Cancel...", "Canceling...");
 		
 		transferTable.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), ACTION_MAP_KEY);

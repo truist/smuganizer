@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.menu.*;
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.Desktop;
 import java.awt.event.KeyEvent;
@@ -16,7 +16,7 @@ import javax.swing.KeyStroke;
 public class LaunchAction extends TreeableAction {
 	private static final String ACTION_MAP_KEY = "launch";
 	
-	public LaunchAction(TreeMenuManager menuManager, Main main, JTree tree) {
+	public LaunchAction(TreeMenuManager menuManager, Smuganizer main, JTree tree) {
 		super(main, menuManager, "Open", "Launching...");
 		
 		tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK), ACTION_MAP_KEY);

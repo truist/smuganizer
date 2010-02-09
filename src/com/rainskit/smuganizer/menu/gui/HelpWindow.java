@@ -13,7 +13,7 @@ import javax.swing.JScrollPane;
 public class HelpWindow extends JFrame {
 	private static final String HELP_PATH = "src/intro.html";
 	
-	public HelpWindow(Main parent) throws FileNotFoundException, IOException {
+	public HelpWindow(Smuganizer parent) throws FileNotFoundException, IOException {
 		super("Smuganizer Help");
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setIconImage(parent.getIconImage());

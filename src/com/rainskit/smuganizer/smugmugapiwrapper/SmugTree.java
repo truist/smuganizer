@@ -10,7 +10,7 @@ import javax.swing.DropMode;
 
 public class SmugTree extends TransferTree implements SettingsListener {
 	
-	public SmugTree(Main main) {
+	public SmugTree(Smuganizer main) {
 		super(main, SmugAPIMethod.httpClient);
 		setDropMode(DropMode.INSERT);
 	}

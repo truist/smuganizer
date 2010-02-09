@@ -8,7 +8,7 @@ import com.rainskit.smuganizer.menu.actions.treeactions.PreviewAction;
 import com.rainskit.smuganizer.menu.actions.treeactions.HideAction;
 import com.rainskit.smuganizer.menu.actions.treeactions.RenameAction;
 import com.rainskit.smuganizer.menu.actions.treeactions.DeleteAction;
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -28,7 +28,7 @@ public class TreeMenuManager implements TreeSelectionListener {
 	private ArrayList<TreeableAction> actions;
 	private ArrayList<TreeableGalleryItem> currentItems;
 
-	public TreeMenuManager(Main main, JTree tree) {
+	public TreeMenuManager(Smuganizer main, JTree tree) {
 		this.tree = tree;
 		
 		currentItems = new ArrayList<TreeableGalleryItem>();
@@ -38,7 +38,7 @@ public class TreeMenuManager implements TreeSelectionListener {
 		tree.addMouseListener(new RightClickListener());
 	}
 	
-	private ArrayList<TreeableAction> createActions(Main main, JTree tree) {
+	private ArrayList<TreeableAction> createActions(Smuganizer main, JTree tree) {
 		ArrayList<TreeableAction> newActions = new ArrayList<TreeableAction>();
 		newActions.add(new PreviewAction(this, main, tree));
 		newActions.add(new LaunchAction(this, main, tree));

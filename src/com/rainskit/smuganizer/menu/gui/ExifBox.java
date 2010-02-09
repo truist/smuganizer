@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.menu.gui;
 
 import com.rainskit.smuganizer.ExifHandler;
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -20,7 +20,7 @@ import org.apache.sanselan.formats.tiff.constants.TagInfo;
 import org.apache.sanselan.formats.tiff.constants.TiffConstants;
 
 public class ExifBox extends JDialog {
-	public ExifBox(Main main, TreeableGalleryItem image) throws IOException {
+	public ExifBox(Smuganizer main, TreeableGalleryItem image) throws IOException {
 		super(main, "EXIF Tags", true);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		

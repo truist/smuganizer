@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.menu.*;
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.menu.gui.SetPasswordDialog;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
@@ -18,7 +18,7 @@ public class PasswordAction extends TreeableAction {
 	private static final String ADD = "Add password...";
 	private static final String REMOVE = "Remove password";
 	
-	public PasswordAction(TreeMenuManager menuManager, Main main) {
+	public PasswordAction(TreeMenuManager menuManager, Smuganizer main) {
 		super(main, menuManager, ADD, "Changing password...");
 	}
 

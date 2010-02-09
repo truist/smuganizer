@@ -47,7 +47,7 @@ public class ImageWindow extends JFrame {
 	private CardLayout cardLayout;
 	private JLabel imageLabel;
 	
-	public ImageWindow(Main parent) throws FileNotFoundException, IOException {
+	public ImageWindow(Smuganizer parent) throws FileNotFoundException, IOException {
 		super("Image Viewer");
         setIconImage(parent.getIconImage());
 		

@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class GalleryTree extends TransferTree {
 
-	public GalleryTree(Main main) {
+	public GalleryTree(Smuganizer main) {
 		super(main, Gallery.loginHttpClient);
 	}
 	

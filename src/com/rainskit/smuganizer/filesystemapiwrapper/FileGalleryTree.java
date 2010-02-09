@@ -1,13 +1,13 @@
 package com.rainskit.smuganizer.filesystemapiwrapper;
 
 import com.rainskit.smuganizer.tree.*;
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.tree.transfer.SmugTransferHandler;
 import java.io.IOException;
 
 public class FileGalleryTree extends TransferTree {
 	
-	public FileGalleryTree(Main main) {
+	public FileGalleryTree(Smuganizer main) {
 		super(main, null);
 	}
 

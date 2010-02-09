@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.tree;
 
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.menu.TreeMenuManager;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,12 +17,12 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 public abstract class TransferTree extends JTree {
-	protected Main main;
+	protected Smuganizer main;
 	protected DefaultMutableTreeNode rootNode;
 	protected DefaultTreeModel model;
 	protected HttpClient httpClient;
 
-	public TransferTree(Main main, HttpClient httpClient) {
+	public TransferTree(Smuganizer main, HttpClient httpClient) {
 		super();
 		this.main = main;
 		this.model = (DefaultTreeModel)getModel();

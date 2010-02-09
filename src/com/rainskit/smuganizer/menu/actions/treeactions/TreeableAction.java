@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.menu.actions.treeactions;
 
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.menu.TreeMenuManager;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -10,11 +10,11 @@ import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
 public abstract class TreeableAction extends AbstractAction {
-	protected Main main;
+	protected Smuganizer main;
 	protected TreeMenuManager menuManager;
 	private String statusText;
 
-	public TreeableAction(Main main, TreeMenuManager menuManager, String name, String statusText) {
+	public TreeableAction(Smuganizer main, TreeMenuManager menuManager, String name, String statusText) {
 		super(name);
 		this.main = main;
 		this.menuManager = menuManager;

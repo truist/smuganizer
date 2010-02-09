@@ -22,9 +22,9 @@ keyword support
 
 update the help / intro doc
 
-make logging consistent / configurable / reviewable
-
 add license info to source files
+
+add paypal link
 
 -----
 

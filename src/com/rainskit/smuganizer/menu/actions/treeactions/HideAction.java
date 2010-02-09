@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.menu.actions.treeactions;
 
 import com.rainskit.smuganizer.menu.*;
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.tree.TreeableGalleryItem;
 import com.rainskit.smuganizer.tree.WriteableTreeableGalleryItem;
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class HideAction extends TreeableAction {
 	private static final String HIDE = "Hide";
 	private static final String SHOW = "Un-Hide";
 	
-	public HideAction(TreeMenuManager menuManager, Main main) {
+	public HideAction(TreeMenuManager menuManager, Smuganizer main) {
 		super(main, menuManager, HIDE, "Changing...");
 	}
 

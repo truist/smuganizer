@@ -1,7 +1,7 @@
 package com.rainskit.smuganizer.menu.actions;
 
 import com.rainskit.smuganizer.menu.gui.HelpWindow;
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -10,9 +10,9 @@ import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
 public class HelpAction extends AbstractAction {
-	private Main main;
+	private Smuganizer main;
 
-	public HelpAction(Main main) {
+	public HelpAction(Smuganizer main) {
 		super("Help");
 		this.main = main;
 	}

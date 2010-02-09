@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.menu.gui;
 
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.tree.transfer.TransferTable;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
 import com.rainskit.smuganizer.tree.transfer.TransferTableModel;
@@ -44,7 +44,7 @@ public class TransferErrorDialog extends JDialog implements ActionListener {
 	
 	private boolean closedWithRetry;
 	
-	public TransferErrorDialog(Main main, List<AbstractTransferTask> initialItems, boolean showRepairPanel) {
+	public TransferErrorDialog(Smuganizer main, List<AbstractTransferTask> initialItems, boolean showRepairPanel) {
 		super(main, "Transfer errors", true);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		

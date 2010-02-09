@@ -1,6 +1,6 @@
 package com.rainskit.smuganizer.menu.actions.tableactions;
 
-import com.rainskit.smuganizer.Main;
+import com.rainskit.smuganizer.Smuganizer;
 import com.rainskit.smuganizer.tree.transfer.TransferTable;
 import com.rainskit.smuganizer.menu.TableMenuManager;
 import com.rainskit.smuganizer.tree.transfer.tasks.AbstractTransferTask;
@@ -10,12 +10,12 @@ import java.util.List;
 import javax.swing.AbstractAction;
 
 public abstract class TableableAction extends AbstractAction {
-	protected Main main;
+	protected Smuganizer main;
 	protected TransferTable transferTable;
 	protected AsynchronousTransferManager transferManager;
 	private String statusText;
 	
-	public TableableAction(Main main, TransferTable transferTable, AsynchronousTransferManager transferManager, String name, String statusText) {
+	public TableableAction(Smuganizer main, TransferTable transferTable, AsynchronousTransferManager transferManager, String name, String statusText) {
 		super(name);
 		
 		this.main = main;

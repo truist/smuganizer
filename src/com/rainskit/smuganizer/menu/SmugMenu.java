@@ -13,6 +13,9 @@ import com.rainskit.smuganizer.menu.actions.AlwaysRemoveFileCaptionAction;
 import com.rainskit.smuganizer.menu.actions.PauseTransfersAction;
 import com.rainskit.smuganizer.menu.actions.PreserveCaptionsAction;
 import com.rainskit.smuganizer.galleryapiwrapper.GalleryTree;
+import com.rainskit.smuganizer.menu.actions.LogContentAction;
+import com.rainskit.smuganizer.menu.actions.LogHeadersAction;
+import com.rainskit.smuganizer.menu.actions.ViewLogAction;
 import com.rainskit.smuganizer.smugmugapiwrapper.SmugTree;
 import com.rainskit.smuganizer.tree.transfer.AsynchronousTransferManager;
 import java.awt.event.ItemEvent;
@@ -26,7 +29,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
 public class SmugMenu extends JMenuBar {
-	public SmugMenu(Main main, SmugTree smugTree, GalleryTree galleryTree, TransferTable transferTable, AsynchronousTransferManager transferManager) {
+	public SmugMenu(Smuganizer main, SmugTree smugTree, GalleryTree galleryTree, TransferTable transferTable, AsynchronousTransferManager transferManager) {
 		super();
 		
 		JMenu menu = new JMenu("Settings");
@@ -37,7 +40,9 @@ public class SmugMenu extends JMenuBar {
 		menu.addSeparator();
 		menu.add(new JCheckBoxMenuItem(new PauseTransfersAction(transferManager)));
 		add(menu);
-		
+
+		add(createLogMenu(main));
+
 		add(createHelpMenu(main));
 	}
 	
@@ -75,7 +80,20 @@ public class SmugMenu extends JMenuBar {
 		return settingsMenu;
 	}
 
-	private JMenu createHelpMenu(Main main) {
+	private JMenu createLogMenu(Smuganizer main) {
+		JMenu logMenu = new JMenu("Log");
+		logMenu.add(new ViewLogAction(main));
+		MaxOneGroup group = new MaxOneGroup();
+		JMenuItem logHeaders = new JCheckBoxMenuItem(new LogHeadersAction());
+		group.add(logHeaders);
+		logMenu.add(logHeaders);
+		JMenuItem logContent = new JCheckBoxMenuItem(new LogContentAction());
+		group.add(logContent);
+		logMenu.add(logContent);
+		return logMenu;
+	}
+
+	private JMenu createHelpMenu(Smuganizer main) {
 		JMenu helpMenu = new JMenu("Help");
 		helpMenu.add(new HelpAction(main));
 		helpMenu.add(new AboutAction(main));
