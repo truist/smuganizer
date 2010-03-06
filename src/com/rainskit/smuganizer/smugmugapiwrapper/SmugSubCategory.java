@@ -1,5 +1,6 @@
 package com.rainskit.smuganizer.smugmugapiwrapper;
 
+import com.rainskit.smuganizer.tree.WriteableTreeableGalleryContainer;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -47,6 +48,19 @@ public class SmugSubCategory extends SmugCategory {
 	@Override
 	protected Integer getSubCategoryID() throws IOException {
 		return SmugAPIUtils.getIntegerSafely(categoryJSON, CATEGORY_ID);
+	}
+
+	@Override
+	public boolean canBeDeleted() throws IOException {
+		return true;
+	}
+
+	@Override
+	public void delete() throws IOException {
+		SmugAPIMethod delete = new SmugAPIMethod(DELETE_SUBCATEGORY);
+		delete.addParameter(SUBCATEGORY_ACTION_ID, getSubCategoryID().toString());
+		delete.execute();
+		((WriteableTreeableGalleryContainer)parent).childRemoved(this);
 	}
 
 	@Override

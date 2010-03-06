@@ -32,6 +32,7 @@ public interface SmugAPIConstants {
 	static final String RENAME_CATEGORY = "smugmug.categories.rename";
 	static final String CATEGORY_ACTION_ID = "CategoryID";
 	static final String DELETE_CATEGORY = "smugmug.categories.delete";
+	static final String DELETE_SUBCATEGORY = "smugmug.subcategories.delete";
 
 	static final String CREATE_SUBCATEGORY = "smugmug.subcategories.create";
 	static final String SUBCATEGORY_ACTION_ID = "SubCategoryID";

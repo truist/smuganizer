@@ -69,6 +69,10 @@ class CursorManager {
 	}
 
 	public void setCursor() {
-		((DispatchedEvent) dispatchedEvents.peek()).setCursor();
+		try {
+			((DispatchedEvent) dispatchedEvents.peek()).setCursor();
+		} catch (EmptyStackException ex) {
+			//do nothing, this usually means we aren't on screen any more
+		}
 	}
 }
